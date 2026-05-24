@@ -265,6 +265,14 @@
           <label>Estimated Completion Date</label>
           <input type="date" id="estimated_completion_date">
         </div>
+        <div class="field full">
+          <label>Contract Language / Idioma del Contrato</label>
+          <select id="document_language">
+            <option value="english">English</option>
+            <option value="spanish">Español (Spanish)</option>
+            <option value="bilingual">Bilingual — English &amp; Spanish</option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -358,6 +366,7 @@
         payment_schedule: document.getElementById('payment_schedule').value,
         start_date: document.getElementById('start_date').value,
         estimated_completion_date: document.getElementById('estimated_completion_date').value,
+        document_language: document.getElementById('document_language').value,
         status: 'active'
       };
 

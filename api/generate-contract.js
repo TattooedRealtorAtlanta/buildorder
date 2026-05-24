@@ -98,6 +98,14 @@ module.exports = async (req, res) => {
 
   const contractorFullAddress = `${profile.address}, ${profile.city}, ${profile.state} ${profile.zip}`;
   const jobFullAddress = `${job.job_address}, ${job.job_city}, ${job.job_state} ${job.job_zip}`;
+  const lang = job.document_language || 'english';
+
+  // Language instructions for the prompt
+  const langInstructions = {
+    english: `Generate the entire contract in English only.`,
+    spanish: `Generate the entire contract in Spanish only. Use formal legal Spanish (usted form). Translate all section headers, body text, and instructions into Spanish. Keep proper names, addresses, dollar amounts, and dates as-is. The contract must read as natural, professional legal Spanish — not a word-for-word translation.`,
+    bilingual: `Generate the contract in BOTH English and Spanish. Format it as two complete side-by-side sections: first the full English contract, then a divider line, then the full Spanish translation. Label them clearly: "ENGLISH VERSION" and "VERSION EN ESPAÑOL". The Spanish must be a complete, accurate legal translation — not abbreviated.`
+  };
 
   const prompt = `You are a legal document specialist generating a professional, state-compliant home improvement contract. Generate a complete, ready-to-sign contract using the information below.
 
@@ -137,6 +145,8 @@ WRITTEN CONTRACT REQUIRED ABOVE: $${template?.written_contract_required_above ||
 MANDATORY STATE CLAUSES (include ALL of these verbatim in the appropriate sections):
 ${clauseText}
 
+LANGUAGE: ${langInstructions[lang] || langInstructions.english}
+
 INSTRUCTIONS:
 1. Generate a complete, professional contract formatted in plain text with clear section headers
 2. Include ALL mandatory clauses above exactly as written — do not paraphrase them
@@ -159,14 +169,14 @@ INSTRUCTIONS:
    - SIGNATURE BLOCK (both parties, date lines)
    - FOOTER DISCLAIMER (from mandatory clauses if provided)
 4. Use plain text formatting with ===, ---, and ALL CAPS for headers
-5. Use professional but plain English — no legalese the average person can't understand
+5. Use professional but plain language — no legalese the average person can't understand
 6. Every blank that needs to be filled in should use [BLANK] notation
 7. Do not add any commentary before or after the contract — output only the contract itself`;
 
   try {
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-5',
-      max_tokens: 4000,
+      max_tokens: lang === 'bilingual' ? 8000 : 4000,
       messages: [{ role: 'user', content: prompt }]
     });
 
