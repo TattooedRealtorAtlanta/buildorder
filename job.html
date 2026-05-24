@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BuildOrder.ai — Job</title>
+  <title>BuildOrder.ai &mdash; Job</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -24,7 +24,6 @@
     }
     body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; }
 
-    /* Nav */
     .nav {
       background: var(--bg2);
       border-bottom: 1px solid var(--border);
@@ -54,10 +53,8 @@
     }
     .btn-back:hover { color: var(--white); border-color: var(--amber); }
 
-    /* Main */
     .main { max-width: 900px; margin: 0 auto; padding: 2.5rem 2rem; }
 
-    /* Job header */
     .job-header {
       display: flex;
       align-items: flex-start;
@@ -80,7 +77,6 @@
     .status-draft { background: rgba(148,163,184,0.12); color: var(--muted); }
     .status-complete { background: rgba(245,158,11,0.12); color: var(--amber); }
 
-    /* Info cards */
     .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
     .info-card {
       background: var(--bg2);
@@ -100,7 +96,6 @@
     .info-label { color: var(--muted); }
     .info-value { font-weight: 600; text-align: right; max-width: 55%; }
 
-    /* Contract section */
     .contract-section {
       background: var(--bg2);
       border: 1px solid var(--border);
@@ -144,7 +139,6 @@
     .btn-generate:hover { background: var(--amber2); }
     .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    /* Generating state */
     .generating {
       padding: 4rem 2rem;
       text-align: center;
@@ -163,7 +157,6 @@
     .generating h3 { font-size: 1rem; font-weight: 700; color: var(--white); margin-bottom: 0.5rem; }
     .generating p { font-size: 0.85rem; }
 
-    /* Contract text */
     .contract-body { padding: 2rem; }
     .contract-text {
       font-family: 'Courier New', Courier, monospace;
@@ -174,7 +167,6 @@
       word-break: break-word;
     }
 
-    /* No contract state */
     .no-contract {
       padding: 3rem 2rem;
       text-align: center;
@@ -183,7 +175,6 @@
     .no-contract h3 { font-size: 1rem; font-weight: 700; color: var(--white); margin-bottom: 0.5rem; }
     .no-contract p { font-size: 0.85rem; margin-bottom: 1.5rem; }
 
-    /* Error */
     .error-msg {
       padding: 1rem 1.5rem;
       background: rgba(239,68,68,0.1);
@@ -194,7 +185,6 @@
       margin: 1rem 1.5rem;
     }
 
-    /* Toast */
     .toast {
       position: fixed;
       bottom: 2rem;
@@ -226,14 +216,12 @@
   <nav class="nav">
     <a href="/dashboard.html" class="logo">Build<em>Order</em></a>
     <div class="nav-right">
-      <a href="/dashboard.html" class="btn-back">← Dashboard</a>
+      <a href="/dashboard.html" class="btn-back">&larr; Dashboard</a>
     </div>
   </nav>
 
   <main class="main">
-    <div id="page-content">
-      <!-- Loaded dynamically -->
-    </div>
+    <div id="page-content"></div>
   </main>
 
   <div class="toast" id="toast">Copied to clipboard!</div>
@@ -241,7 +229,7 @@
   <script>
     const SUPABASE_URL = 'https://pxqwtesczfhfjwdhxiyl.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDI3MDcsImV4cCI6MjA5NTIxODcwN30.rNmcfsteMK_IdyWkGLrNA5ZOlRVHQYahDrnIWmPGCLM';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, storageKey: 'bo-auth' } });
 
     const params = new URLSearchParams(window.location.search);
     const jobId = params.get('id');
@@ -251,33 +239,29 @@
     let currentContract = null;
 
     async function init() {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await db.auth.getSession();
       if (!session) { window.location.href = '/login.html'; return; }
       if (!jobId) { window.location.href = '/dashboard.html'; return; }
-
       await loadJob();
     }
 
     async function loadJob() {
-      const { data: job, error } = await supabase
-        .from('jobs').select('*').eq('id', jobId).single();
+      const { data: job, error } = await db.from('jobs').select('*').eq('id', jobId).single();
 
       if (error || !job) {
         document.getElementById('page-content').innerHTML = `
           <div style="text-align:center;padding:4rem 2rem;color:var(--muted);">
-            <div style="font-size:2rem;margin-bottom:1rem;">⚠️</div>
+            <div style="font-size:2rem;margin-bottom:1rem;">&#9888;&#65039;</div>
             <h3 style="color:var(--white);margin-bottom:0.5rem;">Job not found</h3>
             <p>This job may have been deleted or you don't have access to it.</p>
-            <a href="/dashboard.html" style="display:inline-block;margin-top:1.5rem;color:var(--amber);text-decoration:none;font-weight:700;">← Back to Dashboard</a>
+            <a href="/dashboard.html" style="display:inline-block;margin-top:1.5rem;color:var(--amber);text-decoration:none;font-weight:700;">&larr; Back to Dashboard</a>
           </div>`;
         return;
       }
 
       currentJob = job;
 
-      // Load existing contract if any
-      const { data: docs } = await supabase
-        .from('documents')
+      const { data: docs } = await db.from('documents')
         .select('*')
         .eq('job_id', jobId)
         .eq('doc_type', 'contract')
@@ -288,19 +272,18 @@
 
       renderPage();
 
-      // Auto-trigger generation if coming from new-job form
       if (autoGenerate && !currentContract) {
         generateContract();
       }
     }
 
     function formatDate(dateStr) {
-      if (!dateStr) return '—';
+      if (!dateStr) return '&mdash;';
       return new Date(dateStr).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
     }
 
     function formatPrice(val) {
-      if (!val) return '—';
+      if (!val) return '&mdash;';
       return '$' + Number(val).toLocaleString();
     }
 
@@ -312,7 +295,7 @@
         <div class="job-header">
           <div>
             <div class="job-title">${job.job_address || 'No address'}, ${job.job_city || ''} ${job.job_state || ''}</div>
-            <div class="job-meta">${job.work_type || ''} · Created ${formatDate(job.created_at)}</div>
+            <div class="job-meta">${job.work_type || ''} &middot; Created ${formatDate(job.created_at)}</div>
           </div>
           <span class="status-badge ${statusClass}">${job.status}</span>
         </div>
@@ -320,10 +303,10 @@
         <div class="info-grid">
           <div class="info-card">
             <div class="info-card-title">Homeowner</div>
-            <div class="info-row"><span class="info-label">Name</span><span class="info-value">${job.homeowner_name || '—'}</span></div>
-            <div class="info-row"><span class="info-label">Phone</span><span class="info-value">${job.homeowner_phone || '—'}</span></div>
-            <div class="info-row"><span class="info-label">Email</span><span class="info-value">${job.homeowner_email || '—'}</span></div>
-            <div class="info-row"><span class="info-label">Address</span><span class="info-value">${job.homeowner_address ? job.homeowner_address + ', ' + (job.homeowner_city || '') + ' ' + (job.homeowner_state || '') : (job.job_address || '—')}</span></div>
+            <div class="info-row"><span class="info-label">Name</span><span class="info-value">${job.homeowner_name || '&mdash;'}</span></div>
+            <div class="info-row"><span class="info-label">Phone</span><span class="info-value">${job.homeowner_phone || '&mdash;'}</span></div>
+            <div class="info-row"><span class="info-label">Email</span><span class="info-value">${job.homeowner_email || '&mdash;'}</span></div>
+            <div class="info-row"><span class="info-label">Address</span><span class="info-value">${job.homeowner_address ? job.homeowner_address + ', ' + (job.homeowner_city || '') + ' ' + (job.homeowner_state || '') : (job.job_address || '&mdash;')}</span></div>
           </div>
           <div class="info-card">
             <div class="info-card-title">Job Details</div>
@@ -337,13 +320,13 @@
 
         <div class="contract-section">
           <div class="contract-header">
-            <div class="contract-title">📄 Home Improvement Contract</div>
+            <div class="contract-title">&#128196; Home Improvement Contract</div>
             <div class="contract-actions" id="contract-actions">
               ${currentContract
                 ? `<button class="btn-action" onclick="copyContract()">Copy</button>
                    <button class="btn-action" onclick="downloadContract()">Download .txt</button>
                    <button class="btn-generate" onclick="generateContract()">Regenerate</button>`
-                : `<button class="btn-generate" id="gen-btn" onclick="generateContract()">✦ Generate Contract</button>`
+                : `<button class="btn-generate" id="gen-btn" onclick="generateContract()">&#10022; Generate Contract</button>`
               }
             </div>
           </div>
@@ -361,18 +344,15 @@
     }
 
     async function generateContract() {
-      // Update UI to generating state
       document.getElementById('contract-body').innerHTML = `
         <div class="generating">
           <div class="generating-spinner"></div>
-          <h3>Generating your contract…</h3>
-          <p>Pulling in state compliance rules for ${currentJob.job_state || 'your state'}. This takes about 15–20 seconds.</p>
+          <h3>Generating your contract&hellip;</h3>
+          <p>Pulling in state compliance rules for ${currentJob.job_state || 'your state'}. This takes about 15&ndash;20 seconds.</p>
         </div>`;
 
       const actions = document.getElementById('contract-actions');
-      if (actions) {
-        actions.innerHTML = `<button class="btn-generate" disabled>Generating…</button>`;
-      }
+      if (actions) actions.innerHTML = `<button class="btn-generate" disabled>Generating&hellip;</button>`;
 
       try {
         const res = await fetch('/api/generate-contract', {
@@ -389,28 +369,23 @@
         }
 
         currentContract = { content: data.content, id: data.document_id };
-
-        // Update URL to remove ?generate=true
         window.history.replaceState({}, '', `/job.html?id=${jobId}`);
-
         renderPage();
 
       } catch (err) {
-        showError('Network error — please check your connection and try again.');
+        showError('Network error &mdash; please check your connection and try again.');
       }
     }
 
     function showError(msg) {
       document.getElementById('contract-body').innerHTML = `
-        <div class="error-msg">⚠️ ${msg}</div>
+        <div class="error-msg">&#9888; ${msg}</div>
         <div class="no-contract">
           <p>Something went wrong generating the contract.</p>
           <button class="btn-generate" onclick="generateContract()">Try Again</button>
         </div>`;
       const actions = document.getElementById('contract-actions');
-      if (actions) {
-        actions.innerHTML = `<button class="btn-generate" onclick="generateContract()">✦ Generate Contract</button>`;
-      }
+      if (actions) actions.innerHTML = `<button class="btn-generate" onclick="generateContract()">&#10022; Generate Contract</button>`;
     }
 
     function copyContract() {
@@ -436,10 +411,7 @@
     }
 
     function escapeHtml(str) {
-      return str
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
     init();

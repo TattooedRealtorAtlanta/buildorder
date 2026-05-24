@@ -197,7 +197,7 @@
   <div class="back"><a href="/">← Back to BuildOrder.ai</a></div>
 
   <script>
-    // Tab switching — pure DOM, no dependencies
+    // Tab switching — pure DOM, no Supabase dependency
     function switchTab(tab) {
       document.getElementById('tab-signin').classList.toggle('active', tab === 'signin');
       document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
@@ -211,22 +211,19 @@
       el.className = 'msg ' + type;
     }
 
-    // Supabase init
+    // Use 'db' to avoid conflict with CDN's global 'supabase' variable
     const SUPABASE_URL = 'https://pxqwtesczfhfjwdhxiyl.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDI3MDcsImV4cCI6MjA5NTIxODcwN30.rNmcfsteMK_IdyWkGLrNA5ZOlRVHQYahDrnIWmPGCLM';
-    let supabase;
-    try {
-      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      // If already logged in, redirect to dashboard
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session) window.location.href = '/dashboard.html';
-      });
-    } catch(e) {
-      console.error('Supabase init error:', e);
-    }
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: true, storageKey: 'bo-auth' }
+    });
+
+    // Redirect if already logged in
+    db.auth.getSession().then(({ data: { session } }) => {
+      if (session) window.location.href = '/dashboard.html';
+    });
 
     async function signIn() {
-      if (!supabase) { setMsg('signin-msg', 'Connection error. Please refresh the page.', 'error'); return; }
       const email = document.getElementById('signin-email').value.trim();
       const password = document.getElementById('signin-password').value;
       const btn = document.getElementById('signin-btn');
@@ -235,13 +232,13 @@
 
       btn.disabled = true; btn.textContent = 'Signing in…';
 
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await db.auth.signInWithPassword({ email, password });
 
       if (error) {
         setMsg('signin-msg', error.message, 'error');
         btn.disabled = false; btn.textContent = 'Sign In';
       } else {
-        const { data: profile } = await supabase
+        const { data: profile } = await db
           .from('contractor_profiles')
           .select('onboarding_complete')
           .single();
@@ -255,7 +252,6 @@
     }
 
     async function signUp() {
-      if (!supabase) { setMsg('signup-msg', 'Connection error. Please refresh the page.', 'error'); return; }
       const email = document.getElementById('signup-email').value.trim();
       const password = document.getElementById('signup-password').value;
       const confirm = document.getElementById('signup-confirm').value;
@@ -267,7 +263,7 @@
 
       btn.disabled = true; btn.textContent = 'Creating account…';
 
-      const { data, error } = await supabase.auth.signUp({ email, password });
+      const { error } = await db.auth.signUp({ email, password });
 
       if (error) {
         setMsg('signup-msg', error.message, 'error');

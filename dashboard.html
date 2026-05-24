@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BuildOrder.ai — Dashboard</title>
+  <title>BuildOrder.ai â€” Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -173,15 +173,15 @@
     <div class="stats">
       <div class="stat">
         <div class="stat-label">Total Jobs</div>
-        <div class="stat-value" id="stat-total">—</div>
+        <div class="stat-value" id="stat-total">â€”</div>
       </div>
       <div class="stat">
         <div class="stat-label">Active</div>
-        <div class="stat-value" id="stat-active">—</div>
+        <div class="stat-value" id="stat-active">â€”</div>
       </div>
       <div class="stat">
         <div class="stat-label">Documents Generated</div>
-        <div class="stat-value" id="stat-docs">—</div>
+        <div class="stat-value" id="stat-docs">â€”</div>
       </div>
     </div>
 
@@ -199,22 +199,22 @@
   <script>
     const SUPABASE_URL = 'https://pxqwtesczfhfjwdhxiyl.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDI3MDcsImV4cCI6MjA5NTIxODcwN30.rNmcfsteMK_IdyWkGLrNA5ZOlRVHQYahDrnIWmPGCLM';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, storageKey: 'bo-auth' } });
 
     async function init() {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await db.auth.getSession();
       if (!session) { window.location.href = '/login.html'; return; }
 
       // Load profile
-      const { data: profile } = await supabase.from('contractor_profiles').select('*').single();
+      const { data: profile } = await db.from('contractor_profiles').select('*').single();
       if (!profile || !profile.onboarding_complete) { window.location.href = '/onboarding.html'; return; }
 
       const name = profile.business_name || profile.contractor_name;
       document.getElementById('nav-name').textContent = name;
 
       // Load jobs
-      const { data: jobs } = await supabase.from('jobs').select('*').order('created_at', { ascending: false });
-      const { count: docCount } = await supabase.from('documents').select('*', { count: 'exact', head: true });
+      const { data: jobs } = await db.from('jobs').select('*').order('created_at', { ascending: false });
+      const { count: docCount } = await db.from('documents').select('*', { count: 'exact', head: true });
 
       // Stats
       document.getElementById('stat-total').textContent = jobs?.length || 0;
@@ -225,11 +225,11 @@
       const list = document.getElementById('jobs-list');
       if (!jobs || jobs.length === 0) {
         list.innerHTML = `
-          <div class="empty">
-            <div class="empty-icon">📋</div>
+          <div class=”empty”>
+            <div class=”empty-icon”>📋</div>
             <h3>No jobs yet</h3>
             <p>Create your first job to generate a state-compliant contract.</p>
-            <a href="/new-job.html" class="btn-new">+ Create First Job</a>
+            <a href=”/new-job.html” class=”btn-new”>+ Create First Job</a>
           </div>`;
         document.querySelector('.jobs-header').style.display = 'none';
         return;
@@ -241,23 +241,23 @@
         const date = job.created_at ? new Date(job.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
         const desc = job.project_description ? job.project_description.substring(0, 50) + (job.project_description.length > 50 ? '…' : '') : 'No description';
         return `
-          <a href="/job.html?id=${job.id}" class="job-card">
+          <a href=”/job.html?id=${job.id}” class=”job-card”>
             <div>
-              <div class="job-title">${job.job_address || 'No address'}, ${job.job_city || ''} ${job.job_state || ''}</div>
-              <div class="job-sub">${desc}</div>
+              <div class=”job-title”>${job.job_address || 'No address'}, ${job.job_city || ''} ${job.job_state || ''}</div>
+              <div class=”job-sub”>${desc}</div>
             </div>
             <div>
-              <div class="job-title" style="font-size:0.85rem;">${job.homeowner_name || '—'}</div>
-              <div class="job-date">${job.work_type || ''}</div>
+              <div class=”job-title” style=”font-size:0.85rem;”>${job.homeowner_name || '—'}</div>
+              <div class=”job-date”>${job.work_type || ''}</div>
             </div>
-            <div class="job-price">${price}</div>
-            <div><span class="status-badge ${statusClass}">${job.status}</span></div>
+            <div class=”job-price”>${price}</div>
+            <div><span class=”status-badge ${statusClass}”>${job.status}</span></div>
           </a>`;
       }).join('');
     }
 
     async function signOut() {
-      await supabase.auth.signOut();
+      await db.auth.signOut();
       window.location.href = '/login.html';
     }
 

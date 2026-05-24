@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BuildOrder.ai — Set Up Your Profile</title>
+  <title>BuildOrder.ai â€” Set Up Your Profile</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -206,7 +206,7 @@
         <div class="field">
           <label>State</label>
           <select id="state">
-            <option value="">Select state…</option>
+            <option value="">Select stateâ€¦</option>
             <option>AL</option><option>AK</option><option>AZ</option><option>AR</option>
             <option>CA</option><option>CO</option><option>CT</option><option>DE</option>
             <option>FL</option><option>GA</option><option>HI</option><option>ID</option>
@@ -229,7 +229,7 @@
       </div>
       <div class="nav-btns">
         <div></div>
-        <button class="btn-next" onclick="goStep(2)">Continue →</button>
+        <button class="btn-next" onclick="goStep(2)">Continue â†’</button>
       </div>
       <div class="msg" id="msg-1"></div>
     </div>
@@ -239,7 +239,7 @@
       <div class="step-title">License & Insurance</div>
       <div class="step-sub">Required by law in most states to appear on your contracts. If your state doesn't require a license, leave the license fields blank.</div>
       <div class="note">
-        <strong>Why this matters:</strong> Missing your license number on a contract can void it — and cost you your lien rights if a homeowner doesn't pay.
+        <strong>Why this matters:</strong> Missing your license number on a contract can void it â€” and cost you your lien rights if a homeowner doesn't pay.
       </div>
       <div class="grid-2">
         <div class="field">
@@ -267,8 +267,8 @@
         </div>
       </div>
       <div class="nav-btns">
-        <button class="btn-back" onclick="goStep(1)">← Back</button>
-        <button class="btn-next" onclick="goStep(3)">Continue →</button>
+        <button class="btn-back" onclick="goStep(1)">â† Back</button>
+        <button class="btn-next" onclick="goStep(3)">Continue â†’</button>
       </div>
       <div class="msg" id="msg-2"></div>
     </div>
@@ -279,8 +279,8 @@
       <div class="step-sub">Your profile is saved automatically to every document you generate. You can update it anytime from your dashboard settings.</div>
       <div id="review-box" style="background:var(--bg2);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;font-size:0.875rem;line-height:2;color:var(--muted);"></div>
       <div class="nav-btns">
-        <button class="btn-back" onclick="goStep(2)">← Back</button>
-        <button class="btn-next" id="save-btn" onclick="saveProfile()">Save & Go to Dashboard →</button>
+        <button class="btn-back" onclick="goStep(2)">â† Back</button>
+        <button class="btn-next" id="save-btn" onclick="saveProfile()">Save & Go to Dashboard â†’</button>
       </div>
       <div class="msg" id="msg-3"></div>
     </div>
@@ -290,12 +290,12 @@
   <script>
     const SUPABASE_URL = 'https://pxqwtesczfhfjwdhxiyl.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDI3MDcsImV4cCI6MjA5NTIxODcwN30.rNmcfsteMK_IdyWkGLrNA5ZOlRVHQYahDrnIWmPGCLM';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, storageKey: 'bo-auth' } });
 
     let currentStep = 1;
 
     // Auth check
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    db.auth.getSession().then(({ data: { session } }) => {
       if (!session) window.location.href = '/login.html';
     });
 
@@ -353,7 +353,7 @@
       btn.disabled = true;
       btn.textContent = 'Saving…';
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await db.auth.getUser();
 
       const profile = {
         id: user.id,
@@ -373,12 +373,12 @@
         onboarding_complete: true
       };
 
-      const { error } = await supabase.from('contractor_profiles').upsert(profile);
+      const { error } = await db.from('contractor_profiles').upsert(profile);
 
       if (error) {
         document.getElementById('msg-3').textContent = 'Error saving profile: ' + error.message;
         btn.disabled = false;
-        btn.textContent = 'Save & Go to Dashboard →';
+        btn.textContent = ‘Save & Go to Dashboard →’;
       } else {
         window.location.href = '/dashboard.html';
       }
