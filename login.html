@@ -197,15 +197,7 @@
   <div class="back"><a href="/">← Back to BuildOrder.ai</a></div>
 
   <script>
-    const SUPABASE_URL = 'https://pxqwtesczfhfjwdhxiyl.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDI3MDcsImV4cCI6MjA5NTIxODcwN30.rNmcfsteMK_IdyWkGLrNA5ZOlRVHQYahDrnIWmPGCLM';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // If already logged in, redirect to dashboard
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) window.location.href = '/dashboard.html';
-    });
-
+    // Tab switching — pure DOM, no dependencies
     function switchTab(tab) {
       document.getElementById('tab-signin').classList.toggle('active', tab === 'signin');
       document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
@@ -219,7 +211,22 @@
       el.className = 'msg ' + type;
     }
 
+    // Supabase init
+    const SUPABASE_URL = 'https://pxqwtesczfhfjwdhxiyl.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDI3MDcsImV4cCI6MjA5NTIxODcwN30.rNmcfsteMK_IdyWkGLrNA5ZOlRVHQYahDrnIWmPGCLM';
+    let supabase;
+    try {
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      // If already logged in, redirect to dashboard
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) window.location.href = '/dashboard.html';
+      });
+    } catch(e) {
+      console.error('Supabase init error:', e);
+    }
+
     async function signIn() {
+      if (!supabase) { setMsg('signin-msg', 'Connection error. Please refresh the page.', 'error'); return; }
       const email = document.getElementById('signin-email').value.trim();
       const password = document.getElementById('signin-password').value;
       const btn = document.getElementById('signin-btn');
@@ -234,7 +241,6 @@
         setMsg('signin-msg', error.message, 'error');
         btn.disabled = false; btn.textContent = 'Sign In';
       } else {
-        // Check if onboarding is complete
         const { data: profile } = await supabase
           .from('contractor_profiles')
           .select('onboarding_complete')
@@ -249,6 +255,7 @@
     }
 
     async function signUp() {
+      if (!supabase) { setMsg('signup-msg', 'Connection error. Please refresh the page.', 'error'); return; }
       const email = document.getElementById('signup-email').value.trim();
       const password = document.getElementById('signup-password').value;
       const confirm = document.getElementById('signup-confirm').value;
@@ -260,14 +267,14 @@
 
       btn.disabled = true; btn.textContent = 'Creating account…';
 
-      const { error } = await supabase.auth.signUp({ email, password });
+      const { data, error } = await supabase.auth.signUp({ email, password });
 
       if (error) {
         setMsg('signup-msg', error.message, 'error');
         btn.disabled = false; btn.textContent = 'Create Account';
       } else {
-        setMsg('signup-msg', 'Account created! Setting up your profile…', 'success');
-        setTimeout(() => window.location.href = '/onboarding.html', 1000);
+        setMsg('signup-msg', 'Account created! Taking you to setup…', 'success');
+        setTimeout(() => window.location.href = '/onboarding.html', 1200);
       }
     }
 
