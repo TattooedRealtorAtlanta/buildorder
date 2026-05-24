@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BuildOrder.ai â€” Set Up Your Profile</title>
+  <title>BuildOrder.ai &mdash; Set Up Your Profile</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -20,146 +20,39 @@
       --dim:   #475569;
       --border:rgba(255,255,255,0.07);
     }
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--white);
-      min-height: 100vh;
-      padding: 2rem;
-    }
-    .top {
-      max-width: 640px;
-      margin: 0 auto 2.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; padding: 2rem; }
+    .top { max-width: 640px; margin: 0 auto 2.5rem; display: flex; align-items: center; justify-content: space-between; }
     .logo { font-size: 1.2rem; font-weight: 900; letter-spacing: -0.03em; text-decoration: none; color: var(--white); }
     .logo em { font-style: normal; color: var(--amber); }
-    .step-indicator {
-      font-size: 0.78rem;
-      color: var(--dim);
-      font-weight: 600;
-    }
+    .step-indicator { font-size: 0.78rem; color: var(--dim); font-weight: 600; }
     .step-indicator span { color: var(--amber); }
-    .card {
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 2.5rem;
-      max-width: 640px;
-      margin: 0 auto;
-    }
-    /* Steps */
+    .card { background: var(--bg3); border: 1px solid var(--border); border-radius: 18px; padding: 2.5rem; max-width: 640px; margin: 0 auto; }
     .step { display: none; }
     .step.active { display: block; }
-    .step-title {
-      font-size: 1.3rem;
-      font-weight: 800;
-      margin-bottom: 0.3rem;
-      letter-spacing: -0.02em;
-    }
-    .step-sub {
-      font-size: 0.875rem;
-      color: var(--muted);
-      margin-bottom: 2rem;
-      line-height: 1.6;
-    }
-    /* Progress bar */
-    .progress {
-      height: 3px;
-      background: var(--border);
-      border-radius: 100px;
-      margin-bottom: 2.5rem;
-      overflow: hidden;
-    }
-    .progress-fill {
-      height: 100%;
-      background: var(--amber);
-      border-radius: 100px;
-      transition: width 0.3s ease;
-    }
-    /* Fields */
+    .step-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.3rem; letter-spacing: -0.02em; }
+    .step-sub { font-size: 0.875rem; color: var(--muted); margin-bottom: 2rem; line-height: 1.6; }
+    .progress { height: 3px; background: var(--border); border-radius: 100px; margin-bottom: 2.5rem; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--amber); border-radius: 100px; transition: width 0.3s ease; }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
     .field { margin-bottom: 1.1rem; }
     .field.full { grid-column: 1 / -1; }
-    label {
-      display: block;
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: var(--muted);
-      margin-bottom: 0.4rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
+    label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--muted); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em; }
     label .opt { color: var(--dim); font-weight: 400; text-transform: none; letter-spacing: 0; }
-    input, select, textarea {
-      width: 100%;
-      background: var(--bg2);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 10px;
-      padding: 0.8rem 1rem;
-      font-size: 0.9rem;
-      color: var(--white);
-      font-family: inherit;
-      outline: none;
-      transition: border-color 0.2s;
-    }
+    input, select, textarea { width: 100%; background: var(--bg2); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0.8rem 1rem; font-size: 0.9rem; color: var(--white); font-family: inherit; outline: none; transition: border-color 0.2s; }
     input::placeholder, textarea::placeholder { color: var(--dim); }
     input:focus, select:focus, textarea:focus { border-color: var(--amber); }
     select option { background: var(--bg2); color: var(--white); }
     textarea { resize: vertical; min-height: 80px; }
-    /* Nav buttons */
-    .nav-btns {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 2rem;
-    }
-    .btn-back {
-      background: none;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 0.75rem 1.5rem;
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: var(--muted);
-      cursor: pointer;
-      font-family: inherit;
-      transition: border-color 0.2s, color 0.2s;
-    }
+    .nav-btns { display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; }
+    .btn-back { background: none; border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1.5rem; font-size: 0.875rem; font-weight: 600; color: var(--muted); cursor: pointer; font-family: inherit; transition: border-color 0.2s, color 0.2s; }
     .btn-back:hover { border-color: var(--amber); color: var(--white); }
-    .btn-next {
-      background: var(--amber);
-      color: #090E1A;
-      border: none;
-      border-radius: 10px;
-      padding: 0.75rem 2rem;
-      font-size: 0.9rem;
-      font-weight: 800;
-      cursor: pointer;
-      font-family: inherit;
-      transition: background 0.15s;
-    }
+    .btn-next { background: var(--amber); color: #090E1A; border: none; border-radius: 10px; padding: 0.75rem 2rem; font-size: 0.9rem; font-weight: 800; cursor: pointer; font-family: inherit; transition: background 0.15s; }
     .btn-next:hover { background: var(--amber2); }
     .btn-next:disabled { opacity: 0.5; cursor: not-allowed; }
     .msg { font-size: 0.82rem; color: #EF4444; margin-top: 0.75rem; min-height: 1rem; }
-    /* License note */
-    .note {
-      background: rgba(245,158,11,0.08);
-      border: 1px solid rgba(245,158,11,0.18);
-      border-radius: 10px;
-      padding: 0.9rem 1.1rem;
-      font-size: 0.8rem;
-      color: var(--muted);
-      margin-bottom: 1.5rem;
-      line-height: 1.6;
-    }
+    .note { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.18); border-radius: 10px; padding: 0.9rem 1.1rem; font-size: 0.8rem; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.6; }
     .note strong { color: var(--amber); }
-    @media (max-width: 560px) {
-      .grid-2 { grid-template-columns: 1fr; }
-      .card { padding: 1.5rem 1.25rem; }
-    }
+    @media (max-width: 560px) { .grid-2 { grid-template-columns: 1fr; } .card { padding: 1.5rem 1.25rem; } }
   </style>
 </head>
 <body>
@@ -206,7 +99,7 @@
         <div class="field">
           <label>State</label>
           <select id="state">
-            <option value="">Select stateâ€¦</option>
+            <option value="">Select state...</option>
             <option>AL</option><option>AK</option><option>AZ</option><option>AR</option>
             <option>CA</option><option>CO</option><option>CT</option><option>DE</option>
             <option>FL</option><option>GA</option><option>HI</option><option>ID</option>
@@ -229,17 +122,17 @@
       </div>
       <div class="nav-btns">
         <div></div>
-        <button class="btn-next" onclick="goStep(2)">Continue â†’</button>
+        <button class="btn-next" onclick="goStep(2)">Continue &rarr;</button>
       </div>
       <div class="msg" id="msg-1"></div>
     </div>
 
     <!-- Step 2: License & Insurance -->
     <div class="step" id="step-2">
-      <div class="step-title">License & Insurance</div>
+      <div class="step-title">License &amp; Insurance</div>
       <div class="step-sub">Required by law in most states to appear on your contracts. If your state doesn't require a license, leave the license fields blank.</div>
       <div class="note">
-        <strong>Why this matters:</strong> Missing your license number on a contract can void it â€” and cost you your lien rights if a homeowner doesn't pay.
+        <strong>Why this matters:</strong> Missing your license number on a contract can void it &mdash; and cost you your lien rights if a homeowner doesn't pay.
       </div>
       <div class="grid-2">
         <div class="field">
@@ -267,8 +160,8 @@
         </div>
       </div>
       <div class="nav-btns">
-        <button class="btn-back" onclick="goStep(1)">â† Back</button>
-        <button class="btn-next" onclick="goStep(3)">Continue â†’</button>
+        <button class="btn-back" onclick="goStep(1)">&larr; Back</button>
+        <button class="btn-next" onclick="goStep(3)">Continue &rarr;</button>
       </div>
       <div class="msg" id="msg-2"></div>
     </div>
@@ -279,8 +172,8 @@
       <div class="step-sub">Your profile is saved automatically to every document you generate. You can update it anytime from your dashboard settings.</div>
       <div id="review-box" style="background:var(--bg2);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;font-size:0.875rem;line-height:2;color:var(--muted);"></div>
       <div class="nav-btns">
-        <button class="btn-back" onclick="goStep(2)">â† Back</button>
-        <button class="btn-next" id="save-btn" onclick="saveProfile()">Save & Go to Dashboard â†’</button>
+        <button class="btn-back" onclick="goStep(2)">&larr; Back</button>
+        <button class="btn-next" id="save-btn" onclick="saveProfile()">Save &amp; Go to Dashboard &rarr;</button>
       </div>
       <div class="msg" id="msg-3"></div>
     </div>
@@ -288,35 +181,31 @@
   </div>
 
   <script>
-    const SUPABASE_URL = 'https://pxqwtesczfhfjwdhxiyl.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDI3MDcsImV4cCI6MjA5NTIxODcwN30.rNmcfsteMK_IdyWkGLrNA5ZOlRVHQYahDrnIWmPGCLM';
-    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, storageKey: 'bo-auth' } });
+    var SUPABASE_URL = 'https://pxqwtesczfhfjwdhxiyl.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDI3MDcsImV4cCI6MjA5NTIxODcwN30.rNmcfsteMK_IdyWkGLrNA5ZOlRVHQYahDrnIWmPGCLM';
+    var db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, storageKey: 'bo-auth' } });
 
-    let currentStep = 1;
+    var currentStep = 1;
 
-    // Auth check
-    db.auth.getSession().then(({ data: { session } }) => {
-      if (!session) window.location.href = '/login.html';
+    db.auth.getSession().then(function(res) {
+      if (!res.data.session) window.location.href = '/login.html';
     });
 
     function goStep(n) {
-      // Validate current step before advancing
       if (n > currentStep && !validateStep(currentStep)) return;
-
-      document.getElementById(`step-${currentStep}`).classList.remove('active');
+      document.getElementById('step-' + currentStep).classList.remove('active');
       currentStep = n;
-      document.getElementById(`step-${currentStep}`).classList.add('active');
+      document.getElementById('step-' + currentStep).classList.add('active');
       document.getElementById('step-num').textContent = currentStep;
       document.getElementById('progress-fill').style.width = (currentStep / 3 * 100) + '%';
-
       if (currentStep === 3) buildReview();
       window.scrollTo(0, 0);
     }
 
     function validateStep(step) {
       if (step === 1) {
-        const required = ['contractor_name', 'phone', 'email', 'address', 'city', 'state', 'zip'];
-        const missing = required.filter(id => !document.getElementById(id).value.trim());
+        var required = ['contractor_name', 'phone', 'email', 'address', 'city', 'state', 'zip'];
+        var missing = required.filter(function(id) { return !document.getElementById(id).value.trim(); });
         if (missing.length) {
           document.getElementById('msg-1').textContent = 'Please fill in all required fields.';
           return false;
@@ -327,7 +216,7 @@
     }
 
     function buildReview() {
-      const fields = [
+      var fields = [
         ['Name', 'contractor_name'],
         ['Business', 'business_name'],
         ['Phone', 'phone'],
@@ -339,49 +228,52 @@
         ['License #', 'license_number'],
         ['License Type', 'license_type'],
         ['GL Insurance', 'gl_provider'],
-        ['GL Status', 'gl_status'],
+        ['GL Status', 'gl_status']
       ];
-      const box = document.getElementById('review-box');
+      var box = document.getElementById('review-box');
       box.innerHTML = fields
-        .filter(([_, id]) => document.getElementById(id).value.trim())
-        .map(([label, id]) => `<div><strong style="color:var(--white)">${label}:</strong> ${document.getElementById(id).value.trim()}</div>`)
+        .filter(function(f) { return document.getElementById(f[1]).value.trim(); })
+        .map(function(f) {
+          return '<div><strong style="color:var(--white)">' + f[0] + ':</strong> ' + document.getElementById(f[1]).value.trim() + '</div>';
+        })
         .join('');
     }
 
-    async function saveProfile() {
-      const btn = document.getElementById('save-btn');
+    function saveProfile() {
+      var btn = document.getElementById('save-btn');
       btn.disabled = true;
-      btn.textContent = 'Saving…';
+      btn.textContent = 'Saving...';
 
-      const { data: { user } } = await db.auth.getUser();
+      db.auth.getUser().then(function(res) {
+        var user = res.data.user;
+        var profile = {
+          id: user.id,
+          contractor_name: document.getElementById('contractor_name').value.trim(),
+          business_name: document.getElementById('business_name').value.trim() || null,
+          address: document.getElementById('address').value.trim(),
+          city: document.getElementById('city').value.trim(),
+          state: document.getElementById('state').value,
+          zip: document.getElementById('zip').value.trim(),
+          phone: document.getElementById('phone').value.trim(),
+          email: document.getElementById('email').value.trim(),
+          license_number: document.getElementById('license_number').value.trim() || null,
+          license_type: document.getElementById('license_type').value.trim() || null,
+          gl_provider: document.getElementById('gl_provider').value.trim() || null,
+          gl_status: document.getElementById('gl_status').value,
+          bond_info: document.getElementById('bond_info').value.trim() || null,
+          onboarding_complete: true
+        };
 
-      const profile = {
-        id: user.id,
-        contractor_name: document.getElementById('contractor_name').value.trim(),
-        business_name: document.getElementById('business_name').value.trim() || null,
-        address: document.getElementById('address').value.trim(),
-        city: document.getElementById('city').value.trim(),
-        state: document.getElementById('state').value,
-        zip: document.getElementById('zip').value.trim(),
-        phone: document.getElementById('phone').value.trim(),
-        email: document.getElementById('email').value.trim(),
-        license_number: document.getElementById('license_number').value.trim() || null,
-        license_type: document.getElementById('license_type').value.trim() || null,
-        gl_provider: document.getElementById('gl_provider').value.trim() || null,
-        gl_status: document.getElementById('gl_status').value,
-        bond_info: document.getElementById('bond_info').value.trim() || null,
-        onboarding_complete: true
-      };
-
-      const { error } = await db.from('contractor_profiles').upsert(profile);
-
-      if (error) {
-        document.getElementById('msg-3').textContent = 'Error saving profile: ' + error.message;
-        btn.disabled = false;
-        btn.textContent = ‘Save & Go to Dashboard →’;
-      } else {
-        window.location.href = '/dashboard.html';
-      }
+        db.from('contractor_profiles').upsert(profile).then(function(res2) {
+          if (res2.error) {
+            document.getElementById('msg-3').textContent = 'Error saving profile: ' + res2.error.message;
+            btn.disabled = false;
+            btn.textContent = 'Save & Go to Dashboard';
+          } else {
+            window.location.href = '/dashboard.html';
+          }
+        });
+      });
     }
   </script>
 </body>
