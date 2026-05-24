@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BuildOrder.ai — Job</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:    #090E1A;
+      --bg2:   #111827;
+      --bg3:   #1A2438;
+      --amber: #F59E0B;
+      --amber2:#FCD34D;
+      --white: #F8FAFC;
+      --muted: #94A3B8;
+      --dim:   #475569;
+      --border:rgba(255,255,255,0.07);
+      --green: #34D399;
+      --red:   #EF4444;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; }
+
+    /* Nav */
+    .nav {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .logo { font-size: 1.2rem; font-weight: 900; letter-spacing: -0.03em; text-decoration: none; color: var(--white); }
+    .logo em { font-style: normal; color: var(--amber); }
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
+    .btn-back {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.35rem 0.9rem;
+      font-size: 0.78rem;
+      color: var(--dim);
+      cursor: pointer;
+      font-family: inherit;
+      text-decoration: none;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .btn-back:hover { color: var(--white); border-color: var(--amber); }
+
+    /* Main */
+    .main { max-width: 900px; margin: 0 auto; padding: 2.5rem 2rem; }
+
+    /* Job header */
+    .job-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      gap: 1rem;
+    }
+    .job-title { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.3rem; }
+    .job-meta { font-size: 0.82rem; color: var(--muted); }
+    .status-badge {
+      display: inline-block;
+      padding: 0.25rem 0.7rem;
+      border-radius: 100px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .status-active { background: rgba(52,211,153,0.12); color: var(--green); }
+    .status-draft { background: rgba(148,163,184,0.12); color: var(--muted); }
+    .status-complete { background: rgba(245,158,11,0.12); color: var(--amber); }
+
+    /* Info cards */
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
+    .info-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+    }
+    .info-card-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--dim);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 0.75rem;
+    }
+    .info-row { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.4rem; }
+    .info-label { color: var(--muted); }
+    .info-value { font-weight: 600; text-align: right; max-width: 55%; }
+
+    /* Contract section */
+    .contract-section {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .contract-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .contract-title { font-size: 0.95rem; font-weight: 700; }
+    .contract-actions { display: flex; gap: 0.75rem; }
+    .btn-action {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.45rem 1rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: inherit;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .btn-action:hover { color: var(--white); border-color: var(--amber); }
+    .btn-generate {
+      background: var(--amber);
+      color: #090E1A;
+      border: none;
+      border-radius: 8px;
+      padding: 0.45rem 1.2rem;
+      font-size: 0.82rem;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s;
+    }
+    .btn-generate:hover { background: var(--amber2); }
+    .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Generating state */
+    .generating {
+      padding: 4rem 2rem;
+      text-align: center;
+      color: var(--muted);
+    }
+    .generating-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--amber);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 1.5rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .generating h3 { font-size: 1rem; font-weight: 700; color: var(--white); margin-bottom: 0.5rem; }
+    .generating p { font-size: 0.85rem; }
+
+    /* Contract text */
+    .contract-body { padding: 2rem; }
+    .contract-text {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.8rem;
+      line-height: 1.75;
+      color: #CBD5E1;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* No contract state */
+    .no-contract {
+      padding: 3rem 2rem;
+      text-align: center;
+      color: var(--muted);
+    }
+    .no-contract h3 { font-size: 1rem; font-weight: 700; color: var(--white); margin-bottom: 0.5rem; }
+    .no-contract p { font-size: 0.85rem; margin-bottom: 1.5rem; }
+
+    /* Error */
+    .error-msg {
+      padding: 1rem 1.5rem;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 8px;
+      color: var(--red);
+      font-size: 0.85rem;
+      margin: 1rem 1.5rem;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem 1.25rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--green);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.2s, transform 0.2s;
+      pointer-events: none;
+      z-index: 100;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 640px) {
+      .info-grid { grid-template-columns: 1fr; }
+      .job-header { flex-direction: column; }
+      .contract-actions { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="/dashboard.html" class="logo">Build<em>Order</em></a>
+    <div class="nav-right">
+      <a href="/dashboard.html" class="btn-back">← Dashboard</a>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div id="page-content">
+      <!-- Loaded dynamically -->
+    </div>
+  </main>
+
+  <div class="toast" id="toast">Copied to clipboard!</div>
+
+  <script>
+    const SUPABASE_URL = 'https://pxqwtesczfhfjwdhxiyl.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDI3MDcsImV4cCI6MjA5NTIxODcwN30.rNmcfsteMK_IdyWkGLrNA5ZOlRVHQYahDrnIWmPGCLM';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const params = new URLSearchParams(window.location.search);
+    const jobId = params.get('id');
+    const autoGenerate = params.get('generate') === 'true';
+
+    let currentJob = null;
+    let currentContract = null;
+
+    async function init() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { window.location.href = '/login.html'; return; }
+      if (!jobId) { window.location.href = '/dashboard.html'; return; }
+
+      await loadJob();
+    }
+
+    async function loadJob() {
+      const { data: job, error } = await supabase
+        .from('jobs').select('*').eq('id', jobId).single();
+
+      if (error || !job) {
+        document.getElementById('page-content').innerHTML = `
+          <div style="text-align:center;padding:4rem 2rem;color:var(--muted);">
+            <div style="font-size:2rem;margin-bottom:1rem;">⚠️</div>
+            <h3 style="color:var(--white);margin-bottom:0.5rem;">Job not found</h3>
+            <p>This job may have been deleted or you don't have access to it.</p>
+            <a href="/dashboard.html" style="display:inline-block;margin-top:1.5rem;color:var(--amber);text-decoration:none;font-weight:700;">← Back to Dashboard</a>
+          </div>`;
+        return;
+      }
+
+      currentJob = job;
+
+      // Load existing contract if any
+      const { data: docs } = await supabase
+        .from('documents')
+        .select('*')
+        .eq('job_id', jobId)
+        .eq('doc_type', 'contract')
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      currentContract = docs?.[0] || null;
+
+      renderPage();
+
+      // Auto-trigger generation if coming from new-job form
+      if (autoGenerate && !currentContract) {
+        generateContract();
+      }
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '—';
+      return new Date(dateStr).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    }
+
+    function formatPrice(val) {
+      if (!val) return '—';
+      return '$' + Number(val).toLocaleString();
+    }
+
+    function renderPage() {
+      const job = currentJob;
+      const statusClass = { active: 'status-active', draft: 'status-draft', complete: 'status-complete' }[job.status] || 'status-draft';
+
+      document.getElementById('page-content').innerHTML = `
+        <div class="job-header">
+          <div>
+            <div class="job-title">${job.job_address || 'No address'}, ${job.job_city || ''} ${job.job_state || ''}</div>
+            <div class="job-meta">${job.work_type || ''} · Created ${formatDate(job.created_at)}</div>
+          </div>
+          <span class="status-badge ${statusClass}">${job.status}</span>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-card">
+            <div class="info-card-title">Homeowner</div>
+            <div class="info-row"><span class="info-label">Name</span><span class="info-value">${job.homeowner_name || '—'}</span></div>
+            <div class="info-row"><span class="info-label">Phone</span><span class="info-value">${job.homeowner_phone || '—'}</span></div>
+            <div class="info-row"><span class="info-label">Email</span><span class="info-value">${job.homeowner_email || '—'}</span></div>
+            <div class="info-row"><span class="info-label">Address</span><span class="info-value">${job.homeowner_address ? job.homeowner_address + ', ' + (job.homeowner_city || '') + ' ' + (job.homeowner_state || '') : (job.job_address || '—')}</span></div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-title">Job Details</div>
+            <div class="info-row"><span class="info-label">Contract Price</span><span class="info-value">${formatPrice(job.contract_price)}</span></div>
+            <div class="info-row"><span class="info-label">Deposit</span><span class="info-value">${formatPrice(job.deposit_amount)}</span></div>
+            <div class="info-row"><span class="info-label">Start Date</span><span class="info-value">${formatDate(job.start_date)}</span></div>
+            <div class="info-row"><span class="info-label">Est. Completion</span><span class="info-value">${formatDate(job.estimated_completion_date)}</span></div>
+            <div class="info-row"><span class="info-label">Primary Residence</span><span class="info-value">${job.is_primary_residence ? 'Yes' : 'No'}</span></div>
+          </div>
+        </div>
+
+        <div class="contract-section">
+          <div class="contract-header">
+            <div class="contract-title">📄 Home Improvement Contract</div>
+            <div class="contract-actions" id="contract-actions">
+              ${currentContract
+                ? `<button class="btn-action" onclick="copyContract()">Copy</button>
+                   <button class="btn-action" onclick="downloadContract()">Download .txt</button>
+                   <button class="btn-generate" onclick="generateContract()">Regenerate</button>`
+                : `<button class="btn-generate" id="gen-btn" onclick="generateContract()">✦ Generate Contract</button>`
+              }
+            </div>
+          </div>
+          <div id="contract-body">
+            ${currentContract
+              ? `<div class="contract-body"><pre class="contract-text">${escapeHtml(currentContract.content)}</pre></div>`
+              : `<div class="no-contract">
+                   <h3>No contract generated yet</h3>
+                   <p>Click Generate Contract to create a state-compliant contract for this job.</p>
+                 </div>`
+            }
+          </div>
+        </div>
+      `;
+    }
+
+    async function generateContract() {
+      // Update UI to generating state
+      document.getElementById('contract-body').innerHTML = `
+        <div class="generating">
+          <div class="generating-spinner"></div>
+          <h3>Generating your contract…</h3>
+          <p>Pulling in state compliance rules for ${currentJob.job_state || 'your state'}. This takes about 15–20 seconds.</p>
+        </div>`;
+
+      const actions = document.getElementById('contract-actions');
+      if (actions) {
+        actions.innerHTML = `<button class="btn-generate" disabled>Generating…</button>`;
+      }
+
+      try {
+        const res = await fetch('/api/generate-contract', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ job_id: jobId })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          showError(data.error || 'Contract generation failed. Please try again.');
+          return;
+        }
+
+        currentContract = { content: data.content, id: data.document_id };
+
+        // Update URL to remove ?generate=true
+        window.history.replaceState({}, '', `/job.html?id=${jobId}`);
+
+        renderPage();
+
+      } catch (err) {
+        showError('Network error — please check your connection and try again.');
+      }
+    }
+
+    function showError(msg) {
+      document.getElementById('contract-body').innerHTML = `
+        <div class="error-msg">⚠️ ${msg}</div>
+        <div class="no-contract">
+          <p>Something went wrong generating the contract.</p>
+          <button class="btn-generate" onclick="generateContract()">Try Again</button>
+        </div>`;
+      const actions = document.getElementById('contract-actions');
+      if (actions) {
+        actions.innerHTML = `<button class="btn-generate" onclick="generateContract()">✦ Generate Contract</button>`;
+      }
+    }
+
+    function copyContract() {
+      if (!currentContract?.content) return;
+      navigator.clipboard.writeText(currentContract.content).then(() => {
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2500);
+      });
+    }
+
+    function downloadContract() {
+      if (!currentContract?.content) return;
+      const job = currentJob;
+      const filename = `contract-${(job.homeowner_name || 'homeowner').replace(/\s+/g, '-').toLowerCase()}-${(job.job_city || 'job').replace(/\s+/g, '-').toLowerCase()}.txt`;
+      const blob = new Blob([currentContract.content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    init();
+  </script>
+</body>
+</html>
