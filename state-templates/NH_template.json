@@ -1,0 +1,67 @@
+{
+  "state": "Georgia",
+  "code": "GA",
+  "risk_level": "LOWER",
+  "statute": "O.C.G.A. \u00a7 43-41-1 et seq.; Georgia Lien Law O.C.G.A. \u00a7 44-14-361",
+  "requires_license_on_contract": true,
+  "license_label": "Georgia Contractor License Number",
+  "license_threshold": 2500,
+  "license_notes": "License required for residential and commercial contracting in excess of $2,500. Unlicensed contracting over $2,500 makes the contract unenforceable and forfeits lien rights.",
+  "written_contract_required_above": null,
+  "cancellation_days_standard": 3,
+  "mandatory_clauses": [
+    {
+      "id": "GA_LICENSE",
+      "label": "Contractor license disclosure",
+      "required": true,
+      "applies_to": "contracts_over_2500",
+      "placement": "header",
+      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nGeorgia License Number: {{license_number}}\nLicense Type: {{license_type}}"
+    },
+    {
+      "id": "GA_LIEN_NOTICE",
+      "label": "Mechanics lien notice",
+      "required": true,
+      "placement": "standalone_section",
+      "text": "NOTICE REGARDING LIENS\n\nUnder Georgia law, persons or companies who furnish labor, services, or materials for the improvement of your real property may have a claim against your property if they are not paid. This claim is known as a materialman's or mechanic's lien. If unpaid subcontractors, laborers, or suppliers file a lien against your property, you could be required to pay twice for the same work or materials. To protect yourself, obtain a lien waiver or release from each contractor, subcontractor, and material supplier before making final payment.",
+      "statute_ref": "O.C.G.A. \u00a7 44-14-361"
+    },
+    {
+      "id": "GA_PROJECT_DETAILS",
+      "label": "Project description and timeline",
+      "required": true,
+      "placement": "body",
+      "fields": [
+        "project_description",
+        "start_date",
+        "estimated_completion_date",
+        "contract_price"
+      ]
+    },
+    {
+      "id": "FEDERAL_3DAY",
+      "label": "Federal 3-day right to cancel (TILA)",
+      "required": true,
+      "placement": "near_signature",
+      "applies_to": "primary_residence_lien",
+      "text": "NOTICE OF RIGHT TO CANCEL\n\nYou have the right to cancel this contract within three business days of signing. To cancel, notify us in writing at:\n{{contractor_name}}, {{contractor_address}}\n\nDate: {{contract_date}}"
+    }
+  ],
+  "required_contract_fields": [
+    "contractor_name",
+    "contractor_address",
+    "contractor_phone",
+    "license_number",
+    "homeowner_name",
+    "homeowner_address",
+    "job_address",
+    "contract_date",
+    "project_description",
+    "contract_price",
+    "payment_schedule",
+    "start_date",
+    "estimated_completion_date"
+  ],
+  "penalties_for_non_compliance": "Contracting without license over $2,500 = contract unenforceable, forfeiture of lien rights, civil penalties.",
+  "notes": "Georgia requires a license for any residential or commercial contracting job over $2,500. Without a license, the contract is unenforceable and the contractor loses all lien rights. Federal 3-day notice satisfies state cancellation requirements. Georgia has reciprocity with Louisiana, Mississippi, North Carolina, and Tennessee for general contractors."
+}

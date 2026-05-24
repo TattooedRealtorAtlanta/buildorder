@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BuildOrder.ai — Sign In</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:    #090E1A;
+      --bg2:   #111827;
+      --bg3:   #1A2438;
+      --amber: #F59E0B;
+      --amber2:#FCD34D;
+      --white: #F8FAFC;
+      --muted: #94A3B8;
+      --dim:   #475569;
+      --red:   #EF4444;
+      --border:rgba(255,255,255,0.07);
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--white);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .logo {
+      font-size: 1.4rem;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      margin-bottom: 2.5rem;
+    }
+    .logo em { font-style: normal; color: var(--amber); }
+    .logo sub { color: var(--dim); font-weight: 400; font-size: 0.85rem; vertical-align: baseline; }
+    .card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 420px;
+    }
+    .tabs {
+      display: flex;
+      gap: 0;
+      background: var(--bg2);
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 2rem;
+    }
+    .tab {
+      flex: 1;
+      padding: 0.6rem;
+      text-align: center;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 7px;
+      color: var(--muted);
+      transition: all 0.15s;
+      border: none;
+      background: none;
+      font-family: inherit;
+    }
+    .tab.active {
+      background: var(--bg3);
+      color: var(--white);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+    .field { margin-bottom: 1.1rem; }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    input {
+      width: 100%;
+      background: var(--bg2);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 0.8rem 1rem;
+      font-size: 0.92rem;
+      color: var(--white);
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input::placeholder { color: var(--dim); }
+    input:focus { border-color: var(--amber); }
+    input.error { border-color: var(--red); }
+    .btn {
+      width: 100%;
+      background: var(--amber);
+      color: #090E1A;
+      border: none;
+      border-radius: 10px;
+      padding: 0.9rem;
+      font-size: 0.95rem;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: inherit;
+      margin-top: 0.5rem;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn:hover { background: var(--amber2); }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .msg {
+      font-size: 0.82rem;
+      margin-top: 0.75rem;
+      text-align: center;
+      min-height: 1.2rem;
+    }
+    .msg.error { color: var(--red); }
+    .msg.success { color: #34D399; }
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin: 1.5rem 0;
+      color: var(--dim);
+      font-size: 0.78rem;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    .back {
+      margin-top: 2rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--dim);
+    }
+    .back a { color: var(--amber); text-decoration: none; }
+    .back a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <a href="/" style="text-decoration:none;">
+    <div class="logo">Build<em>Order</em><sub>.ai</sub></div>
+  </a>
+
+  <div class="card">
+    <div class="tabs">
+      <button class="tab active" id="tab-signin" onclick="switchTab('signin')">Sign In</button>
+      <button class="tab" id="tab-signup" onclick="switchTab('signup')">Create Account</button>
+    </div>
+
+    <!-- Sign In -->
+    <div id="form-signin">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="signin-email" placeholder="your@email.com">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="signin-password" placeholder="••••••••">
+      </div>
+      <button class="btn" id="signin-btn" onclick="signIn()">Sign In</button>
+      <div class="msg" id="signin-msg"></div>
+    </div>
+
+    <!-- Sign Up -->
+    <div id="form-signup" style="display:none;">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="signup-email" placeholder="your@email.com">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="signup-password" placeholder="8+ characters">
+      </div>
+      <div class="field">
+        <label>Confirm Password</label>
+        <input type="password" id="signup-confirm" placeholder="••••••••">
+      </div>
+      <button class="btn" id="signup-btn" onclick="signUp()">Create Account</button>
+      <div class="msg" id="signup-msg"></div>
+    </div>
+  </div>
+
+  <div class="back"><a href="/">← Back to BuildOrder.ai</a></div>
+
+  <script>
+    const SUPABASE_URL = 'https://pxqwtesczfhfjwdhxiyl.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDI3MDcsImV4cCI6MjA5NTIxODcwN30.rNmcfsteMK_IdyWkGLrNA5ZOlRVHQYahDrnIWmPGCLM';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // If already logged in, redirect to dashboard
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) window.location.href = '/dashboard.html';
+    });
+
+    function switchTab(tab) {
+      document.getElementById('tab-signin').classList.toggle('active', tab === 'signin');
+      document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
+      document.getElementById('form-signin').style.display = tab === 'signin' ? 'block' : 'none';
+      document.getElementById('form-signup').style.display = tab === 'signup' ? 'block' : 'none';
+    }
+
+    function setMsg(id, text, type) {
+      const el = document.getElementById(id);
+      el.textContent = text;
+      el.className = 'msg ' + type;
+    }
+
+    async function signIn() {
+      const email = document.getElementById('signin-email').value.trim();
+      const password = document.getElementById('signin-password').value;
+      const btn = document.getElementById('signin-btn');
+
+      if (!email || !password) { setMsg('signin-msg', 'Please fill in all fields.', 'error'); return; }
+
+      btn.disabled = true; btn.textContent = 'Signing in…';
+
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        setMsg('signin-msg', error.message, 'error');
+        btn.disabled = false; btn.textContent = 'Sign In';
+      } else {
+        // Check if onboarding is complete
+        const { data: profile } = await supabase
+          .from('contractor_profiles')
+          .select('onboarding_complete')
+          .single();
+
+        if (!profile || !profile.onboarding_complete) {
+          window.location.href = '/onboarding.html';
+        } else {
+          window.location.href = '/dashboard.html';
+        }
+      }
+    }
+
+    async function signUp() {
+      const email = document.getElementById('signup-email').value.trim();
+      const password = document.getElementById('signup-password').value;
+      const confirm = document.getElementById('signup-confirm').value;
+      const btn = document.getElementById('signup-btn');
+
+      if (!email || !password || !confirm) { setMsg('signup-msg', 'Please fill in all fields.', 'error'); return; }
+      if (password !== confirm) { setMsg('signup-msg', 'Passwords do not match.', 'error'); return; }
+      if (password.length < 8) { setMsg('signup-msg', 'Password must be at least 8 characters.', 'error'); return; }
+
+      btn.disabled = true; btn.textContent = 'Creating account…';
+
+      const { error } = await supabase.auth.signUp({ email, password });
+
+      if (error) {
+        setMsg('signup-msg', error.message, 'error');
+        btn.disabled = false; btn.textContent = 'Create Account';
+      } else {
+        setMsg('signup-msg', 'Account created! Setting up your profile…', 'success');
+        setTimeout(() => window.location.href = '/onboarding.html', 1000);
+      }
+    }
+
+    // Enter key support
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Enter') return;
+      const signinVisible = document.getElementById('form-signin').style.display !== 'none';
+      if (signinVisible) signIn(); else signUp();
+    });
+  </script>
+</body>
+</html>

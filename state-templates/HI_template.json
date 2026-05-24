@@ -1,0 +1,98 @@
+{
+  "state": "Maryland",
+  "code": "MD",
+  "risk_level": "HIGH",
+  "statute": "Maryland Code Business Regulation \u00a7 8-301 et seq. (Maryland Home Improvement Commission); MHIC",
+  "requires_license_on_contract": true,
+  "license_label": "MHIC License Number",
+  "written_contract_required_above": 100,
+  "cancellation_days_standard": 3,
+  "mandatory_clauses": [
+    {
+      "id": "MD_MHIC_LICENSE",
+      "label": "MHIC license disclosure",
+      "required": true,
+      "placement": "header",
+      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nMaryland Home Improvement Commission (MHIC) License Number: {{license_number}}\n\nAll home improvement contractors in Maryland must be licensed by the Maryland Home Improvement Commission. If you have questions about this contractor's license, contact MHIC at (410) 230-6309 or visit www.dllr.state.md.us/license/mhic.",
+      "note": "MISSING MHIC LICENSE NUMBER MAKES CONTRACT VOIDABLE BY THE HOMEOWNER."
+    },
+    {
+      "id": "MD_SALESPERSON",
+      "label": "Salesperson registration (if applicable)",
+      "required": true,
+      "applies_to": "contracts_solicited_by_salesperson",
+      "placement": "header",
+      "text": "If a salesperson solicited or negotiated this contract, their name and MHIC Salesperson Registration Number must appear here:\n\nSalesperson Name: {{salesperson_name}}\nMHIC Salesperson Registration Number: {{salesperson_reg_number}}"
+    },
+    {
+      "id": "MD_REQUIRED_ELEMENTS",
+      "label": "MHIC required contract elements",
+      "required": true,
+      "placement": "throughout",
+      "fields_required": [
+        "contractor_name",
+        "contractor_address",
+        "contractor_phone",
+        "mhic_license_number",
+        "homeowner_name",
+        "homeowner_address",
+        "project_address",
+        "project_description",
+        "contract_price",
+        "payment_schedule",
+        "start_date",
+        "estimated_completion_date",
+        "materials_to_be_used",
+        "warranty_terms"
+      ]
+    },
+    {
+      "id": "MD_CANCELLATION",
+      "label": "Right to cancel notice",
+      "required": true,
+      "placement": "near_signature",
+      "text": "RIGHT TO CANCEL\n\nYou may cancel this contract within three business days after the date you sign it. To cancel, send written notice by certified mail or hand delivery to:\n\n{{contractor_name}}\n{{contractor_address}}\n\nIf you cancel within three business days, the contractor must return any deposit you paid within 15 days."
+    },
+    {
+      "id": "MD_LIEN_NOTICE",
+      "label": "Mechanics lien notice",
+      "required": true,
+      "placement": "standalone_section",
+      "text": "NOTICE OF LIEN RIGHTS\n\nUnder Maryland law (Real Property Article \u00a7 9-101 et seq.), contractors, subcontractors, and materialmen who provide labor or materials to your property and are not paid may have the right to file a mechanic's lien against your property. Even if you pay your general contractor in full, you may still be subject to liens from unpaid subcontractors and suppliers. You should obtain lien waivers from all subcontractors and suppliers before making final payment."
+    },
+    {
+      "id": "MD_GUARANTY_FUND",
+      "label": "Maryland Guaranty Fund notice",
+      "required": true,
+      "placement": "standalone_section",
+      "text": "MARYLAND HOME IMPROVEMENT GUARANTY FUND\n\nIf you suffer a loss as the result of a home improvement transaction, you may be entitled to compensation from the Maryland Home Improvement Guaranty Fund. You must file a claim with the Maryland Home Improvement Commission. For information, contact MHIC at (410) 230-6309."
+    },
+    {
+      "id": "FEDERAL_3DAY",
+      "label": "Federal 3-day right to cancel (TILA)",
+      "required": true,
+      "placement": "near_signature",
+      "applies_to": "primary_residence_lien",
+      "text": "FEDERAL NOTICE OF RIGHT TO CANCEL\n\nYou have the right under federal law to cancel this transaction within three business days of signing. To cancel, notify us in writing at:\n{{contractor_name}}, {{contractor_address}}\n\nDate of transaction: {{contract_date}}"
+    }
+  ],
+  "required_contract_fields": [
+    "contractor_name",
+    "contractor_address",
+    "contractor_phone",
+    "license_number",
+    "homeowner_name",
+    "homeowner_address",
+    "job_address",
+    "contract_date",
+    "project_description",
+    "materials_description",
+    "warranty_terms",
+    "contract_price",
+    "payment_schedule",
+    "start_date",
+    "estimated_completion_date"
+  ],
+  "penalties_for_non_compliance": "Missing MHIC license = contract VOIDABLE by homeowner. MHIC enforcement action. Guaranty Fund may compensate homeowners for contractor violations. Criminal penalties for unlicensed work.",
+  "notes": "Maryland's MHIC licensing is strictly enforced. A missing MHIC license number makes the contract voidable at the homeowner's option \u2014 the homeowner can walk away and the contractor has no recourse. All home improvement work over $100 requires a written contract. If a salesperson sold or solicited the contract, their MHIC salesperson registration number must also appear. Warranty terms must be included in the contract. Cancel notice must be by certified mail or hand delivery."
+}

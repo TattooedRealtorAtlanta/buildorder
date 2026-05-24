@@ -1,0 +1,70 @@
+{
+  "state": "Ohio",
+  "code": "OH",
+  "risk_level": "LOWER",
+  "statute": "Ohio Revised Code \u00a7 4722 (Home Construction Services Suppliers Act); Updated by HB50 (2024)",
+  "requires_license_on_contract": false,
+  "license_label": null,
+  "license_notes": "Ohio does not require a statewide contractor license for general contracting. Specific trades (electrical, plumbing, HVAC) require state licenses. Some cities have local requirements.",
+  "written_contract_required_above": 25,
+  "mandatory_clauses": [
+    {
+      "id": "OH_REQUIRED_ELEMENTS",
+      "label": "HCSSA required contract elements",
+      "required": true,
+      "placement": "throughout",
+      "applies_to": "contracts_over_25_dollars",
+      "fields_required": [
+        "contractor_name",
+        "contractor_address",
+        "contractor_phone",
+        "homeowner_name",
+        "homeowner_address",
+        "project_description",
+        "contract_price_or_formula",
+        "start_date",
+        "estimated_completion_date",
+        "payment_schedule",
+        "materials_to_be_used"
+      ]
+    },
+    {
+      "id": "OH_CONSUMER_RIGHTS",
+      "label": "Consumer rights notice",
+      "required": true,
+      "placement": "standalone_section",
+      "text": "CONSUMER RIGHTS UNDER OHIO LAW\n\nUnder the Ohio Home Construction Services Suppliers Act (R.C. \u00a7 4722), as a consumer you have the following rights:\n\n1. To receive a written contract before work begins\n2. To receive an itemized statement of work to be performed and materials to be used\n3. To have any changes to the contract agreed to in writing before the changes are made\n4. To have disputes resolved through the Ohio Attorney General's Consumer Protection Section if needed\n\nIf you have questions about your rights, contact the Ohio Attorney General's office at 1-800-282-0515."
+    },
+    {
+      "id": "OH_LIEN_NOTICE",
+      "label": "Mechanics lien notice",
+      "required": true,
+      "placement": "standalone_section",
+      "text": "NOTICE OF LIEN RIGHTS\n\nUnder Ohio law (R.C. \u00a7 1311), subcontractors, material suppliers, and laborers who work on your property may have the right to file a mechanic's lien against your property if they are not paid. If a lien is filed and not discharged, you may be required to pay the lien amount even if you have already paid your general contractor. To protect yourself, obtain written lien waivers from all subcontractors and suppliers before making final payment."
+    },
+    {
+      "id": "FEDERAL_3DAY",
+      "label": "Federal 3-day right to cancel (TILA)",
+      "required": true,
+      "placement": "near_signature",
+      "applies_to": "primary_residence_lien",
+      "text": "NOTICE OF RIGHT TO CANCEL\n\nYou have the right under federal law to cancel this transaction within three business days of signing. To cancel, notify us in writing at:\n{{contractor_name}}, {{contractor_address}}\n\nDate of transaction: {{contract_date}}"
+    }
+  ],
+  "required_contract_fields": [
+    "contractor_name",
+    "contractor_address",
+    "contractor_phone",
+    "homeowner_name",
+    "homeowner_address",
+    "job_address",
+    "contract_date",
+    "project_description",
+    "contract_price",
+    "payment_schedule",
+    "start_date",
+    "estimated_completion_date"
+  ],
+  "penalties_for_non_compliance": "HCSSA violations = unfair or deceptive act, civil penalties, consumer may rescind. AG can bring enforcement action.",
+  "notes": "Ohio's HCSSA was significantly updated by HB50 (signed June 28, 2024) to add remodelers to its coverage. Written contract required for jobs over $25. Federal 3-day notice satisfies state cancellation requirements. Specific trades (electrical, plumbing, HVAC) require state trade licenses. Check local municipality for additional requirements."
+}

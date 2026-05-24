@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BuildOrder.ai — New Job</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:    #090E1A;
+      --bg2:   #111827;
+      --bg3:   #1A2438;
+      --amber: #F59E0B;
+      --amber2:#FCD34D;
+      --white: #F8FAFC;
+      --muted: #94A3B8;
+      --dim:   #475569;
+      --border:rgba(255,255,255,0.07);
+      --red:   #EF4444;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; }
+    .nav {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo { font-size: 1.2rem; font-weight: 900; letter-spacing: -0.03em; text-decoration: none; color: var(--white); }
+    .logo em { font-style: normal; color: var(--amber); }
+    .back-link { font-size: 0.82rem; color: var(--muted); text-decoration: none; display: flex; align-items: center; gap: 0.4rem; }
+    .back-link:hover { color: var(--amber); }
+    .main { max-width: 720px; margin: 0 auto; padding: 2.5rem 2rem; }
+    .page-title { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.4rem; }
+    .page-sub { font-size: 0.875rem; color: var(--muted); margin-bottom: 2.5rem; }
+    .section-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.75rem;
+      margin-bottom: 1.25rem;
+    }
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--amber);
+      margin-bottom: 1.25rem;
+    }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .field { margin-bottom: 1rem; }
+    .field.full { grid-column: 1 / -1; }
+    .field:last-child { margin-bottom: 0; }
+    label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    label .opt { color: var(--dim); font-weight: 400; text-transform: none; letter-spacing: 0; font-size: 0.72rem; }
+    input, select, textarea {
+      width: 100%;
+      background: var(--bg2);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      font-size: 0.9rem;
+      color: var(--white);
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input::placeholder, textarea::placeholder { color: var(--dim); }
+    input:focus, select:focus, textarea:focus { border-color: var(--amber); }
+    select option { background: var(--bg2); }
+    textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+    /* State compliance alert */
+    .compliance-alert {
+      display: none;
+      background: rgba(245,158,11,0.08);
+      border: 1px solid rgba(245,158,11,0.2);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-top: 0.75rem;
+    }
+    .compliance-alert strong { color: var(--amber); display: block; margin-bottom: 0.3rem; }
+    /* Submit area */
+    .submit-area { margin-top: 1.5rem; }
+    .btn-generate {
+      width: 100%;
+      background: var(--amber);
+      color: #090E1A;
+      border: none;
+      border-radius: 12px;
+      padding: 1rem;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn-generate:hover { background: var(--amber2); }
+    .btn-generate:active { transform: scale(0.99); }
+    .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .gen-note { font-size: 0.78rem; color: var(--dim); text-align: center; margin-top: 0.75rem; }
+    .msg { font-size: 0.82rem; color: var(--red); margin-top: 0.75rem; text-align: center; }
+    @media (max-width: 580px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      .main { padding: 1.5rem 1.25rem; }
+      .section-card { padding: 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="/dashboard.html" class="logo">Build<em>Order</em></a>
+    <a href="/dashboard.html" class="back-link">← Back to Dashboard</a>
+  </nav>
+
+  <main class="main">
+    <div class="page-title">New Job</div>
+    <div class="page-sub">Fill in the job details. BuildOrder will generate a state-compliant contract automatically.</div>
+
+    <!-- Homeowner Info -->
+    <div class="section-card">
+      <div class="section-label">Homeowner Information</div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Homeowner Name</label>
+          <input type="text" id="homeowner_name" placeholder="Jane Smith">
+        </div>
+        <div class="field">
+          <label>Homeowner Phone <span class="opt">(optional)</span></label>
+          <input type="tel" id="homeowner_phone" placeholder="(555) 555-5555">
+        </div>
+        <div class="field">
+          <label>Homeowner Email <span class="opt">(optional)</span></label>
+          <input type="email" id="homeowner_email" placeholder="jane@email.com">
+        </div>
+        <div class="field">
+          <label>Is this their primary residence?</label>
+          <select id="is_primary_residence">
+            <option value="true">Yes — primary residence</option>
+            <option value="false">No — rental or other</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label>Homeowner Address <span class="opt">(if different from job address)</span></label>
+          <input type="text" id="homeowner_address" placeholder="123 Main St, City, State ZIP">
+        </div>
+      </div>
+    </div>
+
+    <!-- Job Location -->
+    <div class="section-card">
+      <div class="section-label">Job Location</div>
+      <div class="grid-2">
+        <div class="field full">
+          <label>Job Address</label>
+          <input type="text" id="job_address" placeholder="456 Oak Ave">
+        </div>
+        <div class="field">
+          <label>City</label>
+          <input type="text" id="job_city" placeholder="Atlanta">
+        </div>
+        <div class="field">
+          <label>County <span class="opt">(optional — affects some state rules)</span></label>
+          <input type="text" id="job_county" placeholder="Cobb County">
+        </div>
+        <div class="field">
+          <label>State</label>
+          <select id="job_state" onchange="onStateChange()">
+            <option value="">Select state…</option>
+            <option>AL</option><option>AK</option><option>AZ</option><option>AR</option>
+            <option>CA</option><option>CO</option><option>CT</option><option>DE</option>
+            <option>FL</option><option>GA</option><option>HI</option><option>ID</option>
+            <option>IL</option><option>IN</option><option>IA</option><option>KS</option>
+            <option>KY</option><option>LA</option><option>ME</option><option>MD</option>
+            <option>MA</option><option>MI</option><option>MN</option><option>MS</option>
+            <option>MO</option><option>MT</option><option>NE</option><option>NV</option>
+            <option>NH</option><option>NJ</option><option>NM</option><option>NY</option>
+            <option>NC</option><option>ND</option><option>OH</option><option>OK</option>
+            <option>OR</option><option>PA</option><option>RI</option><option>SC</option>
+            <option>SD</option><option>TN</option><option>TX</option><option>UT</option>
+            <option>VT</option><option>VA</option><option>WA</option><option>WV</option>
+            <option>WI</option><option>WY</option><option>DC</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>ZIP Code</label>
+          <input type="text" id="job_zip" placeholder="30101" maxlength="10">
+        </div>
+      </div>
+      <div class="compliance-alert" id="compliance-alert"></div>
+    </div>
+
+    <!-- Job Details -->
+    <div class="section-card">
+      <div class="section-label">Job Details</div>
+      <div class="grid-2">
+        <div class="field full">
+          <label>Type of Work</label>
+          <select id="work_type">
+            <option value="">Select work type…</option>
+            <option value="General Contracting">General Contracting</option>
+            <option value="Roofing">Roofing</option>
+            <option value="Plumbing">Plumbing</option>
+            <option value="Electrical">Electrical</option>
+            <option value="HVAC">HVAC</option>
+            <option value="Painting">Painting</option>
+            <option value="Flooring">Flooring</option>
+            <option value="Drywall">Drywall</option>
+            <option value="Concrete / Masonry">Concrete / Masonry</option>
+            <option value="Landscaping">Landscaping</option>
+            <option value="Fencing">Fencing</option>
+            <option value="Decking / Patios">Decking / Patios</option>
+            <option value="Windows / Doors">Windows / Doors</option>
+            <option value="Kitchen Remodel">Kitchen Remodel</option>
+            <option value="Bathroom Remodel">Bathroom Remodel</option>
+            <option value="Basement Finishing">Basement Finishing</option>
+            <option value="Handyman">Handyman</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label>Project Description</label>
+          <textarea id="project_description" placeholder="Describe the work to be performed. Be specific — the AI uses this to write your contract. Example: Replace existing 30-year architectural shingles on a 2,200 sq ft ranch home. Install new felt underlayment, replace 3 sheets of rotted decking, and install new ridge cap and flashing."></textarea>
+        </div>
+        <div class="field">
+          <label>Contract Price ($)</label>
+          <input type="number" id="contract_price" placeholder="12500" min="0">
+        </div>
+        <div class="field">
+          <label>Deposit Amount ($) <span class="opt">(optional)</span></label>
+          <input type="number" id="deposit_amount" placeholder="3000" min="0">
+        </div>
+        <div class="field full">
+          <label>Payment Schedule</label>
+          <select id="payment_schedule">
+            <option value="50% deposit, 50% on completion">50% deposit, 50% on completion</option>
+            <option value="33% deposit, 33% midway, 33% on completion">Three draws — 33/33/33</option>
+            <option value="25% deposit, 25% at start, 25% midway, 25% on completion">Four draws — 25/25/25/25</option>
+            <option value="Full payment on completion">Full payment on completion</option>
+            <option value="Custom">Custom (describe below)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Estimated Start Date</label>
+          <input type="date" id="start_date">
+        </div>
+        <div class="field">
+          <label>Estimated Completion Date</label>
+          <input type="date" id="estimated_completion_date">
+        </div>
+      </div>
+    </div>
+
+    <div class="submit-area">
+      <button class="btn-generate" id="gen-btn" onclick="createJob()">
+        Generate State-Compliant Contract →
+      </button>
+      <div class="gen-note">BuildOrder will generate your contract using the mandatory clauses required in the job state.</div>
+      <div class="msg" id="msg"></div>
+    </div>
+  </main>
+
+  <script>
+    const SUPABASE_URL = 'https://pxqwtesczfhfjwdhxiyl.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDI3MDcsImV4cCI6MjA5NTIxODcwN30.rNmcfsteMK_IdyWkGLrNA5ZOlRVHQYahDrnIWmPGCLM';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // State compliance hints shown when contractor selects a state
+    const STATE_HINTS = {
+      CA: 'California is HIGH risk. Your contract must include CSLB license number, 10% or $1,000 deposit cap, mechanics lien warning, and a 3-day right to cancel. Seniors (65+) get 5 days. BuildOrder handles all of this.',
+      TX: 'Texas requires two separate notices — the state home solicitation notice AND the federal TILA 3-day notice. Both are required on jobs signed at the homeowner\'s property. BuildOrder includes both.',
+      NY: 'New York requires a Home Improvement Contractor (HIC) license and mandatory contract clauses including a notice of cancellation rights. NYC has additional local requirements.',
+      PA: 'Pennsylvania requires Home Improvement Contractor registration, a notice of cancellation rights, and specific contract language. High compliance risk state.',
+      MD: 'Maryland is HIGH risk. Requires MHIC license, mechanics lien notice, and deposit limitations. One of the most regulated states for contractors.',
+      FL: 'Florida requires contractor license number on all contracts and a rescission notice. Separate requirements for Recovery Fund disclosure.',
+      WA: 'Washington requires contractor registration number on all contracts and a specific notice of your right to file a lien.',
+      OR: 'Oregon requires CCB license on all contracts. Unlicensed contractors have NO lien rights. 16-hour training required before licensing.',
+      NC: 'North Carolina requires a lien agent on jobs over $30,000. BuildOrder will flag this and include the required lien agent notice.',
+      TN: 'Tennessee requires Home Improvement license for jobs over $3,000 in 9 specific counties. BuildOrder detects county automatically.',
+    };
+
+    function onStateChange() {
+      const state = document.getElementById('job_state').value;
+      const alert = document.getElementById('compliance-alert');
+      if (STATE_HINTS[state]) {
+        alert.style.display = 'block';
+        alert.innerHTML = `<strong>⚡ ${state} Compliance Note</strong>${STATE_HINTS[state]}`;
+      } else {
+        alert.style.display = 'none';
+      }
+    }
+
+    async function createJob() {
+      const btn = document.getElementById('gen-btn');
+      const msgEl = document.getElementById('msg');
+
+      // Validate required fields
+      const required = [
+        ['homeowner_name', 'Homeowner name'],
+        ['job_address', 'Job address'],
+        ['job_city', 'City'],
+        ['job_state', 'State'],
+        ['job_zip', 'ZIP code'],
+        ['work_type', 'Type of work'],
+        ['project_description', 'Project description'],
+        ['contract_price', 'Contract price'],
+        ['start_date', 'Start date'],
+        ['estimated_completion_date', 'Completion date'],
+      ];
+
+      for (const [id, label] of required) {
+        if (!document.getElementById(id).value.trim()) {
+          msgEl.textContent = `${label} is required.`;
+          document.getElementById(id).focus();
+          return;
+        }
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Saving job…';
+      msgEl.textContent = '';
+
+      const { data: { user } } = await supabase.auth.getUser();
+
+      const jobData = {
+        user_id: user.id,
+        homeowner_name: document.getElementById('homeowner_name').value.trim(),
+        homeowner_phone: document.getElementById('homeowner_phone').value.trim() || null,
+        homeowner_email: document.getElementById('homeowner_email').value.trim() || null,
+        homeowner_address: document.getElementById('homeowner_address').value.trim() || null,
+        is_primary_residence: document.getElementById('is_primary_residence').value === 'true',
+        job_address: document.getElementById('job_address').value.trim(),
+        job_city: document.getElementById('job_city').value.trim(),
+        job_county: document.getElementById('job_county').value.trim() || null,
+        job_state: document.getElementById('job_state').value,
+        job_zip: document.getElementById('job_zip').value.trim(),
+        work_type: document.getElementById('work_type').value,
+        project_description: document.getElementById('project_description').value.trim(),
+        contract_price: parseFloat(document.getElementById('contract_price').value),
+        deposit_amount: parseFloat(document.getElementById('deposit_amount').value) || null,
+        payment_schedule: document.getElementById('payment_schedule').value,
+        start_date: document.getElementById('start_date').value,
+        estimated_completion_date: document.getElementById('estimated_completion_date').value,
+        status: 'active'
+      };
+
+      const { data: job, error } = await supabase.from('jobs').insert(jobData).select().single();
+
+      if (error) {
+        msgEl.textContent = 'Error saving job: ' + error.message;
+        btn.disabled = false;
+        btn.textContent = 'Generate State-Compliant Contract →';
+        return;
+      }
+
+      // Redirect to job page where contract generation happens
+      window.location.href = `/job.html?id=${job.id}&generate=true`;
+    }
+
+    // Auth check
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) window.location.href = '/login.html';
+    });
+  </script>
+</body>
+</html>

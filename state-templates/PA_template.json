@@ -1,0 +1,88 @@
+{
+  "state": "Pennsylvania",
+  "code": "PA",
+  "risk_level": "HIGH",
+  "statute": "Home Improvement Consumer Protection Act (HICPA), 73 P.S. \u00a7 517.1 et seq.",
+  "requires_license_on_contract": true,
+  "license_label": "PA Home Improvement Contractor Registration Number (HIC#)",
+  "written_contract_required_above": 500,
+  "cancellation_days_standard": 3,
+  "mandatory_clauses": [
+    {
+      "id": "PA_REGISTRATION",
+      "label": "PA HIC registration disclosure",
+      "required": true,
+      "placement": "header",
+      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nPA Home Improvement Contractor Registration Number: {{license_number}}\n\nContractors are required to be registered with the Pennsylvania Office of the Attorney General under the Home Improvement Consumer Protection Act.",
+      "note": "HIC registration is MANDATORY. Unregistered contractors cannot enforce the contract and may be subject to criminal penalties."
+    },
+    {
+      "id": "PA_CANCELLATION",
+      "label": "3-day right to cancel notice",
+      "required": true,
+      "placement": "near_signature",
+      "text": "NOTICE OF RIGHT TO CANCEL\n\nYou, the buyer, may cancel this transaction at any time prior to midnight of the third business day after the date of this transaction. See the attached notice of cancellation form for an explanation of this right.\n\nTo cancel, send written notice to:\n{{contractor_name}}\n{{contractor_address}}"
+    },
+    {
+      "id": "PA_SPECIFICATIONS",
+      "label": "Work description and specifications",
+      "required": true,
+      "placement": "body",
+      "text": "DESCRIPTION OF WORK AND MATERIALS\n\nWork to be performed: {{project_description}}\n\nMaterials to be used: {{materials_description}}\n\nSpecifications: {{specifications}}\n\nNote: These specifications cannot be changed without a written change order signed by both the homeowner and the contractor."
+    },
+    {
+      "id": "PA_SUBCONTRACTORS",
+      "label": "Subcontractor disclosure",
+      "required": true,
+      "placement": "body",
+      "text": "SUBCONTRACTORS\n\nThe following subcontractors are known at the date of signing this agreement and will be used on this project:\n\n{{subcontractor_list}}\n\n(If no subcontractors are known at time of signing, state: 'No subcontractors are known at this time. If subcontractors are used, their names, addresses, and telephone numbers will be provided upon request.')"
+    },
+    {
+      "id": "PA_LIEN_NOTICE",
+      "label": "Mechanics lien notice",
+      "required": true,
+      "placement": "standalone_section",
+      "text": "NOTICE REGARDING MECHANICS' LIENS\n\nUnder Pennsylvania law, persons who perform labor or furnish materials for the improvement of your property may be entitled to file a mechanic's lien claim against your property. A mechanic's lien claim is a claim against your property. If such a claim is established and not paid, the lien claimant may be entitled to a court order directing the sale of your property to pay the claim. To protect yourself, you should obtain written lien waivers from all contractors, subcontractors, and material suppliers before making final payment."
+    },
+    {
+      "id": "PA_GUARANTY_FUND",
+      "label": "Home Improvement Guaranty Fund notice",
+      "required": true,
+      "placement": "standalone_section",
+      "text": "HOME IMPROVEMENT GUARANTY FUND NOTICE\n\nPayment may be available from the Pennsylvania Home Improvement Guaranty Fund if you lose money on a project performed under contract, where the loss results from specified violations of the Home Improvement Consumer Protection Act by a registered contractor. For information about the fund and filing a claim, contact the Pennsylvania Office of the Attorney General, Bureau of Consumer Protection, 16th Floor, Strawberry Square, Harrisburg, PA 17120, (717) 787-9707."
+    },
+    {
+      "id": "FEDERAL_3DAY",
+      "label": "Federal 3-day right to cancel (TILA)",
+      "required": true,
+      "placement": "near_signature",
+      "applies_to": "primary_residence_lien",
+      "text": "FEDERAL NOTICE OF RIGHT TO CANCEL\n\nYou have the right under federal law to cancel this transaction within three business days. To cancel, notify us in writing at:\n{{contractor_name}}, {{contractor_address}}\n\nDate of transaction: {{contract_date}}"
+    }
+  ],
+  "required_contract_fields": [
+    "contractor_name",
+    "contractor_address",
+    "contractor_phone",
+    "license_number",
+    "homeowner_name",
+    "homeowner_address",
+    "job_address",
+    "contract_date",
+    "project_description",
+    "materials_description",
+    "specifications",
+    "subcontractor_list",
+    "contract_price",
+    "payment_schedule",
+    "start_date",
+    "estimated_completion_date"
+  ],
+  "prohibited_clauses": [
+    "Any clause requiring homeowner to waive right to cancel",
+    "Any clause that makes the contract take effect before the 3-day cancellation period expires",
+    "Any clause requiring arbitration that waives homeowner's right to jury trial (these void the entire contract in PA)"
+  ],
+  "penalties_for_non_compliance": "HICPA violation = criminal offense (misdemeanor). Contract voidable by homeowner. AG can bring enforcement action. Certain prohibited clauses void the ENTIRE contract.",
+  "notes": "Pennsylvania's HICPA is one of the most contractor-hostile statutes in the US. Registration is mandatory for all residential home improvement work over $500. Certain prohibited clauses (like pre-dispute arbitration waivers of jury trial) can void the ENTIRE contract, not just the clause. The Guaranty Fund provides consumer compensation for losses from HICPA violations. Subcontractor list must be included at time of signing if known."
+}

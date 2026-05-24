@@ -1,0 +1,142 @@
+{
+  "state": "California",
+  "code": "CA",
+  "risk_level": "HIGH",
+  "statute": "California Business and Professions Code \u00a7 7159",
+  "requires_license_on_contract": true,
+  "license_label": "CSLB License Number",
+  "written_contract_required_above": 500,
+  "cancellation_days_standard": 3,
+  "cancellation_days_senior": 5,
+  "cancellation_days_disaster": 7,
+  "downpayment_cap": {
+    "type": "lesser_of",
+    "amount": 1000,
+    "percent": 10
+  },
+  "mandatory_clauses": [
+    {
+      "id": "CA_LICENSE",
+      "label": "Contractor license disclosure",
+      "required": true,
+      "placement": "header",
+      "text": "Contractor's Name: {{contractor_name}}\nBusiness Address: {{contractor_address}}\nPhone: {{contractor_phone}}\nCSLB License Number: {{license_number}}\nLicense Type: {{license_type}}"
+    },
+    {
+      "id": "CA_HEADING",
+      "label": "Home Improvement heading",
+      "required": true,
+      "placement": "title",
+      "min_font_size": 10,
+      "bold": true,
+      "text": "HOME IMPROVEMENT CONTRACT"
+    },
+    {
+      "id": "CA_ENTITLEMENT",
+      "label": "Entitlement to signed copy",
+      "required": true,
+      "placement": "near_top",
+      "min_font_size": 12,
+      "bold": true,
+      "text": "You are entitled to a completely filled in copy of this agreement, signed by both you and the contractor, before any work may be started."
+    },
+    {
+      "id": "CA_DOWNPAYMENT_CAP",
+      "label": "Downpayment cap notice",
+      "required": true,
+      "placement": "near_deposit_field",
+      "min_font_size": 12,
+      "bold": true,
+      "text": "THE DOWNPAYMENT MAY NOT EXCEED $1,000 OR 10 PERCENT OF THE CONTRACT PRICE, WHICHEVER IS LESS."
+    },
+    {
+      "id": "CA_PROGRESS_PAYMENTS",
+      "label": "Progress payment warning",
+      "required": true,
+      "placement": "payment_schedule_section",
+      "min_font_size": 12,
+      "bold": true,
+      "text": "The schedule of progress payments must specifically describe each phase of work, including the type and amount of work or services scheduled to be supplied in each phase, along with the amount of each proposed progress payment. IT IS AGAINST THE LAW FOR A CONTRACTOR TO COLLECT PAYMENT FOR WORK NOT YET COMPLETED, OR FOR MATERIALS NOT YET DELIVERED. HOWEVER, A CONTRACTOR MAY REQUIRE A DOWNPAYMENT."
+    },
+    {
+      "id": "CA_CHANGE_ORDER_NOTE",
+      "label": "Change order note",
+      "required": true,
+      "placement": "change_order_section",
+      "text": "Extra Work and Change Orders become part of the contract once the order is prepared in writing and signed by the parties prior to the commencement of work covered by the new change order. The order must describe the scope of the extra work or change, the cost to be added or subtracted from the contract, and the effect the order will have on the schedule of progress payments."
+    },
+    {
+      "id": "CA_GL_INSURANCE",
+      "label": "General liability insurance notice",
+      "required": true,
+      "placement": "insurance_section",
+      "text_if_insured": "{{contractor_name}} carries commercial general liability insurance written by {{gl_provider}}. You may call {{gl_provider}} at {{gl_phone}} to check the contractor's insurance coverage.",
+      "text_if_not_insured": "{{contractor_name}} does not carry commercial general liability insurance.",
+      "text_if_self_insured": "{{contractor_name}} is self-insured."
+    },
+    {
+      "id": "CA_WORKERS_COMP",
+      "label": "Workers' compensation notice",
+      "required": true,
+      "placement": "insurance_section",
+      "text_if_has_employees": "{{contractor_name}} carries workers' compensation insurance for all employees.",
+      "text_if_no_employees": "{{contractor_name}} has no employees and is exempt from workers' compensation requirements."
+    },
+    {
+      "id": "CA_MECHANICS_LIEN_WARNING",
+      "label": "Mechanics lien warning",
+      "required": true,
+      "placement": "standalone_section",
+      "heading": "MECHANICS LIEN WARNING",
+      "text": "Anyone who helps improve your property, but who is not paid, may record what is called a mechanics lien on your property. A mechanics lien is a claim, like a mortgage or home equity loan, made against your property and recorded with the county recorder.\n\nEven if you pay your contractor in full, unpaid subcontractors, suppliers, and laborers who helped to improve your property may record mechanics liens and sue you in court to foreclose the lien. If a court finds the lien is valid, you could be forced to pay twice or have a court officer sell your home to pay the lien. Liens can also affect your credit.\n\nTo preserve their right to record a lien, each subcontractor and material supplier must provide you with a document called a 'Preliminary Notice.' This notice is not a lien. The purpose of the notice is to let you know that the person who sends you the notice has the right to record a lien on your property if they are not paid.\n\nBE CAREFUL. The Preliminary Notice can be sent up to 20 days after the subcontractor starts work or the supplier provides material.\n\nPROTECT YOURSELF FROM LIENS. You can protect yourself from liens by getting a list from your contractor of all the subcontractors and material suppliers that work on your project.\n\nREMEMBER, IF YOU DO NOTHING, YOU RISK HAVING A LIEN PLACED ON YOUR HOME. This can mean that you may have to pay twice, or face the forced sale of your home to pay what you owe."
+    },
+    {
+      "id": "CA_CSLB_INFO",
+      "label": "CSLB information notice",
+      "required": true,
+      "placement": "footer_or_attachment",
+      "min_font_size": 12,
+      "text": "Information about the Contractors State License Board (CSLB): CSLB is the state consumer protection agency that licenses and regulates construction contractors. Contact CSLB for information about the licensed contractor you are considering, including information about disclosable complaints, disciplinary actions, and civil judgments that are reported to CSLB. Use only licensed contractors. If you file a complaint against a licensed contractor within the legal deadline (usually four years), CSLB has authority to investigate the complaint. Visit CSLB's internet website at www.cslb.ca.gov or Call CSLB at 800-321-CSLB (2752)."
+    },
+    {
+      "id": "CA_3DAY_CANCEL",
+      "label": "Three-Day Right to Cancel notice",
+      "required": true,
+      "placement": "near_signature",
+      "min_font_size": 12,
+      "bold": true,
+      "note": "Use 5-day version for senior citizens. Use 7-day version for post-disaster contracts.",
+      "text_standard": "THREE-DAY RIGHT TO CANCEL\n\nYou, the buyer, have the right to cancel this contract within three business days. You may cancel by emailing, mailing, faxing, or delivering a written notice to the contractor at the contractor's place of business by midnight of the third business day after you received a signed and dated copy of the contract that includes this notice. Include your name, your address, and the date you received the signed copy of the contract and this notice.\n\nIf you cancel, the contractor must return to you anything you paid within 10 days of receiving the notice of cancellation.",
+      "text_senior": "FIVE-DAY RIGHT TO CANCEL\n\nYou, the buyer, have the right to cancel this contract within five business days. You may cancel by emailing, mailing, faxing, or delivering a written notice to the contractor at the contractor's place of business by midnight of the fifth business day after you received a signed and dated copy of the contract that includes this notice.",
+      "text_disaster": "SEVEN-DAY RIGHT TO CANCEL\n\nYou, the buyer, have the right to cancel this contract within seven business days. You may cancel by emailing, mailing, faxing, or delivering a written notice to the contractor at the contractor's place of business by midnight of the seventh business day after you received a signed and dated copy of the contract that includes this notice."
+    },
+    {
+      "id": "FEDERAL_3DAY",
+      "label": "Federal 3-day right to cancel (TILA)",
+      "required": true,
+      "placement": "near_signature",
+      "applies_to": "primary_residence_lien",
+      "text": "NOTICE OF RIGHT TO CANCEL\n\nYour right to cancel: You are entering into a transaction that will result in a [mortgage/lien/security interest] on your home. You have a legal right under federal law to cancel this transaction, without cost, within three business days from whichever of the following events occurs last:\n(1) the date of the transaction, which is {{contract_date}}; or\n(2) the date you received your Truth in Lending disclosures; or\n(3) the date you received this notice of your right to cancel.\n\nIf you cancel this transaction, the [mortgage/lien/security interest] is also cancelled. Within 20 calendar days after we receive your notice, we must take the steps necessary to reflect the fact that the [mortgage/lien/security interest] on your home has been cancelled, and we must return to you any money or property you have given us or anyone else in connection with this transaction.\n\nYou may keep any money or property we have given you until we have done the things mentioned above, but you must then offer to return the money or property. If it is impractical or unfair for you to return the property, you must offer its reasonable value.\n\nHow to cancel: If you decide to cancel this transaction, you may do so by notifying us in writing at: {{contractor_name}}, {{contractor_address}}.\n\nYou may use any written statement that is signed and dated by you and states your intention to cancel, or you may use this notice by dating and signing below."
+    }
+  ],
+  "required_contract_fields": [
+    "contractor_name",
+    "contractor_address",
+    "contractor_phone",
+    "license_number",
+    "license_type",
+    "homeowner_name",
+    "homeowner_address",
+    "job_address",
+    "contract_date",
+    "approximate_start_date",
+    "approximate_completion_date",
+    "contract_price",
+    "downpayment_amount",
+    "payment_schedule",
+    "project_description",
+    "materials_description"
+  ],
+  "penalties_for_non_compliance": "License discipline by CSLB. Contract may be voidable. Homeowner may have 3 years to sue for refund under federal TILA if right-to-cancel notice missing.",
+  "notes": "California has the most complex home improvement contract requirements in the US. The CSLB actively enforces these requirements. Contracts for jobs over $500 must comply. Swimming pool contracts that don't comply are void and unenforceable. Change orders must be in writing and signed before work begins."
+}
