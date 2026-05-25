@@ -334,16 +334,15 @@
           storage_path: path,
           public_url:   pubUrl,
           caption:      caption || null
-        }).then(function(insertRes) {
+        }).select().then(function(insertRes) {
           bar.style.width = '100%';
           setTimeout(function() { progress.style.display = 'none'; bar.style.width = '0%'; }, 500);
 
           if (insertRes.error) {
             showToast('Saved to storage but DB error: ' + insertRes.error.message, true);
           } else {
-            allPhotos.unshift(insertRes.data[0]);
-            filterPhotos();
             showToast('Photo uploaded!');
+            loadPhotos();
           }
           if (done) done();
         });
