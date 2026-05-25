@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BuildOrder.ai &mdash; Lien Waiver</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --bg:#090E1A; --bg2:#111827; --bg3:#1A2438; --amber:#F59E0B; --amber2:#FCD34D; --white:#F8FAFC; --muted:#94A3B8; --dim:#475569; --border:rgba(255,255,255,0.07); --green:#34D399; --red:#EF4444; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; }
+    .nav { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+    .logo { font-size: 1.2rem; font-weight: 900; letter-spacing: -0.03em; text-decoration: none; color: var(--white); }
+    .logo em { font-style: normal; color: var(--amber); }
+    .btn-back { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.9rem; font-size: 0.78rem; color: var(--dim); cursor: pointer; font-family: inherit; text-decoration: none; transition: color 0.2s, border-color 0.2s; }
+    .btn-back:hover { color: var(--white); border-color: var(--amber); }
+    .main { max-width: 900px; margin: 0 auto; padding: 2.5rem 2rem; }
+    .doc-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 2rem; gap: 1rem; }
+    .doc-title { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.3rem; }
+    .doc-meta { font-size: 0.82rem; color: var(--muted); }
+    .status-badge { display: inline-block; padding: 0.25rem 0.7rem; border-radius: 100px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+    .status-draft  { background: rgba(148,163,184,0.12); color: var(--muted); }
+    .status-sent   { background: rgba(245,158,11,0.12); color: var(--amber); }
+    .status-signed { background: rgba(52,211,153,0.12); color: var(--green); }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
+    .info-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem 1.5rem; }
+    .info-card-title { font-size: 0.72rem; font-weight: 700; color: var(--dim); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.75rem; }
+    .info-row { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.4rem; }
+    .info-label { color: var(--muted); }
+    .info-value { font-weight: 600; text-align: right; max-width: 60%; }
+    .waiver-type-badge { display: inline-block; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2); border-radius: 8px; padding: 0.4rem 0.85rem; font-size: 0.75rem; font-weight: 700; color: var(--amber); margin-bottom: 1.5rem; }
+    .doc-section { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .doc-sec-header { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 0.75rem; }
+    .doc-sec-title { font-size: 0.95rem; font-weight: 700; }
+    .doc-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .btn-action { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.45rem 1rem; font-size: 0.78rem; font-weight: 600; color: var(--muted); cursor: pointer; font-family: inherit; transition: color 0.2s, border-color 0.2s; }
+    .btn-action:hover { color: var(--white); border-color: var(--amber); }
+    .btn-generate { background: var(--amber); color: #090E1A; border: none; border-radius: 8px; padding: 0.45rem 1.2rem; font-size: 0.82rem; font-weight: 800; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+    .btn-generate:hover { background: var(--amber2); }
+    .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; }
+    .generating { padding: 4rem 2rem; text-align: center; color: var(--muted); }
+    .generating-spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--amber); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1.5rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .generating h3 { font-size: 1rem; font-weight: 700; color: var(--white); margin-bottom: 0.5rem; }
+    .generating p { font-size: 0.85rem; }
+    .doc-body { padding: 2rem; }
+    .doc-text { font-family: 'Courier New', Courier, monospace; font-size: 0.8rem; line-height: 1.75; color: #CBD5E1; white-space: pre-wrap; word-break: break-word; }
+    .no-doc { padding: 3rem 2rem; text-align: center; color: var(--muted); }
+    .no-doc h3 { font-size: 1rem; font-weight: 700; color: var(--white); margin-bottom: 0.5rem; }
+    .no-doc p { font-size: 0.85rem; margin-bottom: 1.5rem; }
+    .error-msg { padding: 1rem 1.5rem; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; color: var(--red); font-size: 0.85rem; margin: 1rem 1.5rem; }
+    .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1.25rem; font-size: 0.85rem; font-weight: 600; color: var(--green); opacity: 0; transform: translateY(10px); transition: opacity 0.2s, transform 0.2s; pointer-events: none; z-index: 100; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    @media (max-width: 640px) { .info-grid { grid-template-columns: 1fr; } .doc-header { flex-direction: column; } }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a href="/dashboard.html" class="logo">Build<em>Order</em></a>
+    <a href="/dashboard.html" class="btn-back">&larr; Dashboard</a>
+  </nav>
+  <main class="main"><div id="page-content"></div></main>
+  <div class="toast" id="toast"></div>
+  <script>
+    var SUPABASE_URL = 'https://pxqwtesczfhfjwdhxiyl.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDI3MDcsImV4cCI6MjA5NTIxODcwN30.rNmcfsteMK_IdyWkGLrNA5ZOlRVHQYahDrnIWmPGCLM';
+    var db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, storageKey: 'bo-auth' } });
+    var params = new URLSearchParams(window.location.search);
+    var docId = params.get('id');
+    var autoGen = params.get('generate') === 'true';
+    var current = null;
+
+    var typeLabels = {
+      conditional_progress:   'Conditional Waiver &mdash; Progress Payment',
+      unconditional_progress: 'Unconditional Waiver &mdash; Progress Payment',
+      conditional_final:      'Conditional Waiver &mdash; Final Payment',
+      unconditional_final:    'Unconditional Waiver &mdash; Final Payment'
+    };
+
+    db.auth.getSession().then(function(res) {
+      if (!res.data.session) { window.location.href = '/login.html'; return; }
+      if (!docId) { window.location.href = '/dashboard.html'; return; }
+      db.from('lien_waivers').select('*').eq('id', docId).single().then(function(res) {
+        if (res.error || !res.data) { document.getElementById('page-content').innerHTML = '<div style="text-align:center;padding:4rem 2rem;color:var(--muted);"><h3 style="color:var(--white);">Not found</h3><a href="/dashboard.html" style="color:var(--amber);text-decoration:none;font-weight:700;">&larr; Back</a></div>'; return; }
+        current = res.data; render();
+        if (autoGen && !current.content) generate();
+      });
+    });
+
+    function fmtDate(s) { if (!s) return '&mdash;'; return new Date(s).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }); }
+    function fmt(n) { return '$' + Number(n || 0).toFixed(2); }
+
+    function render() {
+      var d = current;
+      var sc = { draft: 'status-draft', sent: 'status-sent', signed: 'status-signed' }[d.status] || 'status-draft';
+      var typeLabel = typeLabels[d.waiver_type] || 'Lien Waiver';
+      var actions = d.content
+        ? '<button class="btn-action" onclick="copyDoc()">Copy</button><button class="btn-action" onclick="dlDoc()">Download .txt</button><button class="btn-generate" onclick="generate()">Regenerate</button>'
+        : '<button class="btn-generate" onclick="generate()">&#10022; Generate Lien Waiver</button>';
+
+      document.getElementById('page-content').innerHTML =
+        '<div class="doc-header"><div><div class="doc-title">' + (d.customer_name || 'Lien Waiver') + '</div><div class="doc-meta">Lien Waiver &middot; ' + [d.job_city, d.job_state].filter(Boolean).join(', ') + ' &middot; ' + fmtDate(d.created_at) + '</div></div><span class="status-badge ' + sc + '">' + d.status + '</span></div>' +
+        '<div class="waiver-type-badge">' + typeLabel + '</div>' +
+        '<div class="info-grid"><div class="info-card"><div class="info-card-title">Waiver Details</div><div class="info-row"><span class="info-label">Amount</span><span class="info-value" style="font-size:1.1rem;font-weight:900;color:var(--amber);">' + fmt(d.amount) + '</span></div><div class="info-row"><span class="info-label">Through Date</span><span class="info-value">' + fmtDate(d.through_date) + '</span></div><div class="info-row"><span class="info-label">Payment Date</span><span class="info-value">' + fmtDate(d.payment_date) + '</span></div>' + (d.check_number ? '<div class="info-row"><span class="info-label">Check #</span><span class="info-value">' + d.check_number + '</span></div>' : '') + '</div>' +
+        '<div class="info-card"><div class="info-card-title">Parties</div><div class="info-row"><span class="info-label">Claimant</span><span class="info-value">' + (d.claimant_company || d.claimant_name || '&mdash;') + '</span></div><div class="info-row"><span class="info-label">Customer</span><span class="info-value">' + (d.customer_company || d.customer_name || '&mdash;') + '</span></div><div class="info-row"><span class="info-label">Property</span><span class="info-value">' + (d.job_address || '&mdash;') + '</span></div></div></div>' +
+        '<div class="doc-section"><div class="doc-sec-header"><div class="doc-sec-title">&#128203; Lien Waiver Document</div><div class="doc-actions" id="doc-actions">' + actions + '</div></div>' +
+        '<div id="doc-body">' + (d.content ? '<div class="doc-body"><pre class="doc-text">' + escapeHtml(d.content) + '</pre></div>' : '<div class="no-doc"><h3>No document generated yet</h3><p>Click Generate Lien Waiver to create the document.</p></div>') + '</div></div>';
+    }
+
+    function generate() {
+      document.getElementById('doc-body').innerHTML = '<div class="generating"><div class="generating-spinner"></div><h3>Generating lien waiver&hellip;</h3><p>This will take about 10 seconds.</p></div>';
+      var el = document.getElementById('doc-actions');
+      if (el) el.innerHTML = '<button class="btn-generate" disabled>Generating&hellip;</button>';
+      fetch('/api/generate-lien-waiver', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ waiver_id: docId }) })
+        .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
+        .then(function(result) {
+          if (!result.ok || !result.data.success) { showErr(result.data.error || 'Generation failed.'); return; }
+          current.content = result.data.content; current.status = 'signed';
+          window.history.replaceState({}, '', '/lien-waiver.html?id=' + docId); render();
+        }).catch(function() { showErr('Network error &mdash; please try again.'); });
+    }
+
+    function showErr(msg) {
+      document.getElementById('doc-body').innerHTML = '<div class="error-msg">&#9888; ' + msg + '</div><div class="no-doc"><button class="btn-generate" onclick="generate()">Try Again</button></div>';
+      var el = document.getElementById('doc-actions');
+      if (el) el.innerHTML = '<button class="btn-generate" onclick="generate()">&#10022; Generate Lien Waiver</button>';
+    }
+
+    function copyDoc() { if (!current || !current.content) return; navigator.clipboard.writeText(current.content).then(function() { showToast('Copied!'); }); }
+    function dlDoc() {
+      if (!current || !current.content) return;
+      var fn = 'lien-waiver-' + (current.customer_name || 'waiver').replace(/\s+/g, '-').toLowerCase() + '.txt';
+      var b = new Blob([current.content], { type: 'text/plain' }); var u = URL.createObjectURL(b);
+      var a = document.createElement('a'); a.href = u; a.download = fn; a.click(); URL.revokeObjectURL(u);
+    }
+    function showToast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(function() { t.classList.remove('show'); }, 2500); }
+    function escapeHtml(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  </script>
+</body>
+</html>

@@ -23,19 +23,7 @@
       --red:   #EF4444;
     }
     body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; }
-
-    .nav {
-      background: var(--bg2);
-      border-bottom: 1px solid var(--border);
-      padding: 0 2rem;
-      height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
+    .nav { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
     .logo { font-size: 1.2rem; font-weight: 900; letter-spacing: -0.03em; text-decoration: none; color: var(--white); }
     .logo em { font-style: normal; color: var(--amber); }
     .nav-right { display: flex; align-items: center; gap: 1rem; }
@@ -51,93 +39,83 @@
     .stat-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 600; margin-bottom: 0.35rem; }
     .stat-value { font-size: 1.7rem; font-weight: 900; letter-spacing: -0.03em; }
 
-    /* Tabs */
-    .tab-bar { display: flex; gap: 0.25rem; margin-bottom: 1.5rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 0.35rem; }
-    .tab-btn {
-      flex: 1;
-      background: none;
-      border: none;
-      border-radius: 8px;
-      padding: 0.55rem 0.5rem;
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: var(--muted);
+    /* Tools Grid */
+    .section-label { font-size: 0.72rem; font-weight: 700; color: var(--dim); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.85rem; }
+    .tools-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 2rem; }
+    .tool-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.1rem 1rem;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      transition: border-color 0.2s, background 0.2s;
       cursor: pointer;
-      font-family: inherit;
-      transition: color 0.15s, background 0.15s;
-      text-align: center;
     }
-    .tab-btn:hover { color: var(--white); }
-    .tab-btn.active { background: var(--bg3); color: var(--white); }
-    .tab-btn .tab-count { display: inline-block; background: var(--bg3); border-radius: 100px; padding: 0.05rem 0.45rem; font-size: 0.68rem; margin-left: 0.35rem; color: var(--muted); }
-    .tab-btn.active .tab-count { background: rgba(245,158,11,0.15); color: var(--amber); }
+    .tool-card:hover { border-color: rgba(245,158,11,0.4); background: rgba(245,158,11,0.03); }
+    .tool-icon { font-size: 1.4rem; }
+    .tool-name { font-size: 0.82rem; font-weight: 800; }
+    .tool-desc { font-size: 0.7rem; color: var(--muted); line-height: 1.4; }
+    .tool-count { font-size: 0.7rem; color: var(--dim); font-weight: 700; }
 
-    /* Tab panels */
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
+    /* Recent docs */
+    .recent-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.85rem; }
+    .filter-tabs { display: flex; gap: 0.35rem; }
+    .filter-btn { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 0.3rem 0.75rem; font-size: 0.72rem; font-weight: 700; color: var(--muted); cursor: pointer; font-family: inherit; transition: all 0.15s; }
+    .filter-btn:hover { color: var(--white); }
+    .filter-btn.active { background: var(--bg3); color: var(--white); border-color: rgba(255,255,255,0.15); }
 
-    /* Panel header */
-    .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.85rem; }
-    .panel-title { font-size: 0.85rem; font-weight: 700; color: var(--muted); }
-    .btn-new {
-      background: var(--amber); color: #090E1A; border: none; border-radius: 8px;
-      padding: 0.5rem 1.1rem; font-size: 0.8rem; font-weight: 800; cursor: pointer;
-      font-family: inherit; text-decoration: none; display: inline-flex; align-items: center;
-      gap: 0.3rem; transition: background 0.15s;
-    }
-    .btn-new:hover { background: var(--amber2); }
-
-    /* List headers */
-    .list-header { font-size: 0.68rem; font-weight: 700; color: var(--dim); text-transform: uppercase; letter-spacing: 0.07em; padding: 0 1.4rem 0.55rem; display: grid; gap: 1rem; }
-    .jobs-cols, .job-card.jobs-cols { grid-template-columns: 1fr 160px 100px 85px; }
-    .est-cols,  .row-card.est-cols  { grid-template-columns: 1fr 140px 120px 85px; }
-    .inv-cols,  .row-card.inv-cols  { grid-template-columns: 1fr 110px 120px 85px; }
-    .co-cols,   .row-card.co-cols   { grid-template-columns: 1fr 120px 120px 85px; }
-
-    /* Row cards */
-    .row-card, .job-card {
+    .doc-list { min-height: 200px; }
+    .doc-row {
       background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
-      padding: 1rem 1.4rem; align-items: center; gap: 1rem; margin-bottom: 0.5rem;
-      cursor: pointer; transition: border-color 0.2s; text-decoration: none; color: inherit; display: grid;
+      padding: 0.9rem 1.25rem; margin-bottom: 0.5rem; display: flex;
+      align-items: center; gap: 1rem; text-decoration: none; color: inherit;
+      transition: border-color 0.2s; cursor: pointer;
     }
-    .row-card:hover, .job-card:hover { border-color: rgba(245,158,11,0.3); }
-    .row-title { font-weight: 700; font-size: 0.86rem; margin-bottom: 0.12rem; }
-    .row-sub { font-size: 0.74rem; color: var(--muted); }
-    .row-value { font-weight: 700; font-size: 0.86rem; }
-    .row-date { font-size: 0.78rem; color: var(--muted); }
-    .row-meta { font-size: 0.82rem; font-weight: 600; }
+    .doc-row:hover { border-color: rgba(245,158,11,0.3); }
+    .doc-row-type { font-size: 1rem; flex-shrink: 0; }
+    .doc-row-main { flex: 1; min-width: 0; }
+    .doc-row-title { font-weight: 700; font-size: 0.86rem; margin-bottom: 0.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .doc-row-sub { font-size: 0.74rem; color: var(--muted); }
+    .doc-row-meta { text-align: right; flex-shrink: 0; }
+    .doc-row-date { font-size: 0.74rem; color: var(--muted); }
+    .doc-row-val { font-size: 0.82rem; font-weight: 700; margin-bottom: 0.1rem; }
+    .type-pill { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 6px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; flex-shrink: 0; }
+    .pill-job  { background: rgba(148,163,184,0.12); color: var(--muted); }
+    .pill-est  { background: rgba(245,158,11,0.1); color: var(--amber); }
+    .pill-inv  { background: rgba(52,211,153,0.1); color: var(--green); }
+    .pill-co   { background: rgba(99,102,241,0.1); color: #818CF8; }
+    .pill-sub  { background: rgba(244,114,182,0.1); color: #F472B6; }
+    .pill-lien { background: rgba(251,146,60,0.1); color: #FB923C; }
+    .pill-tkof { background: rgba(56,189,248,0.1); color: #38BDF8; }
 
-    .status-badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 100px; font-size: 0.66rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+    .status-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 100px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
     .status-active   { background: rgba(52,211,153,0.12); color: var(--green); }
     .status-draft    { background: rgba(148,163,184,0.12); color: var(--muted); }
     .status-complete { background: rgba(245,158,11,0.12); color: var(--amber); }
     .status-sent     { background: rgba(245,158,11,0.12); color: var(--amber); }
     .status-accepted { background: rgba(52,211,153,0.12); color: var(--green); }
     .status-paid     { background: rgba(52,211,153,0.12); color: var(--green); }
+    .status-signed   { background: rgba(52,211,153,0.12); color: var(--green); }
 
-    /* Empty state */
-    .empty { text-align: center; padding: 3rem 2rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; color: var(--muted); }
-    .empty h3 { font-size: 0.95rem; font-weight: 700; color: var(--white); margin-bottom: 0.35rem; }
-    .empty p { font-size: 0.82rem; margin-bottom: 1.25rem; }
+    .empty-state { text-align: center; padding: 3rem 2rem; color: var(--muted); }
+    .empty-state h3 { font-size: 0.95rem; font-weight: 700; color: var(--white); margin-bottom: 0.35rem; }
+    .empty-state p { font-size: 0.82rem; }
 
-    /* Balance colors */
-    .balance-col { font-weight: 800; color: var(--green); font-size: 0.86rem; }
-    .change-pos { color: var(--green); font-weight: 700; font-size: 0.86rem; }
-    .change-neg { color: var(--red); font-weight: 700; font-size: 0.86rem; }
-
-    @media (max-width: 700px) {
+    @media (max-width: 750px) {
       .stats { grid-template-columns: repeat(2, 1fr); }
-      .tab-btn span { display: none; }
-      .list-header { display: none; }
-      .jobs-cols, .job-card.jobs-cols,
-      .est-cols,  .row-card.est-cols,
-      .inv-cols,  .row-card.inv-cols,
-      .co-cols,   .row-card.co-cols  { grid-template-columns: 1fr auto; }
+      .tools-grid { grid-template-columns: repeat(2, 1fr); }
+      .filter-tabs { flex-wrap: wrap; }
+    }
+    @media (max-width: 480px) {
+      .tools-grid { grid-template-columns: repeat(2, 1fr); }
     }
   </style>
 </head>
 <body>
-
   <nav class="nav">
     <a href="/dashboard.html" class="logo">Build<em>Order</em></a>
     <div class="nav-right">
@@ -150,58 +128,81 @@
 
     <!-- Stats -->
     <div class="stats">
-      <div class="stat"><div class="stat-label">Jobs</div><div class="stat-value" id="stat-jobs">&mdash;</div></div>
-      <div class="stat"><div class="stat-label">Estimates</div><div class="stat-value" id="stat-est">&mdash;</div></div>
+      <div class="stat"><div class="stat-label">Total Docs</div><div class="stat-value" id="stat-total">&mdash;</div></div>
+      <div class="stat"><div class="stat-label">Contracts</div><div class="stat-value" id="stat-jobs">&mdash;</div></div>
       <div class="stat"><div class="stat-label">Invoices</div><div class="stat-value" id="stat-inv">&mdash;</div></div>
-      <div class="stat"><div class="stat-label">Change Orders</div><div class="stat-value" id="stat-co">&mdash;</div></div>
+      <div class="stat"><div class="stat-label">Outstanding</div><div class="stat-value" id="stat-outstanding">&mdash;</div></div>
     </div>
 
-    <!-- Tab Bar -->
-    <div class="tab-bar">
-      <button class="tab-btn active" onclick="switchTab('jobs')"><span>&#128196; Jobs &amp; Contracts</span><span class="tab-count" id="tc-jobs">0</span></button>
-      <button class="tab-btn" onclick="switchTab('estimates')"><span>&#128203; Estimates</span><span class="tab-count" id="tc-est">0</span></button>
-      <button class="tab-btn" onclick="switchTab('invoices')"><span>&#128176; Invoices</span><span class="tab-count" id="tc-inv">0</span></button>
-      <button class="tab-btn" onclick="switchTab('change-orders')"><span>&#128221; Change Orders</span><span class="tab-count" id="tc-co">0</span></button>
-    </div>
-
-    <!-- Jobs Tab -->
-    <div class="tab-panel active" id="tab-jobs">
-      <div class="panel-header">
-        <div class="panel-title">Jobs &amp; Contracts</div>
-        <a href="/new-job.html" class="btn-new">+ New Job</a>
+    <!-- Tools -->
+    <div class="section-label">Create New Document</div>
+    <div class="tools-grid">
+      <a href="/new-job.html" class="tool-card">
+        <div class="tool-icon">&#128196;</div>
+        <div class="tool-name">Contract</div>
+        <div class="tool-desc">State-compliant scope of work</div>
+        <div class="tool-count" id="tc-jobs">0 contracts</div>
+      </a>
+      <a href="/new-estimate.html" class="tool-card">
+        <div class="tool-icon">&#128203;</div>
+        <div class="tool-name">Estimate</div>
+        <div class="tool-desc">Itemized project estimate</div>
+        <div class="tool-count" id="tc-est">0 estimates</div>
+      </a>
+      <a href="/new-invoice.html" class="tool-card">
+        <div class="tool-icon">&#128176;</div>
+        <div class="tool-name">Invoice</div>
+        <div class="tool-desc">Professional payment invoice</div>
+        <div class="tool-count" id="tc-inv">0 invoices</div>
+      </a>
+      <a href="/new-change-order.html" class="tool-card">
+        <div class="tool-icon">&#128221;</div>
+        <div class="tool-name">Change Order</div>
+        <div class="tool-desc">Document scope changes</div>
+        <div class="tool-count" id="tc-co">0 change orders</div>
+      </a>
+      <a href="/new-subcontractor.html" class="tool-card">
+        <div class="tool-icon">&#129309;</div>
+        <div class="tool-name">Subcontractor</div>
+        <div class="tool-desc">Sub agreement &amp; scope</div>
+        <div class="tool-count" id="tc-sub">0 agreements</div>
+      </a>
+      <a href="/new-lien-waiver.html" class="tool-card">
+        <div class="tool-icon">&#9875;</div>
+        <div class="tool-name">Lien Waiver</div>
+        <div class="tool-desc">All 4 waiver types</div>
+        <div class="tool-count" id="tc-lien">0 waivers</div>
+      </a>
+      <a href="/new-takeoff.html" class="tool-card">
+        <div class="tool-icon">&#128296;</div>
+        <div class="tool-name">Material Takeoff</div>
+        <div class="tool-desc">Quantities &amp; cost estimates</div>
+        <div class="tool-count" id="tc-tkof">0 takeoffs</div>
+      </a>
+      <div class="tool-card" style="opacity:0.4;cursor:default;">
+        <div class="tool-icon">&#128247;</div>
+        <div class="tool-name">Photo Log</div>
+        <div class="tool-desc">Coming soon</div>
+        <div class="tool-count">&mdash;</div>
       </div>
-      <div class="list-header jobs-cols"><div>Job</div><div>Homeowner</div><div>Value</div><div>Status</div></div>
-      <div id="jobs-list"></div>
     </div>
 
-    <!-- Estimates Tab -->
-    <div class="tab-panel" id="tab-estimates">
-      <div class="panel-header">
-        <div class="panel-title">Estimates</div>
-        <a href="/new-estimate.html" class="btn-new">+ New Estimate</a>
+    <!-- Recent Docs -->
+    <div class="recent-header">
+      <div class="section-label" style="margin-bottom:0;">Recent Documents</div>
+      <div class="filter-tabs">
+        <button class="filter-btn active" onclick="filter('all')">All</button>
+        <button class="filter-btn" onclick="filter('job')">Contracts</button>
+        <button class="filter-btn" onclick="filter('est')">Estimates</button>
+        <button class="filter-btn" onclick="filter('inv')">Invoices</button>
+        <button class="filter-btn" onclick="filter('co')">Change Orders</button>
+        <button class="filter-btn" onclick="filter('sub')">Subcontractors</button>
+        <button class="filter-btn" onclick="filter('lien')">Lien Waivers</button>
+        <button class="filter-btn" onclick="filter('tkof')">Takeoffs</button>
       </div>
-      <div class="list-header est-cols"><div>Client</div><div>Work Type</div><div>Created</div><div>Status</div></div>
-      <div id="estimates-list"></div>
     </div>
-
-    <!-- Invoices Tab -->
-    <div class="tab-panel" id="tab-invoices">
-      <div class="panel-header">
-        <div class="panel-title">Invoices</div>
-        <a href="/new-invoice.html" class="btn-new">+ New Invoice</a>
-      </div>
-      <div class="list-header inv-cols"><div>Client</div><div>Balance Due</div><div>Created</div><div>Status</div></div>
-      <div id="invoices-list"></div>
-    </div>
-
-    <!-- Change Orders Tab -->
-    <div class="tab-panel" id="tab-change-orders">
-      <div class="panel-header">
-        <div class="panel-title">Change Orders</div>
-        <a href="/new-change-order.html" class="btn-new">+ New Change Order</a>
-      </div>
-      <div class="list-header co-cols"><div>Client</div><div>Change Amount</div><div>New Total</div><div>Status</div></div>
-      <div id="co-list"></div>
+    <div class="doc-list" id="doc-list">
+      <div class="empty-state"><p>Loading&hellip;</p></div>
     </div>
 
   </main>
@@ -211,142 +212,97 @@
     var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDI3MDcsImV4cCI6MjA5NTIxODcwN30.rNmcfsteMK_IdyWkGLrNA5ZOlRVHQYahDrnIWmPGCLM';
     var db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, storageKey: 'bo-auth' } });
 
-    var currentTab = 'jobs';
+    var allDocs = [];
+    var currentFilter = 'all';
 
-    function switchTab(name) {
-      currentTab = name;
-      var panels = document.querySelectorAll('.tab-panel');
-      var btns   = document.querySelectorAll('.tab-btn');
-      for (var i = 0; i < panels.length; i++) panels[i].classList.remove('active');
+    function fmtDate(s) {
+      if (!s) return '';
+      return new Date(s).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    function fmt(n) { return '$' + Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }); }
+
+    function filter(type) {
+      currentFilter = type;
+      var btns = document.querySelectorAll('.filter-btn');
       for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
-      document.getElementById('tab-' + name).classList.add('active');
-      btns[['jobs','estimates','invoices','change-orders'].indexOf(name)].classList.add('active');
+      btns[['all','job','est','inv','co','sub','lien','tkof'].indexOf(type)].classList.add('active');
+      renderDocs();
     }
 
-    function fmtDate(str) {
-      if (!str) return '&mdash;';
-      return new Date(str).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    }
-    function fmt(n) { return '$' + Number(n || 0).toFixed(2); }
-    function fmtChange(n) {
-      n = Number(n || 0);
-      if (n > 0) return '+' + fmt(n);
-      if (n < 0) return '-$' + Math.abs(n).toFixed(2);
-      return '$0.00';
-    }
-
-    function truncate(str, len) {
-      if (!str) return '';
-      return str.length > len ? str.substring(0, len) + '&hellip;' : str;
+    function renderDocs() {
+      var docs = currentFilter === 'all' ? allDocs : allDocs.filter(function(d) { return d._type === currentFilter; });
+      var list = document.getElementById('doc-list');
+      if (docs.length === 0) {
+        list.innerHTML = '<div class="empty-state"><h3>No documents yet</h3><p>Use the tools above to create your first document.</p></div>';
+        return;
+      }
+      list.innerHTML = docs.map(function(d) {
+        return '<a href="' + d._url + '" class="doc-row">' +
+          '<div class="doc-row-type">' + d._icon + '</div>' +
+          '<div class="doc-row-main"><div class="doc-row-title">' + d._title + '</div><div class="doc-row-sub">' + d._sub + '</div></div>' +
+          '<div style="flex-shrink:0;"><span class="type-pill pill-' + d._type + '">' + d._typeLabel + '</span></div>' +
+          '<div class="doc-row-meta"><div class="doc-row-val">' + d._val + '</div><div class="doc-row-date">' + fmtDate(d.created_at) + '</div></div>' +
+          '<div style="flex-shrink:0;"><span class="status-badge status-' + (d.status || 'draft') + '">' + (d.status || 'draft') + '</span></div>' +
+          '</a>';
+      }).join('');
     }
 
     async function init() {
       var sessionRes = await db.auth.getSession();
       if (!sessionRes.data.session) { window.location.href = '/login.html'; return; }
-
       var profileRes = await db.from('contractor_profiles').select('*').single();
       var profile = profileRes.data;
       if (!profile || !profile.onboarding_complete) { window.location.href = '/onboarding.html'; return; }
       document.getElementById('nav-name').textContent = profile.business_name || profile.contractor_name;
 
-      var [jobsRes, estRes, invRes, coRes] = await Promise.all([
+      var [jR, eR, iR, cR, sR, lR, tR] = await Promise.all([
         db.from('jobs').select('*').order('created_at', { ascending: false }),
         db.from('estimates').select('*').order('created_at', { ascending: false }),
         db.from('invoices').select('*').order('created_at', { ascending: false }),
-        db.from('change_orders').select('*').order('created_at', { ascending: false })
+        db.from('change_orders').select('*').order('created_at', { ascending: false }),
+        db.from('subcontractor_agreements').select('*').order('created_at', { ascending: false }),
+        db.from('lien_waivers').select('*').order('created_at', { ascending: false }),
+        db.from('material_takeoffs').select('*').order('created_at', { ascending: false })
       ]);
 
-      var jobs = jobsRes.data || [];
-      var estimates = estRes.data || [];
-      var invoices = invRes.data || [];
-      var cos = coRes.data || [];
+      var jobs  = jR.data || [];
+      var ests  = eR.data || [];
+      var invs  = iR.data || [];
+      var cos   = cR.data || [];
+      var subs  = sR.data || [];
+      var liens = lR.data || [];
+      var tkofs = tR.data || [];
 
       // Stats
-      document.getElementById('stat-jobs').textContent = jobs.length;
-      document.getElementById('stat-est').textContent  = estimates.length;
-      document.getElementById('stat-inv').textContent  = invoices.length;
-      document.getElementById('stat-co').textContent   = cos.length;
+      var totalDocs = jobs.length + ests.length + invs.length + cos.length + subs.length + liens.length + tkofs.length;
+      var outstanding = invs.filter(function(i) { return i.status !== 'paid'; }).length;
+      document.getElementById('stat-total').textContent  = totalDocs;
+      document.getElementById('stat-jobs').textContent   = jobs.length;
+      document.getElementById('stat-inv').textContent    = invs.length;
+      document.getElementById('stat-outstanding').textContent = outstanding;
 
-      // Tab counts
-      document.getElementById('tc-jobs').textContent = jobs.length;
-      document.getElementById('tc-est').textContent  = estimates.length;
-      document.getElementById('tc-inv').textContent  = invoices.length;
-      document.getElementById('tc-co').textContent   = cos.length;
+      // Tool counts
+      document.getElementById('tc-jobs').textContent = jobs.length + ' contract' + (jobs.length !== 1 ? 's' : '');
+      document.getElementById('tc-est').textContent  = ests.length + ' estimate' + (ests.length !== 1 ? 's' : '');
+      document.getElementById('tc-inv').textContent  = invs.length + ' invoice' + (invs.length !== 1 ? 's' : '');
+      document.getElementById('tc-co').textContent   = cos.length + ' change order' + (cos.length !== 1 ? 's' : '');
+      document.getElementById('tc-sub').textContent  = subs.length + ' agreement' + (subs.length !== 1 ? 's' : '');
+      document.getElementById('tc-lien').textContent = liens.length + ' waiver' + (liens.length !== 1 ? 's' : '');
+      document.getElementById('tc-tkof').textContent = tkofs.length + ' takeoff' + (tkofs.length !== 1 ? 's' : '');
 
-      // --- Jobs ---
-      var jobsList = document.getElementById('jobs-list');
-      if (jobs.length === 0) {
-        jobsList.innerHTML = '<div class="empty"><h3>No jobs yet</h3><p>Create your first job to generate a state-compliant contract.</p><a href="/new-job.html" class="btn-new">+ Create First Job</a></div>';
-      } else {
-        jobsList.innerHTML = jobs.map(function(j) {
-          var sc = { active: 'status-active', draft: 'status-draft', complete: 'status-complete' }[j.status] || 'status-draft';
-          var city = [j.job_city, j.job_state].filter(Boolean).join(', ');
-          var addr = (j.job_address || 'No address') + (city ? ', ' + city : '');
-          var desc = truncate(j.project_description, 42);
-          var price = j.contract_price ? '$' + Number(j.contract_price).toLocaleString() : '&mdash;';
-          return '<a href="/job.html?id=' + j.id + '" class="job-card jobs-cols">' +
-            '<div><div class="row-title">' + addr + '</div><div class="row-sub">' + desc + '</div></div>' +
-            '<div class="row-meta">' + (j.homeowner_name || '&mdash;') + '</div>' +
-            '<div class="row-value">' + price + '</div>' +
-            '<div><span class="status-badge ' + sc + '">' + j.status + '</span></div>' +
-            '</a>';
-        }).join('');
-      }
+      // Build unified doc list
+      var jDocs = jobs.map(function(d) { return Object.assign({}, d, { _type:'job', _icon:'&#128196;', _typeLabel:'Contract', _url:'/job.html?id='+d.id, _title:(d.job_address || 'No address') + (d.job_city ? ', ' + d.job_city : ''), _sub: d.homeowner_name || 'No client', _val: d.contract_price ? fmt(d.contract_price) : '' }); });
+      var eDocs = ests.map(function(d) { return Object.assign({}, d, { _type:'est', _icon:'&#128203;', _typeLabel:'Estimate', _url:'/estimate.html?id='+d.id, _title: d.homeowner_name || 'No client', _sub: d.work_type || '', _val: '' }); });
+      var iDocs = invs.map(function(d) { return Object.assign({}, d, { _type:'inv', _icon:'&#128176;', _typeLabel:'Invoice', _url:'/invoice.html?id='+d.id, _title: d.homeowner_name || 'No client', _sub: d.work_type || '', _val: d.status === 'paid' ? 'PAID' : (d.balance_due ? fmt(d.balance_due) + ' due' : '') }); });
+      var cDocs = cos.map(function(d) { return Object.assign({}, d, { _type:'co', _icon:'&#128221;', _typeLabel:'Change Order', _url:'/change-order.html?id='+d.id, _title: d.homeowner_name || 'No client', _sub: d.work_type || '', _val: (Number(d.change_amount||0)>=0?'+':'') + fmt(d.change_amount) }); });
+      var sDocs = subs.map(function(d) { return Object.assign({}, d, { _type:'sub', _icon:'&#129309;', _typeLabel:'Subcontractor', _url:'/subcontractor.html?id='+d.id, _title: d.sub_company || d.sub_name || 'No sub', _sub: d.work_type || '', _val: d.contract_amount ? fmt(d.contract_amount) : '' }); });
+      var lDocs = liens.map(function(d) { return Object.assign({}, d, { _type:'lien', _icon:'&#9875;', _typeLabel:'Lien Waiver', _url:'/lien-waiver.html?id='+d.id, _title: d.customer_name || 'No customer', _sub: (d.job_city || '') + (d.job_state ? ', ' + d.job_state : ''), _val: d.amount ? fmt(d.amount) : '' }); });
+      var tDocs = tkofs.map(function(d) { return Object.assign({}, d, { _type:'tkof', _icon:'&#128296;', _typeLabel:'Takeoff', _url:'/takeoff.html?id='+d.id, _title: d.project_name || d.project_type || 'Material Takeoff', _sub: d.job_address || '', _val: '' }); });
 
-      // --- Estimates ---
-      var estList = document.getElementById('estimates-list');
-      if (estimates.length === 0) {
-        estList.innerHTML = '<div class="empty"><h3>No estimates yet</h3><p>Generate a professional itemized estimate in seconds.</p><a href="/new-estimate.html" class="btn-new">+ Create First Estimate</a></div>';
-      } else {
-        estList.innerHTML = estimates.map(function(e) {
-          var sc = { draft: 'status-draft', sent: 'status-sent', accepted: 'status-accepted' }[e.status] || 'status-draft';
-          return '<a href="/estimate.html?id=' + e.id + '" class="row-card est-cols">' +
-            '<div><div class="row-title">' + (e.homeowner_name || 'No client') + '</div><div class="row-sub">' + [e.job_city, e.job_state].filter(Boolean).join(', ') + '</div></div>' +
-            '<div class="row-meta">' + (e.work_type || '&mdash;') + '</div>' +
-            '<div class="row-date">' + fmtDate(e.created_at) + '</div>' +
-            '<div><span class="status-badge ' + sc + '">' + e.status + '</span></div>' +
-            '</a>';
-        }).join('');
-      }
+      allDocs = jDocs.concat(eDocs, iDocs, cDocs, sDocs, lDocs, tDocs)
+        .sort(function(a, b) { return new Date(b.created_at) - new Date(a.created_at); });
 
-      // --- Invoices ---
-      var invList = document.getElementById('invoices-list');
-      if (invoices.length === 0) {
-        invList.innerHTML = '<div class="empty"><h3>No invoices yet</h3><p>Generate a professional invoice with payment terms and late fee language.</p><a href="/new-invoice.html" class="btn-new">+ Create First Invoice</a></div>';
-      } else {
-        invList.innerHTML = invoices.map(function(inv) {
-          var sc = { draft: 'status-draft', sent: 'status-sent', paid: 'status-paid' }[inv.status] || 'status-draft';
-          var bal = inv.status === 'paid' ? '<span style="color:var(--green);font-weight:800;">PAID</span>' : '<span class="balance-col">' + fmt(inv.balance_due) + '</span>';
-          return '<a href="/invoice.html?id=' + inv.id + '" class="row-card inv-cols">' +
-            '<div><div class="row-title">' + (inv.homeowner_name || 'No client') + '</div><div class="row-sub">' + (inv.work_type || '') + '</div></div>' +
-            '<div>' + bal + '</div>' +
-            '<div class="row-date">' + fmtDate(inv.created_at) + '</div>' +
-            '<div><span class="status-badge ' + sc + '">' + inv.status + '</span></div>' +
-            '</a>';
-        }).join('');
-      }
-
-      // --- Change Orders ---
-      var coList = document.getElementById('co-list');
-      if (cos.length === 0) {
-        coList.innerHTML = '<div class="empty"><h3>No change orders yet</h3><p>Document scope changes in writing before additional work begins.</p><a href="/new-change-order.html" class="btn-new">+ Create First Change Order</a></div>';
-      } else {
-        coList.innerHTML = cos.map(function(co) {
-          var sc = { draft: 'status-draft', sent: 'status-sent', accepted: 'status-accepted' }[co.status] || 'status-draft';
-          var chg = Number(co.change_amount || 0);
-          var chgHtml = chg > 0
-            ? '<span class="change-pos">+' + fmt(chg) + '</span>'
-            : chg < 0
-              ? '<span class="change-neg">-$' + Math.abs(chg).toFixed(2) + '</span>'
-              : '<span class="row-date">$0.00</span>';
-          return '<a href="/change-order.html?id=' + co.id + '" class="row-card co-cols">' +
-            '<div><div class="row-title">' + (co.homeowner_name || 'No client') + '</div><div class="row-sub">' + (co.work_type || '') + '</div></div>' +
-            '<div>' + chgHtml + '</div>' +
-            '<div class="row-value">' + fmt(co.new_total) + '</div>' +
-            '<div><span class="status-badge ' + sc + '">' + co.status + '</span></div>' +
-            '</a>';
-        }).join('');
-      }
+      renderDocs();
     }
 
     async function signOut() {
