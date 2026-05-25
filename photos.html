@@ -317,7 +317,7 @@
       label.textContent = 'Uploading ' + (file.name.length > 30 ? file.name.substring(0,30) + '...' : file.name);
       bar.style.width = '30%';
 
-      db.storage.from('job-photos').upload(path, file, { contentType: file.type, upsert: false }).then(function(uploadRes) {
+      db.storage.from('job-bucket').upload(path, file, { contentType: file.type, upsert: false }).then(function(uploadRes) {
         if (uploadRes.error) {
           progress.style.display = 'none';
           showToast('Upload failed: ' + uploadRes.error.message, true);
@@ -326,7 +326,7 @@
         }
         bar.style.width = '70%';
 
-        var pubUrl = db.storage.from('job-photos').getPublicUrl(path).data.publicUrl;
+        var pubUrl = db.storage.from('job-bucket').getPublicUrl(path).data.publicUrl;
 
         db.from('job_photos').insert({
           user_id:      currentUser.id,
@@ -352,7 +352,7 @@
 
     function deletePhoto(id, storagePath) {
       if (!confirm('Delete this photo? This cannot be undone.')) return;
-      db.storage.from('job-photos').remove([storagePath]).then(function() {
+      db.storage.from('job-bucket').remove([storagePath]).then(function() {
         db.from('job_photos').delete().eq('id', id).then(function() {
           allPhotos = allPhotos.filter(function(p) { return p.id !== id; });
           filterPhotos();
