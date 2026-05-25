@@ -3,552 +3,332 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BuildOrder.ai — AI-Powered Contractor Documents</title>
-  <meta name="description" content="BuildOrder generates state-compliant estimates, contracts, invoices, and job documents for residential contractors — in seconds, from any device.">
+  <title>BuildOrder.ai &mdash; Contractor Documents in Seconds</title>
+  <meta name="description" content="AI-powered estimates, contracts, invoices, change orders, lien waivers, and more. State-compliant. Built for residential contractors.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg:     #090E1A;
-      --bg2:    #111827;
-      --bg3:    #1A2438;
-      --amber:  #F59E0B;
-      --amber2: #FCD34D;
-      --white:  #F8FAFC;
-      --muted:  #94A3B8;
-      --dim:    #475569;
-      --border: rgba(255,255,255,0.07);
+      --bg:    #090E1A;
+      --bg2:   #111827;
+      --bg3:   #1A2438;
+      --amber: #F59E0B;
+      --amber2:#FCD34D;
+      --white: #F8FAFC;
+      --muted: #94A3B8;
+      --dim:   #475569;
+      --border:rgba(255,255,255,0.07);
+      --green: #34D399;
     }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--white); }
 
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--white);
-      min-height: 100vh;
-      line-height: 1.6;
-    }
-
-    /* ── Nav ── */
-    .nav {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 1.5rem 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .logo {
-      font-size: 1.35rem;
-      font-weight: 900;
-      letter-spacing: -0.03em;
-    }
+    /* NAV */
+    .nav { max-width: 1100px; margin: 0 auto; padding: 1.25rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-size: 1.25rem; font-weight: 900; letter-spacing: -0.03em; text-decoration: none; color: var(--white); }
     .logo em { font-style: normal; color: var(--amber); }
-    .logo sub { color: var(--dim); font-weight: 400; font-size: 0.85rem; vertical-align: baseline; }
-    .pill {
-      background: rgba(245,158,11,0.12);
-      border: 1px solid rgba(245,158,11,0.25);
-      color: var(--amber);
-      padding: 0.35rem 1rem;
-      border-radius: 100px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 0.07em;
-      text-transform: uppercase;
-    }
+    .nav-links { display: flex; align-items: center; gap: 1rem; }
+    .nav-link { font-size: 0.82rem; font-weight: 600; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .nav-link:hover { color: var(--white); }
+    .btn-signin { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.4rem 1rem; font-size: 0.82rem; font-weight: 600; color: var(--muted); cursor: pointer; font-family: inherit; text-decoration: none; transition: color 0.2s, border-color 0.2s; }
+    .btn-signin:hover { color: var(--white); border-color: rgba(255,255,255,0.2); }
+    .btn-cta-sm { background: var(--amber); color: #090E1A; border: none; border-radius: 8px; padding: 0.45rem 1.1rem; font-size: 0.82rem; font-weight: 800; cursor: pointer; font-family: inherit; text-decoration: none; transition: background 0.15s; }
+    .btn-cta-sm:hover { background: var(--amber2); }
 
-    /* ── Hero ── */
-    .hero {
-      max-width: 820px;
-      margin: 0 auto;
-      padding: 5rem 2rem 4rem;
-      text-align: center;
-    }
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: rgba(245,158,11,0.1);
-      border: 1px solid rgba(245,158,11,0.22);
-      color: var(--amber);
-      padding: 0.4rem 1.1rem;
-      border-radius: 100px;
-      font-size: 0.78rem;
-      font-weight: 700;
-      letter-spacing: 0.07em;
-      text-transform: uppercase;
-      margin-bottom: 2rem;
-    }
-    .eyebrow::before { content: '⚡'; }
-    h1 {
-      font-size: clamp(2.4rem, 6vw, 4rem);
-      font-weight: 900;
-      line-height: 1.05;
-      letter-spacing: -0.035em;
-      margin-bottom: 1.5rem;
-    }
-    h1 em { font-style: normal; color: var(--amber); }
-    .subhead {
-      font-size: clamp(1rem, 2.2vw, 1.18rem);
-      color: var(--muted);
-      max-width: 580px;
-      margin: 0 auto 3rem;
-      line-height: 1.75;
-    }
+    /* HERO */
+    .hero { max-width: 780px; margin: 0 auto; padding: 5rem 2rem 4rem; text-align: center; }
+    .hero-badge { display: inline-block; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2); border-radius: 100px; padding: 0.3rem 0.9rem; font-size: 0.72rem; font-weight: 700; color: var(--amber); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 1.5rem; }
+    .hero h1 { font-size: clamp(2.2rem, 5vw, 3.2rem); font-weight: 900; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 1.25rem; }
+    .hero h1 span { color: var(--amber); }
+    .hero p { font-size: 1.05rem; color: var(--muted); max-width: 540px; margin: 0 auto 2.5rem; line-height: 1.7; }
+    .hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .btn-hero { background: var(--amber); color: #090E1A; border: none; border-radius: 10px; padding: 0.85rem 2rem; font-size: 0.95rem; font-weight: 900; cursor: pointer; font-family: inherit; text-decoration: none; transition: background 0.15s; display: inline-block; }
+    .btn-hero:hover { background: var(--amber2); }
+    .btn-hero-ghost { background: none; border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem 2rem; font-size: 0.95rem; font-weight: 700; color: var(--muted); cursor: pointer; font-family: inherit; text-decoration: none; transition: all 0.2s; display: inline-block; }
+    .btn-hero-ghost:hover { color: var(--white); border-color: rgba(255,255,255,0.2); }
 
-    /* ── Form ── */
-    .form-wrap {
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 2.25rem 2.5rem;
-      max-width: 500px;
-      margin: 0 auto;
-    }
-    .form-title {
-      font-size: 1rem;
-      font-weight: 800;
-      margin-bottom: 0.3rem;
-    }
-    .form-desc {
-      font-size: 0.85rem;
-      color: var(--muted);
-      margin-bottom: 1rem;
-    }
-    .spots-line {
-      font-size: 0.82rem;
-      color: var(--amber);
-      font-weight: 600;
-      margin-bottom: 1.25rem;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-    .row {
-      display: flex;
-      gap: 0.6rem;
-    }
-    input[type="email"] {
-      flex: 1;
-      background: var(--bg2);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 10px;
-      padding: 0.8rem 1rem;
-      font-size: 0.92rem;
-      color: var(--white);
-      font-family: inherit;
-      outline: none;
-      transition: border-color 0.2s;
-      min-width: 0;
-    }
-    input[type="email"]::placeholder { color: var(--dim); }
-    input[type="email"]:focus { border-color: var(--amber); }
-    .btn-primary {
-      background: var(--amber);
-      color: #090E1A;
-      border: none;
-      border-radius: 10px;
-      padding: 0.8rem 1.3rem;
-      font-size: 0.88rem;
-      font-weight: 800;
-      cursor: pointer;
-      white-space: nowrap;
-      font-family: inherit;
-      letter-spacing: -0.01em;
-      transition: background 0.15s, transform 0.1s;
-    }
-    .btn-primary:hover { background: var(--amber2); }
-    .btn-primary:active { transform: scale(0.97); }
-    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-    .form-note {
-      font-size: 0.74rem;
-      color: var(--dim);
-      margin-top: 0.9rem;
-      text-align: center;
-    }
+    /* STATS BAR */
+    .stats-bar { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 1.25rem 2rem; }
+    .stats-inner { max-width: 900px; margin: 0 auto; display: flex; justify-content: center; gap: 3rem; flex-wrap: wrap; }
+    .stat-item { text-align: center; }
+    .stat-num { font-size: 1.6rem; font-weight: 900; letter-spacing: -0.03em; color: var(--amber); }
+    .stat-lbl { font-size: 0.72rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
 
-    /* ── Success ── */
-    #success {
-      display: none;
-      text-align: center;
-      padding: 2.5rem 2rem;
-      max-width: 500px;
-      margin: 0 auto;
-    }
-    #success .check { font-size: 2.5rem; margin-bottom: 1rem; }
-    #success h3 { font-size: 1.3rem; font-weight: 800; color: var(--amber); margin-bottom: 0.5rem; }
-    #success p { color: var(--muted); font-size: 0.9rem; line-height: 1.7; }
+    /* TOOLS */
+    .section { max-width: 1100px; margin: 0 auto; padding: 4rem 2rem; }
+    .section-eyebrow { font-size: 0.72rem; font-weight: 700; color: var(--amber); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem; }
+    .section-title { font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 900; letter-spacing: -0.03em; margin-bottom: 0.75rem; }
+    .section-sub { font-size: 0.95rem; color: var(--muted); max-width: 520px; line-height: 1.7; margin-bottom: 2.5rem; }
 
-    /* ── Divider ── */
-    .divider {
-      max-width: 1000px;
-      margin: 0 auto;
-      border: none;
-      border-top: 1px solid var(--border);
-    }
-
-    /* ── Section ── */
-    .section {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 4.5rem 2rem;
-    }
-    .section-tag {
-      text-align: center;
-      font-size: 0.74rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--amber);
-      margin-bottom: 0.75rem;
-    }
-    .section-title {
-      text-align: center;
-      font-size: clamp(1.5rem, 3.5vw, 2.25rem);
-      font-weight: 900;
-      letter-spacing: -0.025em;
-      margin-bottom: 0.65rem;
-      line-height: 1.15;
-    }
-    .section-sub {
-      text-align: center;
-      color: var(--muted);
-      font-size: 0.92rem;
-      margin-bottom: 2.75rem;
-    }
-
-    /* ── Tools ── */
-    .tools-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-      gap: 0.9rem;
-    }
-    .tool {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.35rem;
-      transition: border-color 0.2s;
-    }
-    .tool:hover { border-color: rgba(245,158,11,0.28); }
-    .tool-icon { font-size: 1.4rem; margin-bottom: 0.7rem; }
-    .tool-name { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .tools-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+    .tool-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; transition: border-color 0.2s, transform 0.2s; }
+    .tool-card:hover { border-color: rgba(245,158,11,0.35); transform: translateY(-2px); }
+    .tool-card.coming { opacity: 0.45; }
+    .tool-icon { font-size: 1.8rem; margin-bottom: 0.75rem; }
+    .tool-name { font-size: 0.92rem; font-weight: 800; margin-bottom: 0.35rem; }
     .tool-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.55; }
+    .tool-tag { display: inline-block; margin-top: 0.75rem; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.15rem 0.55rem; border-radius: 100px; background: rgba(52,211,153,0.1); color: var(--green); }
+    .tool-tag.soon { background: rgba(148,163,184,0.1); color: var(--muted); }
 
-    /* ── Compliance callout ── */
-    .callout {
-      background: linear-gradient(135deg, rgba(245,158,11,0.07), rgba(245,158,11,0.02));
-      border: 1px solid rgba(245,158,11,0.18);
-      border-radius: 16px;
-      padding: 2.75rem 2.5rem;
-      text-align: center;
-      max-width: 680px;
-      margin: 0 auto;
-    }
-    .callout h3 {
-      font-size: 1.2rem;
-      font-weight: 800;
-      margin-bottom: 0.75rem;
-      line-height: 1.3;
-    }
-    .callout p { color: var(--muted); font-size: 0.88rem; line-height: 1.75; }
-    .callout strong { color: var(--white); }
+    /* HOW IT WORKS */
+    .hiw-bg { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-top: 2rem; }
+    .step { text-align: center; }
+    .step-num { width: 44px; height: 44px; border-radius: 50%; background: rgba(245,158,11,0.12); border: 2px solid rgba(245,158,11,0.3); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 900; color: var(--amber); margin: 0 auto 1rem; }
+    .step-title { font-size: 0.95rem; font-weight: 800; margin-bottom: 0.5rem; }
+    .step-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
 
-    /* ── Pricing ── */
-    .pricing-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(255px, 1fr));
-      gap: 1.1rem;
-    }
-    .plan {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 2rem;
-    }
-    .plan.featured {
-      border-color: rgba(245,158,11,0.35);
-      background: linear-gradient(160deg, rgba(245,158,11,0.05), var(--bg2) 70%);
-    }
-    .plan-badge {
-      display: inline-block;
-      background: var(--amber);
-      color: #090E1A;
-      font-size: 0.66rem;
-      font-weight: 800;
-      padding: 0.18rem 0.6rem;
-      border-radius: 100px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-bottom: 0.9rem;
-    }
-    .plan-name {
-      font-size: 0.78rem;
-      font-weight: 700;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.09em;
-      margin-bottom: 0.4rem;
-    }
-    .plan-price {
-      font-size: 2.4rem;
-      font-weight: 900;
-      letter-spacing: -0.04em;
-      margin-bottom: 1.4rem;
-      line-height: 1;
-    }
-    .plan-price sub {
-      font-size: 1rem;
-      font-weight: 500;
-      color: var(--muted);
-      vertical-align: baseline;
-    }
-    .plan-features {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 0.55rem;
-    }
-    .plan-features li {
-      font-size: 0.84rem;
-      color: var(--muted);
-      display: flex;
-      align-items: flex-start;
-      gap: 0.5rem;
-    }
-    .plan-features li::before {
-      content: '✓';
-      color: var(--amber);
-      font-weight: 800;
-      flex-shrink: 0;
-    }
+    /* PRICING */
+    .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-top: 2rem; }
+    .price-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 2rem 1.75rem; position: relative; }
+    .price-card.featured { border-color: var(--amber); background: linear-gradient(145deg, rgba(245,158,11,0.06), var(--bg2)); }
+    .price-badge { position: absolute; top: -0.75rem; left: 50%; transform: translateX(-50%); background: var(--amber); color: #090E1A; font-size: 0.68rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.2rem 0.75rem; border-radius: 100px; white-space: nowrap; }
+    .price-tier { font-size: 0.8rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.75rem; }
+    .price-amount { font-size: 2.5rem; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 0.25rem; }
+    .price-amount span { font-size: 1rem; font-weight: 600; color: var(--muted); }
+    .price-desc { font-size: 0.78rem; color: var(--muted); margin-bottom: 1.5rem; }
+    .price-features { list-style: none; }
+    .price-features li { font-size: 0.82rem; color: var(--muted); padding: 0.4rem 0; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 0.5rem; }
+    .price-features li:last-child { border-bottom: none; }
+    .price-features li::before { content: '&#10003;'; color: var(--green); font-weight: 900; flex-shrink: 0; }
+    .btn-price { display: block; text-align: center; margin-top: 1.75rem; border-radius: 10px; padding: 0.75rem; font-size: 0.875rem; font-weight: 800; cursor: pointer; font-family: inherit; text-decoration: none; transition: all 0.15s; }
+    .btn-price-primary { background: var(--amber); color: #090E1A; border: none; }
+    .btn-price-primary:hover { background: var(--amber2); }
+    .btn-price-outline { background: none; border: 1px solid var(--border); color: var(--muted); }
+    .btn-price-outline:hover { color: var(--white); border-color: rgba(255,255,255,0.2); }
 
-    /* ── States bar ── */
-    .states-bar {
-      text-align: center;
-      border-top: 1px solid var(--border);
-      margin-top: 3rem;
-      padding-top: 2rem;
-      color: var(--dim);
-      font-size: 0.82rem;
-      line-height: 1.7;
-    }
+    /* STATES */
+    .states-section { text-align: center; padding: 3.5rem 2rem; }
+    .states-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; max-width: 800px; margin: 1.5rem auto 0; }
+    .state-chip { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 0.25rem 0.65rem; font-size: 0.72rem; font-weight: 600; color: var(--muted); }
 
-    /* ── Footer ── */
-    footer {
-      border-top: 1px solid var(--border);
-      text-align: center;
-      padding: 2rem;
-      color: var(--dim);
-      font-size: 0.78rem;
-    }
+    /* FOOTER */
+    .footer { border-top: 1px solid var(--border); padding: 2rem; text-align: center; }
+    .footer-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+    .footer-logo { font-size: 1rem; font-weight: 900; letter-spacing: -0.03em; text-decoration: none; color: var(--white); }
+    .footer-logo em { font-style: normal; color: var(--amber); }
+    .footer-copy { font-size: 0.75rem; color: var(--dim); }
+    .footer-links { display: flex; gap: 1.25rem; }
+    .footer-link { font-size: 0.75rem; color: var(--dim); text-decoration: none; }
+    .footer-link:hover { color: var(--muted); }
 
-    /* ── Mobile ── */
-    @media (max-width: 580px) {
-      .hero { padding: 3.5rem 1.25rem 3rem; }
-      .form-wrap { padding: 1.75rem 1.25rem; }
-      .row { flex-direction: column; }
-      .section { padding: 3rem 1.25rem; }
-      .callout { padding: 2rem 1.25rem; }
-      .nav { padding: 1.25rem; }
+    @media (max-width: 768px) {
+      .tools-grid { grid-template-columns: repeat(2, 1fr); }
+      .steps { grid-template-columns: 1fr; }
+      .pricing-grid { grid-template-columns: 1fr; }
+      .stats-inner { gap: 1.5rem; }
+      .nav-links { gap: 0.5rem; }
+      .footer-inner { flex-direction: column; text-align: center; }
     }
   </style>
 </head>
 <body>
 
-  <nav class="nav">
-    <div class="logo">Build<em>Order</em><sub>.ai</sub></div>
-    <div class="pill">Coming Soon</div>
+  <!-- NAV -->
+  <nav style="border-bottom: 1px solid var(--border);">
+    <div class="nav">
+      <a href="/" class="logo">Build<em>Order</em></a>
+      <div class="nav-links">
+        <a href="#tools" class="nav-link">Tools</a>
+        <a href="#pricing" class="nav-link">Pricing</a>
+        <a href="/login.html" class="btn-signin">Sign In</a>
+        <a href="/login.html?tab=signup" class="btn-cta-sm">Get Started Free</a>
+      </div>
+    </div>
   </nav>
 
-  <!-- Hero -->
+  <!-- HERO -->
   <section class="hero">
-    <div class="eyebrow">Founding Members — 50 Spots Only</div>
-
-    <h1>Contractor documents.<br><em>Done in seconds.</em><br>Legal in every state.</h1>
-
-    <p class="subhead">BuildOrder uses AI to generate your estimates, contracts, invoices, change orders, and more — state-compliant, branded to your business, ready from any device.</p>
-
-    <div class="form-wrap" id="form-wrap">
-      <div class="form-title">Get early access</div>
-      <div class="form-desc">Be one of the first contractors to use BuildOrder when we launch.</div>
-      <div class="spots-line">Founding members get 6 months of Pro free &mdash; a $114 value</div>
-      <div class="row">
-        <input type="email" id="email" placeholder="your@email.com">
-        <button class="btn-primary" id="cta-btn" onclick="subscribe()">Claim My Spot</button>
-      </div>
-      <p class="form-note">No credit card. No spam. Just early access when we launch.</p>
-    </div>
-
-    <div id="success">
-      <div class="check">✅</div>
-      <h3>You're on the list.</h3>
-      <p>We'll reach out before launch with early access details.<br>You won't be waiting long.</p>
+    <div class="hero-badge">&#9733; 8 AI Document Tools Live Now</div>
+    <h1>Contractor documents.<br><span>Done in seconds.</span></h1>
+    <p>BuildOrder generates state-compliant estimates, contracts, invoices, change orders, lien waivers, and more &mdash; from a job description. No templates. No forms. Just your job, done.</p>
+    <div class="hero-actions">
+      <a href="/login.html?tab=signup" class="btn-hero">Start Free &mdash; No Credit Card</a>
+      <a href="#tools" class="btn-hero-ghost">See All Tools</a>
     </div>
   </section>
 
-  <hr class="divider">
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stats-inner">
+      <div class="stat-item"><div class="stat-num">8</div><div class="stat-lbl">Document Types</div></div>
+      <div class="stat-item"><div class="stat-num">52</div><div class="stat-lbl">States Covered</div></div>
+      <div class="stat-item"><div class="stat-num">&lt;30s</div><div class="stat-lbl">Time to Generate</div></div>
+      <div class="stat-item"><div class="stat-num">EN/ES</div><div class="stat-lbl">English &amp; Spanish</div></div>
+    </div>
+  </div>
 
-  <!-- Tools -->
-  <section class="section">
-    <div class="section-tag">What's included</div>
-    <h2 class="section-title">8 tools. Every document your jobs need.</h2>
-    <p class="section-sub">Set up your profile once. Everything auto-fills with your name, license number, and branding.</p>
+  <!-- TOOLS -->
+  <section class="section" id="tools">
+    <div class="section-eyebrow">The Full Suite</div>
+    <div class="section-title">Every document you need on every job</div>
+    <div class="section-sub">From first estimate to final lien waiver &mdash; BuildOrder has every document a residential contractor needs, generated by AI in seconds.</div>
 
     <div class="tools-grid">
-      <div class="tool">
-        <div class="tool-icon">📋</div>
+      <div class="tool-card">
+        <div class="tool-icon">&#128196;</div>
+        <div class="tool-name">Contract &amp; Scope of Work</div>
+        <div class="tool-desc">State-compliant contracts with all mandatory clauses, cancellation rights, and lien notices. Covers all 52 states.</div>
+        <div class="tool-tag">Live</div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-icon">&#128203;</div>
         <div class="tool-name">Estimate Generator</div>
-        <div class="tool-desc">Describe the job, enter materials and hours — get a professional line-item estimate instantly.</div>
+        <div class="tool-desc">Itemized professional estimates with labor, materials, tax, payment terms, and homeowner acceptance block.</div>
+        <div class="tool-tag">Live</div>
       </div>
-      <div class="tool">
-        <div class="tool-icon">💰</div>
+      <div class="tool-card">
+        <div class="tool-icon">&#128176;</div>
         <div class="tool-name">Invoice Generator</div>
-        <div class="tool-desc">Convert an approved estimate to an invoice in one click, or create a standalone invoice.</div>
+        <div class="tool-desc">Professional invoices showing balance due, payments received, late fee language, and accepted payment methods.</div>
+        <div class="tool-tag">Live</div>
       </div>
-      <div class="tool">
-        <div class="tool-icon">📝</div>
-        <div class="tool-name">Contract & Scope of Work</div>
-        <div class="tool-desc">AI writes a plain-English contract based on your job — payment terms, warranty, and all required clauses.</div>
-      </div>
-      <div class="tool">
-        <div class="tool-icon">🔄</div>
+      <div class="tool-card">
+        <div class="tool-icon">&#128221;</div>
         <div class="tool-name">Change Order Form</div>
-        <div class="tool-desc">Scope changed mid-job? Generate a signed change order before you continue work.</div>
+        <div class="tool-desc">Document every scope change with original price, delta, new total, and dual signature block before you start the work.</div>
+        <div class="tool-tag">Live</div>
       </div>
-      <div class="tool">
-        <div class="tool-icon">🤝</div>
+      <div class="tool-card">
+        <div class="tool-icon">&#129309;</div>
         <div class="tool-name">Subcontractor Agreement</div>
-        <div class="tool-desc">Hire a sub? Generate a simple agreement covering scope, pay rate, timeline, and liability.</div>
+        <div class="tool-desc">Binding sub agreements with scope, insurance requirements, indemnification, and independent contractor clauses.</div>
+        <div class="tool-tag">Live</div>
       </div>
-      <div class="tool">
-        <div class="tool-icon">🔒</div>
+      <div class="tool-card">
+        <div class="tool-icon">&#9875;</div>
         <div class="tool-name">Lien Waiver Generator</div>
-        <div class="tool-desc">Standard lien waiver documents — required on many jobs and at final payment.</div>
+        <div class="tool-desc">All 4 waiver types &mdash; conditional and unconditional, progress and final &mdash; with notary block ready to sign.</div>
+        <div class="tool-tag">Live</div>
       </div>
-      <div class="tool">
-        <div class="tool-icon">📦</div>
+      <div class="tool-card">
+        <div class="tool-icon">&#128296;</div>
         <div class="tool-name">Material Takeoff</div>
-        <div class="tool-desc">Enter dimensions and get a material shopping list with quantities. No more guessing at the supply house.</div>
+        <div class="tool-desc">Enter dimensions and get a complete materials list with quantities, waste factor, unit costs, and total estimate.</div>
+        <div class="tool-tag">Live</div>
       </div>
-      <div class="tool">
-        <div class="tool-icon">📷</div>
+      <div class="tool-card">
+        <div class="tool-icon">&#128247;</div>
         <div class="tool-name">Job Photo Log</div>
-        <div class="tool-desc">Upload before/after photos tied to a job — auto-generates a professional PDF photo report.</div>
+        <div class="tool-desc">Upload and organize job site photos by job with captions. Build a visual record of every project.</div>
+        <div class="tool-tag">Live</div>
       </div>
     </div>
   </section>
 
-  <hr class="divider">
+  <!-- HOW IT WORKS -->
+  <div class="hiw-bg">
+    <section class="section">
+      <div class="section-eyebrow">How It Works</div>
+      <div class="section-title">From job details to signed document in 3 steps</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-title">Set up your profile once</div>
+          <div class="step-desc">Enter your contractor info, license number, and insurance details. BuildOrder stores it and puts it on every document automatically.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-title">Describe the job</div>
+          <div class="step-desc">Enter the client info, job address, and a description of the work. For estimates and invoices, add line items or let AI generate them from your description.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-title">Copy, download, or send</div>
+          <div class="step-desc">Your AI-generated document is ready in under 30 seconds. Copy it to your clipboard, download as .txt, or paste it into an email to your client.</div>
+        </div>
+      </div>
+    </section>
+  </div>
 
-  <!-- Compliance callout -->
-  <section class="section">
-    <div class="callout">
-      <h3>Built for all 50 states — including the fine print that protects you.</h3>
-      <p>Every contract BuildOrder generates includes the <strong>mandatory clauses, license disclosures, lien notices, and cancellation rights</strong> required in your state. Miss a required clause and you could lose your lien rights — or worse. BuildOrder handles that automatically so you don't have to think about it.</p>
+  <!-- STATES -->
+  <div class="states-section">
+    <div class="section-eyebrow" style="text-align:center;">State Compliance</div>
+    <div class="section-title" style="text-align:center;font-size:1.6rem;">Built for every state &mdash; not just yours</div>
+    <p style="font-size:0.85rem;color:var(--muted);max-width:480px;margin:0.5rem auto 0;line-height:1.7;">Every contract includes that state&rsquo;s mandatory clauses, cancellation rights, lien notices, and penalty disclosures &mdash; automatically.</p>
+    <div class="states-grid">
+      <span class="state-chip">AL</span><span class="state-chip">AK</span><span class="state-chip">AZ</span><span class="state-chip">AR</span><span class="state-chip">CA</span><span class="state-chip">CO</span><span class="state-chip">CT</span><span class="state-chip">DE</span><span class="state-chip">FL</span><span class="state-chip">GA</span><span class="state-chip">HI</span><span class="state-chip">ID</span><span class="state-chip">IL</span><span class="state-chip">IN</span><span class="state-chip">IA</span><span class="state-chip">KS</span><span class="state-chip">KY</span><span class="state-chip">LA</span><span class="state-chip">ME</span><span class="state-chip">MD</span><span class="state-chip">MA</span><span class="state-chip">MI</span><span class="state-chip">MN</span><span class="state-chip">MS</span><span class="state-chip">MO</span><span class="state-chip">MT</span><span class="state-chip">NE</span><span class="state-chip">NV</span><span class="state-chip">NH</span><span class="state-chip">NJ</span><span class="state-chip">NM</span><span class="state-chip">NY</span><span class="state-chip">NC</span><span class="state-chip">ND</span><span class="state-chip">OH</span><span class="state-chip">OK</span><span class="state-chip">OR</span><span class="state-chip">PA</span><span class="state-chip">RI</span><span class="state-chip">SC</span><span class="state-chip">SD</span><span class="state-chip">TN</span><span class="state-chip">TX</span><span class="state-chip">UT</span><span class="state-chip">VT</span><span class="state-chip">VA</span><span class="state-chip">WA</span><span class="state-chip">WV</span><span class="state-chip">WI</span><span class="state-chip">WY</span><span class="state-chip">DC</span><span class="state-chip">PR</span>
     </div>
+  </div>
+
+  <!-- PRICING -->
+  <div class="hiw-bg" id="pricing">
+    <section class="section">
+      <div class="section-eyebrow">Pricing</div>
+      <div class="section-title">Simple pricing. No surprises.</div>
+      <div class="section-sub">Start free. Upgrade when you need more.</div>
+
+      <div class="pricing-grid">
+        <div class="price-card">
+          <div class="price-tier">Starter</div>
+          <div class="price-amount">$0<span>/mo</span></div>
+          <div class="price-desc">For contractors getting started</div>
+          <ul class="price-features">
+            <li>5 documents per month</li>
+            <li>All 7 document types</li>
+            <li>All 52 states</li>
+            <li>Copy &amp; download</li>
+            <li>BuildOrder branding</li>
+          </ul>
+          <a href="/login.html?tab=signup" class="btn-price btn-price-outline">Get Started Free</a>
+        </div>
+
+        <div class="price-card featured">
+          <div class="price-badge">Most Popular</div>
+          <div class="price-tier">Pro</div>
+          <div class="price-amount">$19<span>/mo</span></div>
+          <div class="price-desc">For active contractors</div>
+          <ul class="price-features">
+            <li>Unlimited documents</li>
+            <li>All 7 document types</li>
+            <li>English &amp; Spanish</li>
+            <li>Custom branding (no BuildOrder logo)</li>
+            <li>Priority AI generation</li>
+            <li>Single user</li>
+          </ul>
+          <a href="/login.html?tab=signup" class="btn-price btn-price-primary">Start Pro &mdash; $19/mo</a>
+        </div>
+
+        <div class="price-card">
+          <div class="price-tier">Business</div>
+          <div class="price-amount">$39<span>/mo</span></div>
+          <div class="price-desc">For growing operations</div>
+          <ul class="price-features">
+            <li>Everything in Pro</li>
+            <li>Up to 5 team members</li>
+            <li>Job Photo Log</li>
+            <li>Material Takeoff Calculator</li>
+            <li>Subcontractor agreements</li>
+            <li>Priority support</li>
+          </ul>
+          <a href="/login.html?tab=signup" class="btn-price btn-price-outline">Start Business</a>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- FOOTER CTA -->
+  <section style="text-align:center;padding:4rem 2rem;background:var(--bg);">
+    <div style="font-size:clamp(1.5rem,3vw,2rem);font-weight:900;letter-spacing:-0.03em;margin-bottom:0.75rem;">
+      Stop losing time to paperwork.
+    </div>
+    <p style="font-size:0.95rem;color:var(--muted);max-width:440px;margin:0 auto 2rem;line-height:1.7;">
+      Your first 5 documents are free. No credit card. No setup fees. Just sign up and start generating.
+    </p>
+    <a href="/login.html?tab=signup" class="btn-hero">Create Your Free Account</a>
   </section>
 
-  <hr class="divider">
-
-  <!-- Pricing -->
-  <section class="section">
-    <div class="section-tag">Pricing</div>
-    <h2 class="section-title">Simple, honest pricing.</h2>
-    <p class="section-sub">Start free. Upgrade when you're ready. No long-term contracts required.</p>
-
-    <div class="pricing-grid">
-      <div class="plan">
-        <div class="plan-name">Starter</div>
-        <div class="plan-price">$0</div>
-        <ul class="plan-features">
-          <li>5 estimates per month</li>
-          <li>Basic invoices</li>
-          <li>BuildOrder branding (no custom logo)</li>
-          <li>No credit card required</li>
-        </ul>
-      </div>
-
-      <div class="plan featured">
-        <div class="plan-badge">Most Popular</div>
-        <div class="plan-name">Pro</div>
-        <div class="plan-price">$19<sub>/mo</sub></div>
-        <ul class="plan-features">
-          <li>Unlimited estimates &amp; invoices</li>
-          <li>Custom logo &amp; branding</li>
-          <li>Contracts &amp; change orders</li>
-          <li>Digital signatures</li>
-          <li>Single user</li>
-        </ul>
-      </div>
-
-      <div class="plan">
-        <div class="plan-name">Business</div>
-        <div class="plan-price">$39<sub>/mo</sub></div>
-        <ul class="plan-features">
-          <li>Everything in Pro</li>
-          <li>Multiple team members</li>
-          <li>Job photo log &amp; PDF reports</li>
-          <li>Material takeoff calculator</li>
-          <li>Subcontractor agreements</li>
-          <li>Lien waivers</li>
-        </ul>
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <a href="/" class="footer-logo">Build<em>Order</em></a>
+      <div class="footer-copy">&copy; 2026 BuildOrder.ai &mdash; All rights reserved</div>
+      <div class="footer-links">
+        <a href="/login.html" class="footer-link">Sign In</a>
+        <a href="/login.html?tab=signup" class="footer-link">Sign Up</a>
       </div>
     </div>
-
-    <div class="states-bar">
-      State-compliant documents for all 50 states + DC.<br>
-      Federal TILA right-to-cancel disclosure included automatically on every contract.
-    </div>
-  </section>
-
-  <footer>
-    &copy; 2026 BuildOrder.ai &mdash; AI-powered documents for residential contractors.
   </footer>
-
-  <script>
-    async function subscribe() {
-      const emailEl = document.getElementById('email');
-      const btn = document.getElementById('cta-btn');
-      const email = emailEl.value.trim();
-
-      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        emailEl.focus();
-        emailEl.style.borderColor = '#EF4444';
-        setTimeout(() => emailEl.style.borderColor = '', 1500);
-        return;
-      }
-
-      btn.textContent = 'Sending…';
-      btn.disabled = true;
-
-      try {
-        const res = await fetch('/api/subscribe', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email })
-        });
-
-        if (res.ok) {
-          document.getElementById('form-wrap').style.display = 'none';
-          document.getElementById('success').style.display = 'block';
-        } else {
-          btn.textContent = 'Claim My Spot';
-          btn.disabled = false;
-          alert('Something went wrong. Please try again.');
-        }
-      } catch {
-        btn.textContent = 'Claim My Spot';
-        btn.disabled = false;
-        alert('Something went wrong. Please try again.');
-      }
-    }
-
-    document.getElementById('email').addEventListener('keydown', e => {
-      if (e.key === 'Enter') subscribe();
-    });
-  </script>
 
 </body>
 </html>

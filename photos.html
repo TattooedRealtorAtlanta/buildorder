@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BuildOrder.ai &mdash; Job Photo Log</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:    #090E1A;
+      --bg2:   #111827;
+      --bg3:   #1A2438;
+      --amber: #F59E0B;
+      --amber2:#FCD34D;
+      --white: #F8FAFC;
+      --muted: #94A3B8;
+      --dim:   #475569;
+      --border:rgba(255,255,255,0.07);
+      --green: #34D399;
+      --red:   #EF4444;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; }
+    .nav { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .logo { font-size: 1.2rem; font-weight: 900; letter-spacing: -0.03em; text-decoration: none; color: var(--white); }
+    .logo em { font-style: normal; color: var(--amber); }
+    .btn-back { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.9rem; font-size: 0.78rem; color: var(--dim); cursor: pointer; font-family: inherit; text-decoration: none; transition: color 0.2s, border-color 0.2s; }
+    .btn-back:hover { color: var(--white); border-color: var(--amber); }
+
+    .main { max-width: 1100px; margin: 0 auto; padding: 2rem 2rem 4rem; }
+
+    /* Header bar */
+    .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+    .page-title { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; }
+    .header-right { display: flex; align-items: center; gap: 0.75rem; }
+
+    /* Job filter */
+    select.job-filter { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 0.9rem; font-size: 0.82rem; color: var(--white); font-family: inherit; outline: none; cursor: pointer; }
+    select.job-filter option { background: var(--bg2); }
+    select.job-filter:focus { border-color: var(--amber); }
+
+    /* Upload area */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 14px;
+      padding: 2.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      margin-bottom: 2rem;
+      background: var(--bg2);
+    }
+    .upload-zone:hover, .upload-zone.drag-over { border-color: var(--amber); background: rgba(245,158,11,0.04); }
+    .upload-zone input[type=file] { display: none; }
+    .upload-icon { font-size: 2rem; margin-bottom: 0.75rem; }
+    .upload-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.35rem; }
+    .upload-sub { font-size: 0.78rem; color: var(--muted); }
+    .btn-upload { display: inline-block; margin-top: 1rem; background: var(--amber); color: #090E1A; border: none; border-radius: 8px; padding: 0.55rem 1.25rem; font-size: 0.82rem; font-weight: 800; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+    .btn-upload:hover { background: var(--amber2); }
+
+    /* Upload progress */
+    .upload-progress { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1rem; display: none; }
+    .progress-label { font-size: 0.8rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .progress-bar-track { background: var(--bg3); border-radius: 100px; height: 6px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; background: var(--amber); border-radius: 100px; transition: width 0.2s; width: 0%; }
+
+    /* Caption modal */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; display: none; align-items: center; justify-content: center; padding: 1rem; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 1.75rem; width: 100%; max-width: 440px; }
+    .modal-title { font-size: 1rem; font-weight: 800; margin-bottom: 0.35rem; }
+    .modal-sub { font-size: 0.78rem; color: var(--muted); margin-bottom: 1.25rem; }
+    .modal input, .modal select { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem 0.9rem; font-size: 0.88rem; color: var(--white); font-family: inherit; outline: none; width: 100%; margin-bottom: 0.75rem; }
+    .modal input:focus, .modal select:focus { border-color: var(--amber); }
+    .modal select option { background: var(--bg2); }
+    .modal-preview { width: 100%; height: 160px; object-fit: cover; border-radius: 8px; margin-bottom: 1rem; }
+    .modal-actions { display: flex; gap: 0.75rem; }
+    .btn-cancel { flex: 1; background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem; font-size: 0.82rem; font-weight: 700; color: var(--muted); cursor: pointer; font-family: inherit; }
+    .btn-save { flex: 1; background: var(--amber); color: #090E1A; border: none; border-radius: 8px; padding: 0.6rem; font-size: 0.82rem; font-weight: 800; cursor: pointer; font-family: inherit; }
+    .btn-save:hover { background: var(--amber2); }
+    .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Photo grid */
+    .photo-grid { columns: 4; column-gap: 1rem; }
+    .photo-item { break-inside: avoid; margin-bottom: 1rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; cursor: pointer; transition: border-color 0.2s; }
+    .photo-item:hover { border-color: rgba(245,158,11,0.4); }
+    .photo-item img { width: 100%; display: block; aspect-ratio: 4/3; object-fit: cover; }
+    .photo-meta { padding: 0.6rem 0.75rem; }
+    .photo-caption { font-size: 0.75rem; font-weight: 600; margin-bottom: 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .photo-info { display: flex; justify-content: space-between; align-items: center; }
+    .photo-date { font-size: 0.68rem; color: var(--muted); }
+    .photo-job { font-size: 0.65rem; color: var(--amber); font-weight: 700; }
+    .btn-delete-photo { background: none; border: none; color: var(--dim); cursor: pointer; font-size: 0.75rem; padding: 0; line-height: 1; transition: color 0.15s; }
+    .btn-delete-photo:hover { color: var(--red); }
+
+    /* Lightbox */
+    .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 300; display: none; align-items: center; justify-content: center; padding: 2rem; }
+    .lightbox.open { display: flex; }
+    .lightbox-inner { position: relative; max-width: 900px; width: 100%; }
+    .lightbox img { width: 100%; max-height: 80vh; object-fit: contain; border-radius: 8px; }
+    .lightbox-caption { text-align: center; margin-top: 0.75rem; font-size: 0.85rem; color: var(--muted); }
+    .lightbox-close { position: absolute; top: -2rem; right: 0; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
+
+    /* Empty state */
+    .empty { text-align: center; padding: 4rem 2rem; color: var(--muted); }
+    .empty h3 { font-size: 1rem; font-weight: 700; color: var(--white); margin-bottom: 0.5rem; }
+    .empty p { font-size: 0.82rem; }
+
+    /* Error / toast */
+    .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1.25rem; font-size: 0.85rem; font-weight: 600; color: var(--green); opacity: 0; transform: translateY(10px); transition: opacity 0.2s, transform 0.2s; pointer-events: none; z-index: 400; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.error { color: var(--red); }
+
+    @media (max-width: 900px) { .photo-grid { columns: 3; } }
+    @media (max-width: 640px) { .photo-grid { columns: 2; } }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="/dashboard.html" class="logo">Build<em>Order</em></a>
+    <a href="/dashboard.html" class="btn-back">&larr; Dashboard</a>
+  </nav>
+
+  <main class="main">
+
+    <div class="page-header">
+      <div class="page-title">&#128247; Job Photo Log</div>
+      <div class="header-right">
+        <select class="job-filter" id="job-filter" onchange="filterPhotos()">
+          <option value="">All Photos</option>
+        </select>
+        <span id="photo-count" style="font-size:0.78rem;color:var(--muted);"></span>
+      </div>
+    </div>
+
+    <!-- Upload Zone -->
+    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+      <input type="file" id="file-input" accept="image/*" multiple onchange="onFileSelect(event)">
+      <div class="upload-icon">&#128247;</div>
+      <div class="upload-title">Drop photos here or click to upload</div>
+      <div class="upload-sub">JPG, PNG, HEIC &mdash; up to 10 photos at once &mdash; 20 MB per photo</div>
+      <button class="btn-upload" onclick="event.stopPropagation(); document.getElementById('file-input').click()">Choose Photos</button>
+    </div>
+
+    <!-- Progress -->
+    <div class="upload-progress" id="upload-progress">
+      <div class="progress-label" id="progress-label">Uploading...</div>
+      <div class="progress-bar-track"><div class="progress-bar-fill" id="progress-bar"></div></div>
+    </div>
+
+    <!-- Photo Grid -->
+    <div class="photo-grid" id="photo-grid"></div>
+    <div class="empty" id="empty-state" style="display:none;">
+      <h3>No photos yet</h3>
+      <p>Drop your first job site photo above to get started.</p>
+    </div>
+
+  </main>
+
+  <!-- Caption Modal -->
+  <div class="modal-overlay" id="caption-modal">
+    <div class="modal">
+      <div class="modal-title">Add Photo Details</div>
+      <div class="modal-sub">Describe what this photo shows so you can find it later.</div>
+      <img id="modal-preview" src="" alt="Preview" class="modal-preview">
+      <input type="text" id="modal-caption" placeholder="Caption (e.g. Before demo, Rough plumbing, Final tile)">
+      <select id="modal-job">
+        <option value="">No specific job</option>
+      </select>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="cancelUpload()">Skip</button>
+        <button class="btn-save" id="modal-save" onclick="confirmUpload()">Upload Photo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <div class="lightbox-inner" onclick="event.stopPropagation()">
+      <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+      <img id="lightbox-img" src="" alt="">
+      <div class="lightbox-caption" id="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    var SUPABASE_URL = 'https://pxqwtesczfhfjwdhxiyl.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDI3MDcsImV4cCI6MjA5NTIxODcwN30.rNmcfsteMK_IdyWkGLrNA5ZOlRVHQYahDrnIWmPGCLM';
+    var db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, storageKey: 'bo-auth' } });
+
+    var currentUser = null;
+    var allPhotos = [];
+    var pendingFiles = [];
+    var pendingIndex = 0;
+
+    // Init
+    db.auth.getSession().then(function(res) {
+      if (!res.data.session) { window.location.href = '/login.html'; return; }
+      currentUser = res.data.session.user;
+      loadJobs();
+      loadPhotos();
+    });
+
+    function loadJobs() {
+      db.from('jobs').select('id, job_address, homeowner_name').order('created_at', { ascending: false }).then(function(res) {
+        var jobs = res.data || [];
+        var sel1 = document.getElementById('job-filter');
+        var sel2 = document.getElementById('modal-job');
+        jobs.forEach(function(j) {
+          var label = (j.homeowner_name || 'Job') + (j.job_address ? ' — ' + j.job_address : '');
+          var opt1 = new Option(label, j.id);
+          var opt2 = new Option(label, j.id);
+          sel1.appendChild(opt1);
+          sel2.appendChild(opt2);
+        });
+      });
+    }
+
+    function loadPhotos() {
+      db.from('job_photos').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false }).then(function(res) {
+        allPhotos = res.data || [];
+        renderPhotos(allPhotos);
+      });
+    }
+
+    function filterPhotos() {
+      var jobId = document.getElementById('job-filter').value;
+      var filtered = jobId ? allPhotos.filter(function(p) { return p.job_id === jobId; }) : allPhotos;
+      renderPhotos(filtered);
+    }
+
+    function renderPhotos(photos) {
+      var grid = document.getElementById('photo-grid');
+      var empty = document.getElementById('empty-state');
+      document.getElementById('photo-count').textContent = photos.length + ' photo' + (photos.length !== 1 ? 's' : '');
+      if (photos.length === 0) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+      empty.style.display = 'none';
+      grid.innerHTML = photos.map(function(p) {
+        var date = p.created_at ? new Date(p.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+        return '<div class="photo-item" onclick="openLightbox(\'' + p.public_url + '\', \'' + escHtml(p.caption || '') + '\')">' +
+          '<img src="' + p.public_url + '" alt="' + escHtml(p.caption || '') + '" loading="lazy">' +
+          '<div class="photo-meta">' +
+            '<div class="photo-caption">' + escHtml(p.caption || 'No caption') + '</div>' +
+            '<div class="photo-info">' +
+              '<span class="photo-date">' + date + '</span>' +
+              '<button class="btn-delete-photo" onclick="event.stopPropagation(); deletePhoto(\'' + p.id + '\', \'' + p.storage_path + '\')" title="Delete">&#128465;</button>' +
+            '</div>' +
+          '</div>' +
+          '</div>';
+      }).join('');
+    }
+
+    // Drag and drop
+    function onDragOver(e) { e.preventDefault(); document.getElementById('upload-zone').classList.add('drag-over'); }
+    function onDragLeave(e) { document.getElementById('upload-zone').classList.remove('drag-over'); }
+    function onDrop(e) {
+      e.preventDefault();
+      document.getElementById('upload-zone').classList.remove('drag-over');
+      var files = Array.from(e.dataTransfer.files).filter(function(f) { return f.type.startsWith('image/'); });
+      if (files.length) startUploadFlow(files);
+    }
+
+    function onFileSelect(e) {
+      var files = Array.from(e.target.files);
+      if (files.length) startUploadFlow(files);
+      e.target.value = '';
+    }
+
+    // Upload flow — show caption modal for each photo
+    function startUploadFlow(files) {
+      pendingFiles = files;
+      pendingIndex = 0;
+      showCaptionModal();
+    }
+
+    function showCaptionModal() {
+      if (pendingIndex >= pendingFiles.length) return;
+      var file = pendingFiles[pendingIndex];
+      var reader = new FileReader();
+      reader.onload = function(e) { document.getElementById('modal-preview').src = e.target.result; };
+      reader.readAsDataURL(file);
+      document.getElementById('modal-caption').value = '';
+      document.getElementById('caption-modal').classList.add('open');
+    }
+
+    function cancelUpload() {
+      document.getElementById('caption-modal').classList.remove('open');
+      pendingIndex++;
+      if (pendingIndex < pendingFiles.length) showCaptionModal();
+    }
+
+    function confirmUpload() {
+      var caption = document.getElementById('modal-caption').value.trim();
+      var jobId   = document.getElementById('modal-job').value || null;
+      document.getElementById('caption-modal').classList.remove('open');
+      uploadFile(pendingFiles[pendingIndex], caption, jobId, function() {
+        pendingIndex++;
+        if (pendingIndex < pendingFiles.length) {
+          showCaptionModal();
+        }
+      });
+    }
+
+    function uploadFile(file, caption, jobId, done) {
+      var ext = file.name.split('.').pop().toLowerCase() || 'jpg';
+      var path = currentUser.id + '/' + Date.now() + '-' + Math.random().toString(36).slice(2) + '.' + ext;
+
+      var progress = document.getElementById('upload-progress');
+      var bar = document.getElementById('progress-bar');
+      var label = document.getElementById('progress-label');
+      progress.style.display = 'block';
+      label.textContent = 'Uploading ' + (file.name.length > 30 ? file.name.substring(0,30) + '...' : file.name);
+      bar.style.width = '30%';
+
+      db.storage.from('job-photos').upload(path, file, { contentType: file.type, upsert: false }).then(function(uploadRes) {
+        if (uploadRes.error) {
+          progress.style.display = 'none';
+          showToast('Upload failed: ' + uploadRes.error.message, true);
+          if (done) done();
+          return;
+        }
+        bar.style.width = '70%';
+
+        var pubUrl = db.storage.from('job-photos').getPublicUrl(path).data.publicUrl;
+
+        db.from('job_photos').insert({
+          user_id:      currentUser.id,
+          job_id:       jobId,
+          storage_path: path,
+          public_url:   pubUrl,
+          caption:      caption || null
+        }).then(function(insertRes) {
+          bar.style.width = '100%';
+          setTimeout(function() { progress.style.display = 'none'; bar.style.width = '0%'; }, 500);
+
+          if (insertRes.error) {
+            showToast('Saved to storage but DB error: ' + insertRes.error.message, true);
+          } else {
+            allPhotos.unshift(insertRes.data[0]);
+            filterPhotos();
+            showToast('Photo uploaded!');
+          }
+          if (done) done();
+        });
+      });
+    }
+
+    function deletePhoto(id, storagePath) {
+      if (!confirm('Delete this photo? This cannot be undone.')) return;
+      db.storage.from('job-photos').remove([storagePath]).then(function() {
+        db.from('job_photos').delete().eq('id', id).then(function() {
+          allPhotos = allPhotos.filter(function(p) { return p.id !== id; });
+          filterPhotos();
+          showToast('Photo deleted.');
+        });
+      });
+    }
+
+    function openLightbox(url, caption) {
+      document.getElementById('lightbox-img').src = url;
+      document.getElementById('lightbox-caption').textContent = caption;
+      document.getElementById('lightbox').classList.add('open');
+    }
+    function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
+
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeLightbox(); document.getElementById('caption-modal').classList.remove('open'); } });
+
+    function showToast(msg, isErr) {
+      var t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast' + (isErr ? ' error' : '');
+      t.classList.add('show');
+      setTimeout(function() { t.classList.remove('show'); }, 3000);
+    }
+
+    function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  </script>
+</body>
+</html>
