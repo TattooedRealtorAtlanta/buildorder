@@ -20,6 +20,7 @@
       --dim:   #475569;
       --border:rgba(255,255,255,0.07);
       --green: #34D399;
+      --red:   #EF4444;
     }
     body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; }
 
@@ -39,127 +40,99 @@
     .logo em { font-style: normal; color: var(--amber); }
     .nav-right { display: flex; align-items: center; gap: 1rem; }
     .nav-name { font-size: 0.82rem; color: var(--muted); }
-    .btn-signout {
-      background: none;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 0.35rem 0.9rem;
-      font-size: 0.78rem;
-      color: var(--dim);
-      cursor: pointer;
-      font-family: inherit;
-      transition: color 0.2s, border-color 0.2s;
-    }
+    .btn-signout { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.9rem; font-size: 0.78rem; color: var(--dim); cursor: pointer; font-family: inherit; transition: color 0.2s, border-color 0.2s; }
     .btn-signout:hover { color: var(--white); border-color: var(--amber); }
 
-    .main { max-width: 1000px; margin: 0 auto; padding: 2.5rem 2rem; }
+    .main { max-width: 1000px; margin: 0 auto; padding: 2rem 2rem 4rem; }
 
     /* Stats */
-    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2.5rem; }
-    .stat {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.25rem 1.5rem;
-    }
-    .stat-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 600; margin-bottom: 0.4rem; }
-    .stat-value { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.03em; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+    .stat { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem 1.4rem; }
+    .stat-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 600; margin-bottom: 0.35rem; }
+    .stat-value { font-size: 1.7rem; font-weight: 900; letter-spacing: -0.03em; }
 
-    /* Section header */
-    .section-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 1rem;
-    }
-    .section-title { font-size: 1rem; font-weight: 800; letter-spacing: -0.01em; }
-    .btn-new {
-      background: var(--amber);
-      color: #090E1A;
+    /* Tabs */
+    .tab-bar { display: flex; gap: 0.25rem; margin-bottom: 1.5rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 0.35rem; }
+    .tab-btn {
+      flex: 1;
+      background: none;
       border: none;
       border-radius: 8px;
-      padding: 0.5rem 1.1rem;
+      padding: 0.55rem 0.5rem;
       font-size: 0.8rem;
-      font-weight: 800;
+      font-weight: 700;
+      color: var(--muted);
       cursor: pointer;
       font-family: inherit;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3rem;
-      transition: background 0.15s;
+      transition: color 0.15s, background 0.15s;
+      text-align: center;
+    }
+    .tab-btn:hover { color: var(--white); }
+    .tab-btn.active { background: var(--bg3); color: var(--white); }
+    .tab-btn .tab-count { display: inline-block; background: var(--bg3); border-radius: 100px; padding: 0.05rem 0.45rem; font-size: 0.68rem; margin-left: 0.35rem; color: var(--muted); }
+    .tab-btn.active .tab-count { background: rgba(245,158,11,0.15); color: var(--amber); }
+
+    /* Tab panels */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Panel header */
+    .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.85rem; }
+    .panel-title { font-size: 0.85rem; font-weight: 700; color: var(--muted); }
+    .btn-new {
+      background: var(--amber); color: #090E1A; border: none; border-radius: 8px;
+      padding: 0.5rem 1.1rem; font-size: 0.8rem; font-weight: 800; cursor: pointer;
+      font-family: inherit; text-decoration: none; display: inline-flex; align-items: center;
+      gap: 0.3rem; transition: background 0.15s;
     }
     .btn-new:hover { background: var(--amber2); }
 
-    /* Table headers */
-    .list-header {
-      font-size: 0.72rem;
-      font-weight: 700;
-      color: var(--dim);
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      padding: 0 1.5rem 0.6rem;
-    }
-    .jobs-cols { display: grid; grid-template-columns: 1fr 170px 110px 90px; gap: 1rem; }
-    .est-cols  { display: grid; grid-template-columns: 1fr 170px 120px 90px; gap: 1rem; }
+    /* List headers */
+    .list-header { font-size: 0.68rem; font-weight: 700; color: var(--dim); text-transform: uppercase; letter-spacing: 0.07em; padding: 0 1.4rem 0.55rem; display: grid; gap: 1rem; }
+    .jobs-cols, .job-card.jobs-cols { grid-template-columns: 1fr 160px 100px 85px; }
+    .est-cols,  .row-card.est-cols  { grid-template-columns: 1fr 140px 120px 85px; }
+    .inv-cols,  .row-card.inv-cols  { grid-template-columns: 1fr 110px 120px 85px; }
+    .co-cols,   .row-card.co-cols   { grid-template-columns: 1fr 120px 120px 85px; }
 
-    /* Cards */
-    .row-card {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.1rem 1.5rem;
-      align-items: center;
-      gap: 1rem;
-      margin-bottom: 0.6rem;
-      cursor: pointer;
-      transition: border-color 0.2s;
-      text-decoration: none;
-      color: inherit;
-      display: grid;
+    /* Row cards */
+    .row-card, .job-card {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+      padding: 1rem 1.4rem; align-items: center; gap: 1rem; margin-bottom: 0.5rem;
+      cursor: pointer; transition: border-color 0.2s; text-decoration: none; color: inherit; display: grid;
     }
-    .row-card:hover { border-color: rgba(245,158,11,0.3); }
-    .row-title { font-weight: 700; font-size: 0.88rem; margin-bottom: 0.15rem; }
-    .row-sub { font-size: 0.76rem; color: var(--muted); }
-    .row-value { font-weight: 700; font-size: 0.88rem; }
+    .row-card:hover, .job-card:hover { border-color: rgba(245,158,11,0.3); }
+    .row-title { font-weight: 700; font-size: 0.86rem; margin-bottom: 0.12rem; }
+    .row-sub { font-size: 0.74rem; color: var(--muted); }
+    .row-value { font-weight: 700; font-size: 0.86rem; }
     .row-date { font-size: 0.78rem; color: var(--muted); }
+    .row-meta { font-size: 0.82rem; font-weight: 600; }
 
-    .status-badge {
-      display: inline-block;
-      padding: 0.22rem 0.65rem;
-      border-radius: 100px;
-      font-size: 0.68rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
+    .status-badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 100px; font-size: 0.66rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
     .status-active   { background: rgba(52,211,153,0.12); color: var(--green); }
     .status-draft    { background: rgba(148,163,184,0.12); color: var(--muted); }
     .status-complete { background: rgba(245,158,11,0.12); color: var(--amber); }
     .status-sent     { background: rgba(245,158,11,0.12); color: var(--amber); }
     .status-accepted { background: rgba(52,211,153,0.12); color: var(--green); }
-
-    /* Divider between sections */
-    .section-divider { margin: 2.5rem 0; border: none; border-top: 1px solid var(--border); }
+    .status-paid     { background: rgba(52,211,153,0.12); color: var(--green); }
 
     /* Empty state */
-    .empty {
-      text-align: center;
-      padding: 3rem 2rem;
-      color: var(--muted);
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      margin-bottom: 0.6rem;
-    }
-    .empty h3 { font-size: 0.95rem; font-weight: 700; color: var(--white); margin-bottom: 0.4rem; }
+    .empty { text-align: center; padding: 3rem 2rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; color: var(--muted); }
+    .empty h3 { font-size: 0.95rem; font-weight: 700; color: var(--white); margin-bottom: 0.35rem; }
     .empty p { font-size: 0.82rem; margin-bottom: 1.25rem; }
+
+    /* Balance colors */
+    .balance-col { font-weight: 800; color: var(--green); font-size: 0.86rem; }
+    .change-pos { color: var(--green); font-weight: 700; font-size: 0.86rem; }
+    .change-neg { color: var(--red); font-weight: 700; font-size: 0.86rem; }
 
     @media (max-width: 700px) {
       .stats { grid-template-columns: repeat(2, 1fr); }
+      .tab-btn span { display: none; }
       .list-header { display: none; }
-      .jobs-cols, .est-cols { grid-template-columns: 1fr auto; }
-      .row-value, .row-date { display: none; }
+      .jobs-cols, .job-card.jobs-cols,
+      .est-cols,  .row-card.est-cols,
+      .inv-cols,  .row-card.inv-cols,
+      .co-cols,   .row-card.co-cols  { grid-template-columns: 1fr auto; }
     }
   </style>
 </head>
@@ -177,132 +150,200 @@
 
     <!-- Stats -->
     <div class="stats">
-      <div class="stat">
-        <div class="stat-label">Total Jobs</div>
-        <div class="stat-value" id="stat-jobs">&mdash;</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">Active Jobs</div>
-        <div class="stat-value" id="stat-active">&mdash;</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">Estimates</div>
-        <div class="stat-value" id="stat-estimates">&mdash;</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">Documents</div>
-        <div class="stat-value" id="stat-docs">&mdash;</div>
-      </div>
+      <div class="stat"><div class="stat-label">Jobs</div><div class="stat-value" id="stat-jobs">&mdash;</div></div>
+      <div class="stat"><div class="stat-label">Estimates</div><div class="stat-value" id="stat-est">&mdash;</div></div>
+      <div class="stat"><div class="stat-label">Invoices</div><div class="stat-value" id="stat-inv">&mdash;</div></div>
+      <div class="stat"><div class="stat-label">Change Orders</div><div class="stat-value" id="stat-co">&mdash;</div></div>
     </div>
 
-    <!-- Jobs Section -->
-    <div class="section-header">
-      <div class="section-title">&#128196; Jobs &amp; Contracts</div>
-      <a href="/new-job.html" class="btn-new">+ New Job</a>
+    <!-- Tab Bar -->
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('jobs')"><span>&#128196; Jobs &amp; Contracts</span><span class="tab-count" id="tc-jobs">0</span></button>
+      <button class="tab-btn" onclick="switchTab('estimates')"><span>&#128203; Estimates</span><span class="tab-count" id="tc-est">0</span></button>
+      <button class="tab-btn" onclick="switchTab('invoices')"><span>&#128176; Invoices</span><span class="tab-count" id="tc-inv">0</span></button>
+      <button class="tab-btn" onclick="switchTab('change-orders')"><span>&#128221; Change Orders</span><span class="tab-count" id="tc-co">0</span></button>
     </div>
-    <div class="list-header jobs-cols">
-      <div>Job</div>
-      <div>Homeowner</div>
-      <div>Value</div>
-      <div>Status</div>
-    </div>
-    <div id="jobs-list"></div>
 
-    <hr class="section-divider">
+    <!-- Jobs Tab -->
+    <div class="tab-panel active" id="tab-jobs">
+      <div class="panel-header">
+        <div class="panel-title">Jobs &amp; Contracts</div>
+        <a href="/new-job.html" class="btn-new">+ New Job</a>
+      </div>
+      <div class="list-header jobs-cols"><div>Job</div><div>Homeowner</div><div>Value</div><div>Status</div></div>
+      <div id="jobs-list"></div>
+    </div>
 
-    <!-- Estimates Section -->
-    <div class="section-header">
-      <div class="section-title">&#128203; Estimates</div>
-      <a href="/new-estimate.html" class="btn-new">+ New Estimate</a>
+    <!-- Estimates Tab -->
+    <div class="tab-panel" id="tab-estimates">
+      <div class="panel-header">
+        <div class="panel-title">Estimates</div>
+        <a href="/new-estimate.html" class="btn-new">+ New Estimate</a>
+      </div>
+      <div class="list-header est-cols"><div>Client</div><div>Work Type</div><div>Created</div><div>Status</div></div>
+      <div id="estimates-list"></div>
     </div>
-    <div class="list-header est-cols">
-      <div>Client</div>
-      <div>Work Type</div>
-      <div>Created</div>
-      <div>Status</div>
+
+    <!-- Invoices Tab -->
+    <div class="tab-panel" id="tab-invoices">
+      <div class="panel-header">
+        <div class="panel-title">Invoices</div>
+        <a href="/new-invoice.html" class="btn-new">+ New Invoice</a>
+      </div>
+      <div class="list-header inv-cols"><div>Client</div><div>Balance Due</div><div>Created</div><div>Status</div></div>
+      <div id="invoices-list"></div>
     </div>
-    <div id="estimates-list"></div>
+
+    <!-- Change Orders Tab -->
+    <div class="tab-panel" id="tab-change-orders">
+      <div class="panel-header">
+        <div class="panel-title">Change Orders</div>
+        <a href="/new-change-order.html" class="btn-new">+ New Change Order</a>
+      </div>
+      <div class="list-header co-cols"><div>Client</div><div>Change Amount</div><div>New Total</div><div>Status</div></div>
+      <div id="co-list"></div>
+    </div>
 
   </main>
 
   <script>
-    const SUPABASE_URL = 'https://pxqwtesczfhfjwdhxiyl.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDI3MDcsImV4cCI6MjA5NTIxODcwN30.rNmcfsteMK_IdyWkGLrNA5ZOlRVHQYahDrnIWmPGCLM';
-    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, storageKey: 'bo-auth' } });
+    var SUPABASE_URL = 'https://pxqwtesczfhfjwdhxiyl.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDI3MDcsImV4cCI6MjA5NTIxODcwN30.rNmcfsteMK_IdyWkGLrNA5ZOlRVHQYahDrnIWmPGCLM';
+    var db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, storageKey: 'bo-auth' } });
+
+    var currentTab = 'jobs';
+
+    function switchTab(name) {
+      currentTab = name;
+      var panels = document.querySelectorAll('.tab-panel');
+      var btns   = document.querySelectorAll('.tab-btn');
+      for (var i = 0; i < panels.length; i++) panels[i].classList.remove('active');
+      for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
+      document.getElementById('tab-' + name).classList.add('active');
+      btns[['jobs','estimates','invoices','change-orders'].indexOf(name)].classList.add('active');
+    }
 
     function fmtDate(str) {
       if (!str) return '&mdash;';
       return new Date(str).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     }
+    function fmt(n) { return '$' + Number(n || 0).toFixed(2); }
+    function fmtChange(n) {
+      n = Number(n || 0);
+      if (n > 0) return '+' + fmt(n);
+      if (n < 0) return '-$' + Math.abs(n).toFixed(2);
+      return '$0.00';
+    }
+
+    function truncate(str, len) {
+      if (!str) return '';
+      return str.length > len ? str.substring(0, len) + '&hellip;' : str;
+    }
 
     async function init() {
-      const { data: { session } } = await db.auth.getSession();
-      if (!session) { window.location.href = '/login.html'; return; }
+      var sessionRes = await db.auth.getSession();
+      if (!sessionRes.data.session) { window.location.href = '/login.html'; return; }
 
-      const { data: profile } = await db.from('contractor_profiles').select('*').single();
+      var profileRes = await db.from('contractor_profiles').select('*').single();
+      var profile = profileRes.data;
       if (!profile || !profile.onboarding_complete) { window.location.href = '/onboarding.html'; return; }
-
       document.getElementById('nav-name').textContent = profile.business_name || profile.contractor_name;
 
-      const [jobsRes, estRes, docRes] = await Promise.all([
+      var [jobsRes, estRes, invRes, coRes] = await Promise.all([
         db.from('jobs').select('*').order('created_at', { ascending: false }),
         db.from('estimates').select('*').order('created_at', { ascending: false }),
-        db.from('documents').select('*', { count: 'exact', head: true })
+        db.from('invoices').select('*').order('created_at', { ascending: false }),
+        db.from('change_orders').select('*').order('created_at', { ascending: false })
       ]);
 
-      const jobs = jobsRes.data || [];
-      const estimates = estRes.data || [];
-      const docCount = docRes.count || 0;
+      var jobs = jobsRes.data || [];
+      var estimates = estRes.data || [];
+      var invoices = invRes.data || [];
+      var cos = coRes.data || [];
 
+      // Stats
       document.getElementById('stat-jobs').textContent = jobs.length;
-      document.getElementById('stat-active').textContent = jobs.filter(function(j) { return j.status === 'active'; }).length;
-      document.getElementById('stat-estimates').textContent = estimates.length;
-      document.getElementById('stat-docs').textContent = docCount;
+      document.getElementById('stat-est').textContent  = estimates.length;
+      document.getElementById('stat-inv').textContent  = invoices.length;
+      document.getElementById('stat-co').textContent   = cos.length;
 
-      // Render jobs
+      // Tab counts
+      document.getElementById('tc-jobs').textContent = jobs.length;
+      document.getElementById('tc-est').textContent  = estimates.length;
+      document.getElementById('tc-inv').textContent  = invoices.length;
+      document.getElementById('tc-co').textContent   = cos.length;
+
+      // --- Jobs ---
       var jobsList = document.getElementById('jobs-list');
       if (jobs.length === 0) {
-        jobsList.innerHTML =
-          '<div class="empty">' +
-          '<h3>No jobs yet</h3>' +
-          '<p>Create your first job to generate a state-compliant contract.</p>' +
-          '<a href="/new-job.html" class="btn-new">+ Create First Job</a>' +
-          '</div>';
+        jobsList.innerHTML = '<div class="empty"><h3>No jobs yet</h3><p>Create your first job to generate a state-compliant contract.</p><a href="/new-job.html" class="btn-new">+ Create First Job</a></div>';
       } else {
-        jobsList.innerHTML = jobs.map(function(job) {
-          var sc = { active: 'status-active', draft: 'status-draft', complete: 'status-complete' }[job.status] || 'status-draft';
-          var price = job.contract_price ? '$' + Number(job.contract_price).toLocaleString() : '&mdash;';
-          var city = [job.job_city, job.job_state].filter(Boolean).join(', ');
-          var addr = (job.job_address || 'No address') + (city ? ', ' + city : '');
-          var desc = job.project_description ? job.project_description.substring(0, 45) + (job.project_description.length > 45 ? '&hellip;' : '') : 'No description';
-          return '<a href="/job.html?id=' + job.id + '" class="row-card jobs-cols">' +
+        jobsList.innerHTML = jobs.map(function(j) {
+          var sc = { active: 'status-active', draft: 'status-draft', complete: 'status-complete' }[j.status] || 'status-draft';
+          var city = [j.job_city, j.job_state].filter(Boolean).join(', ');
+          var addr = (j.job_address || 'No address') + (city ? ', ' + city : '');
+          var desc = truncate(j.project_description, 42);
+          var price = j.contract_price ? '$' + Number(j.contract_price).toLocaleString() : '&mdash;';
+          return '<a href="/job.html?id=' + j.id + '" class="job-card jobs-cols">' +
             '<div><div class="row-title">' + addr + '</div><div class="row-sub">' + desc + '</div></div>' +
-            '<div><div class="row-title" style="font-size:0.83rem;">' + (job.homeowner_name || '&mdash;') + '</div><div class="row-date">' + (job.work_type || '') + '</div></div>' +
+            '<div class="row-meta">' + (j.homeowner_name || '&mdash;') + '</div>' +
             '<div class="row-value">' + price + '</div>' +
-            '<div><span class="status-badge ' + sc + '">' + job.status + '</span></div>' +
+            '<div><span class="status-badge ' + sc + '">' + j.status + '</span></div>' +
             '</a>';
         }).join('');
       }
 
-      // Render estimates
+      // --- Estimates ---
       var estList = document.getElementById('estimates-list');
       if (estimates.length === 0) {
-        estList.innerHTML =
-          '<div class="empty">' +
-          '<h3>No estimates yet</h3>' +
-          '<p>Generate a professional itemized estimate for any job in seconds.</p>' +
-          '<a href="/new-estimate.html" class="btn-new">+ Create First Estimate</a>' +
-          '</div>';
+        estList.innerHTML = '<div class="empty"><h3>No estimates yet</h3><p>Generate a professional itemized estimate in seconds.</p><a href="/new-estimate.html" class="btn-new">+ Create First Estimate</a></div>';
       } else {
-        estList.innerHTML = estimates.map(function(est) {
-          var sc = { draft: 'status-draft', sent: 'status-sent', accepted: 'status-accepted' }[est.status] || 'status-draft';
-          var location = [est.job_city, est.job_state].filter(Boolean).join(', ') || '';
-          var sub = [est.work_type, location].filter(Boolean).join(' &middot; ') || 'No details';
-          return '<a href="/estimate.html?id=' + est.id + '" class="row-card est-cols">' +
-            '<div><div class="row-title">' + (est.homeowner_name || 'No client') + '</div><div class="row-sub">' + sub + '</div></div>' +
-            '<div class="row-date" style="font-size:0.83rem;font-weight:600;">' + (est.work_type || '&mdash;') + '</div>' +
-            '<div class="row-date">' + fmtDate(est.created_at) + '</div>' +
-            '<div><span class="status-badge ' + sc + '">' + est.status + '</span></div>' +
+        estList.innerHTML = estimates.map(function(e) {
+          var sc = { draft: 'status-draft', sent: 'status-sent', accepted: 'status-accepted' }[e.status] || 'status-draft';
+          return '<a href="/estimate.html?id=' + e.id + '" class="row-card est-cols">' +
+            '<div><div class="row-title">' + (e.homeowner_name || 'No client') + '</div><div class="row-sub">' + [e.job_city, e.job_state].filter(Boolean).join(', ') + '</div></div>' +
+            '<div class="row-meta">' + (e.work_type || '&mdash;') + '</div>' +
+            '<div class="row-date">' + fmtDate(e.created_at) + '</div>' +
+            '<div><span class="status-badge ' + sc + '">' + e.status + '</span></div>' +
+            '</a>';
+        }).join('');
+      }
+
+      // --- Invoices ---
+      var invList = document.getElementById('invoices-list');
+      if (invoices.length === 0) {
+        invList.innerHTML = '<div class="empty"><h3>No invoices yet</h3><p>Generate a professional invoice with payment terms and late fee language.</p><a href="/new-invoice.html" class="btn-new">+ Create First Invoice</a></div>';
+      } else {
+        invList.innerHTML = invoices.map(function(inv) {
+          var sc = { draft: 'status-draft', sent: 'status-sent', paid: 'status-paid' }[inv.status] || 'status-draft';
+          var bal = inv.status === 'paid' ? '<span style="color:var(--green);font-weight:800;">PAID</span>' : '<span class="balance-col">' + fmt(inv.balance_due) + '</span>';
+          return '<a href="/invoice.html?id=' + inv.id + '" class="row-card inv-cols">' +
+            '<div><div class="row-title">' + (inv.homeowner_name || 'No client') + '</div><div class="row-sub">' + (inv.work_type || '') + '</div></div>' +
+            '<div>' + bal + '</div>' +
+            '<div class="row-date">' + fmtDate(inv.created_at) + '</div>' +
+            '<div><span class="status-badge ' + sc + '">' + inv.status + '</span></div>' +
+            '</a>';
+        }).join('');
+      }
+
+      // --- Change Orders ---
+      var coList = document.getElementById('co-list');
+      if (cos.length === 0) {
+        coList.innerHTML = '<div class="empty"><h3>No change orders yet</h3><p>Document scope changes in writing before additional work begins.</p><a href="/new-change-order.html" class="btn-new">+ Create First Change Order</a></div>';
+      } else {
+        coList.innerHTML = cos.map(function(co) {
+          var sc = { draft: 'status-draft', sent: 'status-sent', accepted: 'status-accepted' }[co.status] || 'status-draft';
+          var chg = Number(co.change_amount || 0);
+          var chgHtml = chg > 0
+            ? '<span class="change-pos">+' + fmt(chg) + '</span>'
+            : chg < 0
+              ? '<span class="change-neg">-$' + Math.abs(chg).toFixed(2) + '</span>'
+              : '<span class="row-date">$0.00</span>';
+          return '<a href="/change-order.html?id=' + co.id + '" class="row-card co-cols">' +
+            '<div><div class="row-title">' + (co.homeowner_name || 'No client') + '</div><div class="row-sub">' + (co.work_type || '') + '</div></div>' +
+            '<div>' + chgHtml + '</div>' +
+            '<div class="row-value">' + fmt(co.new_total) + '</div>' +
+            '<div><span class="status-badge ' + sc + '">' + co.status + '</span></div>' +
             '</a>';
         }).join('');
       }

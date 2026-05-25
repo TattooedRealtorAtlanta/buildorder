@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BuildOrder.ai &mdash; New Change Order</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:    #090E1A;
+      --bg2:   #111827;
+      --bg3:   #1A2438;
+      --amber: #F59E0B;
+      --amber2:#FCD34D;
+      --white: #F8FAFC;
+      --muted: #94A3B8;
+      --dim:   #475569;
+      --border:rgba(255,255,255,0.07);
+      --red:   #EF4444;
+      --green: #34D399;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; }
+    .nav { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+    .logo { font-size: 1.2rem; font-weight: 900; letter-spacing: -0.03em; text-decoration: none; color: var(--white); }
+    .logo em { font-style: normal; color: var(--amber); }
+    .btn-back { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.9rem; font-size: 0.78rem; color: var(--dim); cursor: pointer; font-family: inherit; text-decoration: none; transition: color 0.2s, border-color 0.2s; }
+    .btn-back:hover { color: var(--white); border-color: var(--amber); }
+
+    .main { max-width: 720px; margin: 0 auto; padding: 2.5rem 2rem 4rem; }
+    .page-title { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.4rem; }
+    .page-sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 2rem; }
+
+    .form-section { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.25rem; }
+    .form-section-title { font-size: 0.72rem; font-weight: 700; color: var(--dim); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 1.25rem; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .form-group.full { grid-column: 1 / -1; }
+    label { font-size: 0.78rem; font-weight: 600; color: var(--muted); }
+    input, select, textarea {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.6rem 0.9rem;
+      font-size: 0.88rem;
+      color: var(--white);
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--amber); }
+    select option { background: var(--bg2); }
+    textarea { resize: vertical; min-height: 100px; }
+
+    /* Change preview */
+    .change-preview { background: var(--bg3); border-radius: 8px; padding: 1rem 1.25rem; margin-top: 1rem; }
+    .cp-row { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.4rem; }
+    .cp-label { color: var(--muted); }
+    .cp-new { font-weight: 900; font-size: 1rem; color: var(--amber); border-top: 1px solid var(--border); padding-top: 0.6rem; margin-top: 0.4rem; }
+    .change-positive { color: var(--green); font-weight: 700; }
+    .change-negative { color: var(--red); font-weight: 700; }
+    .change-zero { color: var(--muted); }
+
+    .btn-submit {
+      background: var(--amber);
+      color: #090E1A;
+      border: none;
+      border-radius: 10px;
+      padding: 0.9rem 2rem;
+      font-size: 0.95rem;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: inherit;
+      width: 100%;
+      margin-top: 1.5rem;
+      transition: background 0.15s;
+    }
+    .btn-submit:hover { background: var(--amber2); }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    .error-msg { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.85rem; color: var(--red); margin-top: 1rem; display: none; }
+
+    .hint { font-size: 0.75rem; color: var(--dim); margin-top: 0.2rem; }
+
+    @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="/dashboard.html" class="logo">Build<em>Order</em></a>
+    <a href="/dashboard.html" class="btn-back">&larr; Dashboard</a>
+  </nav>
+
+  <main class="main">
+    <div class="page-title">New Change Order</div>
+    <div class="page-sub">Document a scope change in writing. Both parties must sign before additional work begins.</div>
+
+    <!-- Client Info -->
+    <div class="form-section">
+      <div class="form-section-title">Client &amp; Job Information</div>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Client Name *</label>
+          <input type="text" id="homeowner_name" placeholder="Jane Smith">
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="tel" id="homeowner_phone" placeholder="(555) 555-5555">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="homeowner_email" placeholder="jane@email.com">
+        </div>
+        <div class="form-group full">
+          <label>Job Address</label>
+          <input type="text" id="job_address" placeholder="123 Main St">
+        </div>
+        <div class="form-group">
+          <label>City</label>
+          <input type="text" id="job_city" placeholder="Atlanta">
+        </div>
+        <div class="form-group">
+          <label>State</label>
+          <input type="text" id="job_state" placeholder="GA" maxlength="2">
+        </div>
+        <div class="form-group">
+          <label>Work Type</label>
+          <input type="text" id="work_type" placeholder="Kitchen Remodel">
+        </div>
+      </div>
+    </div>
+
+    <!-- Original Contract -->
+    <div class="form-section">
+      <div class="form-section-title">Original Contract</div>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Original Scope of Work</label>
+          <textarea id="original_scope" placeholder="Brief description of what the original contract covered..."></textarea>
+        </div>
+        <div class="form-group full">
+          <label>Original Contract Price ($) *</label>
+          <input type="number" id="original_contract_price" placeholder="0.00" min="0" step="0.01" oninput="recalc()">
+        </div>
+      </div>
+    </div>
+
+    <!-- Change Details -->
+    <div class="form-section">
+      <div class="form-section-title">Change Details</div>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Description of Change *</label>
+          <textarea id="change_description" placeholder="Describe what is being added, removed, or modified..."></textarea>
+        </div>
+        <div class="form-group full">
+          <label>Reason for Change</label>
+          <input type="text" id="reason" placeholder="Owner-requested addition, unforeseen condition, design change...">
+        </div>
+        <div class="form-group">
+          <label>Price Change ($)</label>
+          <input type="number" id="change_amount" placeholder="0.00" step="0.01" oninput="recalc()">
+          <div class="hint">Use a negative number to decrease the contract price.</div>
+        </div>
+        <div class="form-group">
+          <label>Additional Days to Complete</label>
+          <input type="number" id="additional_days" placeholder="0" step="1" value="0">
+          <div class="hint">Use 0 for no change, negative to reduce timeline.</div>
+        </div>
+
+        <div class="change-preview full" id="change-preview">
+          <div class="cp-row"><span class="cp-label">Original Contract</span><span id="cp-orig">$0.00</span></div>
+          <div class="cp-row"><span class="cp-label">Change Amount</span><span id="cp-change" class="change-zero">$0.00</span></div>
+          <div class="cp-row cp-new"><span>New Contract Total</span><span id="cp-new-total" style="color:var(--amber);">$0.00</span></div>
+        </div>
+
+        <div class="form-group full">
+          <label>Notes (optional)</label>
+          <textarea id="notes" placeholder="Any additional context or special conditions..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="error-msg" id="error-msg"></div>
+    <button class="btn-submit" id="submit-btn" onclick="createChangeOrder()">&#9733; Generate Change Order</button>
+  </main>
+
+  <script>
+    var SUPABASE_URL = 'https://pxqwtesczfhfjwdhxiyl.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDI3MDcsImV4cCI6MjA5NTIxODcwN30.rNmcfsteMK_IdyWkGLrNA5ZOlRVHQYahDrnIWmPGCLM';
+    var db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, storageKey: 'bo-auth' } });
+
+    db.auth.getSession().then(function(res) {
+      if (!res.data.session) { window.location.href = '/login.html'; return; }
+    });
+
+    function recalc() {
+      var orig   = parseFloat(document.getElementById('original_contract_price').value) || 0;
+      var change = parseFloat(document.getElementById('change_amount').value) || 0;
+      var newTot = orig + change;
+
+      document.getElementById('cp-orig').textContent = '$' + orig.toFixed(2);
+
+      var changeEl = document.getElementById('cp-change');
+      if (change > 0) {
+        changeEl.textContent = '+$' + change.toFixed(2);
+        changeEl.className = 'change-positive';
+      } else if (change < 0) {
+        changeEl.textContent = '-$' + Math.abs(change).toFixed(2);
+        changeEl.className = 'change-negative';
+      } else {
+        changeEl.textContent = '$0.00';
+        changeEl.className = 'change-zero';
+      }
+
+      document.getElementById('cp-new-total').textContent = '$' + newTot.toFixed(2);
+    }
+
+    function showError(msg) {
+      var el = document.getElementById('error-msg');
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    function createChangeOrder() {
+      var name = document.getElementById('homeowner_name').value.trim();
+      var desc = document.getElementById('change_description').value.trim();
+      var origPrice = parseFloat(document.getElementById('original_contract_price').value);
+
+      if (!name) { showError('Client name is required.'); return; }
+      if (!desc) { showError('Description of change is required.'); return; }
+      if (isNaN(origPrice)) { showError('Original contract price is required.'); return; }
+
+      var changeAmt = parseFloat(document.getElementById('change_amount').value) || 0;
+      var newTotal  = origPrice + changeAmt;
+
+      var data = {
+        homeowner_name:           name,
+        homeowner_phone:          document.getElementById('homeowner_phone').value.trim() || null,
+        homeowner_email:          document.getElementById('homeowner_email').value.trim() || null,
+        job_address:              document.getElementById('job_address').value.trim() || null,
+        job_city:                 document.getElementById('job_city').value.trim() || null,
+        job_state:                document.getElementById('job_state').value.trim().toUpperCase() || null,
+        work_type:                document.getElementById('work_type').value.trim() || null,
+        original_scope:           document.getElementById('original_scope').value.trim() || null,
+        original_contract_price:  origPrice,
+        change_description:       desc,
+        reason:                   document.getElementById('reason').value.trim() || null,
+        change_amount:            changeAmt,
+        new_total:                newTotal,
+        additional_days:          parseInt(document.getElementById('additional_days').value) || 0,
+        notes:                    document.getElementById('notes').value.trim() || null,
+        status:                   'draft'
+      };
+
+      document.getElementById('error-msg').style.display = 'none';
+      var btn = document.getElementById('submit-btn');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      db.auth.getUser().then(function(userRes) {
+        if (!userRes.data.user) { window.location.href = '/login.html'; return; }
+        data.user_id = userRes.data.user.id;
+        db.from('change_orders').insert(data).select().single().then(function(res) {
+          if (res.error) { showError('Error saving change order: ' + res.error.message); btn.disabled = false; btn.textContent = 'Generate Change Order'; return; }
+          window.location.href = '/change-order.html?id=' + res.data.id + '&generate=true';
+        });
+      });
+    }
+  </script>
+</body>
+</html>
