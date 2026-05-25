@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BuildOrder.ai &mdash; Estimate</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:    #090E1A;
+      --bg2:   #111827;
+      --bg3:   #1A2438;
+      --amber: #F59E0B;
+      --amber2:#FCD34D;
+      --white: #F8FAFC;
+      --muted: #94A3B8;
+      --dim:   #475569;
+      --border:rgba(255,255,255,0.07);
+      --green: #34D399;
+      --red:   #EF4444;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; }
+    .nav { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+    .logo { font-size: 1.2rem; font-weight: 900; letter-spacing: -0.03em; text-decoration: none; color: var(--white); }
+    .logo em { font-style: normal; color: var(--amber); }
+    .btn-back { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.9rem; font-size: 0.78rem; color: var(--dim); cursor: pointer; font-family: inherit; text-decoration: none; transition: color 0.2s, border-color 0.2s; }
+    .btn-back:hover { color: var(--white); border-color: var(--amber); }
+
+    .main { max-width: 900px; margin: 0 auto; padding: 2.5rem 2rem; }
+
+    .est-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 2rem; gap: 1rem; }
+    .est-title { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.3rem; }
+    .est-meta { font-size: 0.82rem; color: var(--muted); }
+    .status-badge { display: inline-block; padding: 0.25rem 0.7rem; border-radius: 100px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+    .status-draft { background: rgba(148,163,184,0.12); color: var(--muted); }
+    .status-sent { background: rgba(245,158,11,0.12); color: var(--amber); }
+    .status-accepted { background: rgba(52,211,153,0.12); color: var(--green); }
+
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
+    .info-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem 1.5rem; }
+    .info-card-title { font-size: 0.72rem; font-weight: 700; color: var(--dim); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.75rem; }
+    .info-row { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.4rem; }
+    .info-label { color: var(--muted); }
+    .info-value { font-weight: 600; text-align: right; max-width: 60%; }
+
+    .estimate-section { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .estimate-header { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); }
+    .estimate-title { font-size: 0.95rem; font-weight: 700; }
+    .estimate-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .btn-action { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.45rem 1rem; font-size: 0.78rem; font-weight: 600; color: var(--muted); cursor: pointer; font-family: inherit; transition: color 0.2s, border-color 0.2s; }
+    .btn-action:hover { color: var(--white); border-color: var(--amber); }
+    .btn-generate { background: var(--amber); color: #090E1A; border: none; border-radius: 8px; padding: 0.45rem 1.2rem; font-size: 0.82rem; font-weight: 800; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+    .btn-generate:hover { background: var(--amber2); }
+    .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .generating { padding: 4rem 2rem; text-align: center; color: var(--muted); }
+    .generating-spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--amber); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1.5rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .generating h3 { font-size: 1rem; font-weight: 700; color: var(--white); margin-bottom: 0.5rem; }
+    .generating p { font-size: 0.85rem; }
+
+    .estimate-body { padding: 2rem; }
+    .estimate-text { font-family: 'Courier New', Courier, monospace; font-size: 0.8rem; line-height: 1.75; color: #CBD5E1; white-space: pre-wrap; word-break: break-word; }
+
+    .no-estimate { padding: 3rem 2rem; text-align: center; color: var(--muted); }
+    .no-estimate h3 { font-size: 1rem; font-weight: 700; color: var(--white); margin-bottom: 0.5rem; }
+    .no-estimate p { font-size: 0.85rem; margin-bottom: 1.5rem; }
+
+    .error-msg { padding: 1rem 1.5rem; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; color: var(--red); font-size: 0.85rem; margin: 1rem 1.5rem; }
+
+    .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1.25rem; font-size: 0.85rem; font-weight: 600; color: var(--green); opacity: 0; transform: translateY(10px); transition: opacity 0.2s, transform 0.2s; pointer-events: none; z-index: 100; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 640px) {
+      .info-grid { grid-template-columns: 1fr; }
+      .est-header { flex-direction: column; }
+      .estimate-actions { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="/dashboard.html" class="logo">Build<em>Order</em></a>
+    <a href="/dashboard.html" class="btn-back">&larr; Dashboard</a>
+  </nav>
+
+  <main class="main">
+    <div id="page-content"></div>
+  </main>
+
+  <div class="toast" id="toast">Copied to clipboard!</div>
+
+  <script>
+    var SUPABASE_URL = 'https://pxqwtesczfhfjwdhxiyl.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDI3MDcsImV4cCI6MjA5NTIxODcwN30.rNmcfsteMK_IdyWkGLrNA5ZOlRVHQYahDrnIWmPGCLM';
+    var db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, storageKey: 'bo-auth' } });
+
+    var params = new URLSearchParams(window.location.search);
+    var estimateId = params.get('id');
+    var autoGenerate = params.get('generate') === 'true';
+    var currentEstimate = null;
+
+    db.auth.getSession().then(function(res) {
+      if (!res.data.session) { window.location.href = '/login.html'; return; }
+      if (!estimateId) { window.location.href = '/dashboard.html'; return; }
+      loadEstimate();
+    });
+
+    function loadEstimate() {
+      db.from('estimates').select('*').eq('id', estimateId).single().then(function(res) {
+        if (res.error || !res.data) {
+          document.getElementById('page-content').innerHTML =
+            '<div style="text-align:center;padding:4rem 2rem;color:var(--muted);">' +
+            '<div style="font-size:2rem;margin-bottom:1rem;">&#9888;&#65039;</div>' +
+            '<h3 style="color:var(--white);margin-bottom:0.5rem;">Estimate not found</h3>' +
+            '<a href="/dashboard.html" style="display:inline-block;margin-top:1.5rem;color:var(--amber);text-decoration:none;font-weight:700;">&larr; Back to Dashboard</a>' +
+            '</div>';
+          return;
+        }
+        currentEstimate = res.data;
+        renderPage();
+        if (autoGenerate && !currentEstimate.content) {
+          generateEstimate();
+        }
+      });
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '&mdash;';
+      return new Date(dateStr).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    }
+
+    function renderPage() {
+      var est = currentEstimate;
+      var statusClass = { draft: 'status-draft', sent: 'status-sent', accepted: 'status-accepted' }[est.status] || 'status-draft';
+      var location = [est.job_city, est.job_state].filter(Boolean).join(', ') || 'No location';
+
+      document.getElementById('page-content').innerHTML =
+        '<div class="est-header">' +
+          '<div>' +
+            '<div class="est-title">' + (est.homeowner_name || 'No client') + '</div>' +
+            '<div class="est-meta">' + (est.work_type || 'Estimate') + ' &middot; ' + location + ' &middot; Created ' + formatDate(est.created_at) + '</div>' +
+          '</div>' +
+          '<span class="status-badge ' + statusClass + '">' + est.status + '</span>' +
+        '</div>' +
+
+        '<div class="info-grid">' +
+          '<div class="info-card">' +
+            '<div class="info-card-title">Client</div>' +
+            '<div class="info-row"><span class="info-label">Name</span><span class="info-value">' + (est.homeowner_name || '&mdash;') + '</span></div>' +
+            '<div class="info-row"><span class="info-label">Phone</span><span class="info-value">' + (est.homeowner_phone || '&mdash;') + '</span></div>' +
+            '<div class="info-row"><span class="info-label">Email</span><span class="info-value">' + (est.homeowner_email || '&mdash;') + '</span></div>' +
+            '<div class="info-row"><span class="info-label">Address</span><span class="info-value">' + (est.job_address || '&mdash;') + '</span></div>' +
+          '</div>' +
+          '<div class="info-card">' +
+            '<div class="info-card-title">Estimate Details</div>' +
+            '<div class="info-row"><span class="info-label">Work Type</span><span class="info-value">' + (est.work_type || '&mdash;') + '</span></div>' +
+            '<div class="info-row"><span class="info-label">Tax Rate</span><span class="info-value">' + (est.tax_rate || 0) + '%</span></div>' +
+            '<div class="info-row"><span class="info-label">Valid For</span><span class="info-value">' + (est.valid_days || 30) + ' days</span></div>' +
+            '<div class="info-row"><span class="info-label">Created</span><span class="info-value">' + formatDate(est.created_at) + '</span></div>' +
+          '</div>' +
+        '</div>' +
+
+        '<div class="estimate-section">' +
+          '<div class="estimate-header">' +
+            '<div class="estimate-title">&#128196; Estimate</div>' +
+            '<div class="estimate-actions" id="estimate-actions">' +
+              (est.content
+                ? '<button class="btn-action" onclick="copyEstimate()">Copy</button>' +
+                  '<button class="btn-action" onclick="downloadEstimate()">Download .txt</button>' +
+                  '<button class="btn-generate" onclick="generateEstimate()">Regenerate</button>'
+                : '<button class="btn-generate" onclick="generateEstimate()">&#10022; Generate Estimate</button>') +
+            '</div>' +
+          '</div>' +
+          '<div id="estimate-body">' +
+            (est.content
+              ? '<div class="estimate-body"><pre class="estimate-text">' + escapeHtml(est.content) + '</pre></div>'
+              : '<div class="no-estimate"><h3>No estimate generated yet</h3><p>Click Generate Estimate to create a professional, itemized estimate.</p></div>') +
+          '</div>' +
+        '</div>';
+    }
+
+    function generateEstimate() {
+      document.getElementById('estimate-body').innerHTML =
+        '<div class="generating">' +
+          '<div class="generating-spinner"></div>' +
+          '<h3>Generating your estimate&hellip;</h3>' +
+          '<p>BuildOrder is creating an itemized estimate for ' + (currentEstimate.homeowner_name || 'your client') + '. About 15 seconds.</p>' +
+        '</div>';
+
+      var actions = document.getElementById('estimate-actions');
+      if (actions) actions.innerHTML = '<button class="btn-generate" disabled>Generating&hellip;</button>';
+
+      fetch('/api/generate-estimate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ estimate_id: estimateId })
+      }).then(function(res) {
+        return res.json().then(function(data) { return { ok: res.ok, data: data }; });
+      }).then(function(result) {
+        if (!result.ok || !result.data.success) {
+          showError(result.data.error || 'Estimate generation failed. Please try again.');
+          return;
+        }
+        currentEstimate.content = result.data.content;
+        currentEstimate.status = 'sent';
+        window.history.replaceState({}, '', '/estimate.html?id=' + estimateId);
+        renderPage();
+      }).catch(function(err) {
+        showError('Network error &mdash; please check your connection and try again.');
+      });
+    }
+
+    function showError(msg) {
+      document.getElementById('estimate-body').innerHTML =
+        '<div class="error-msg">&#9888; ' + msg + '</div>' +
+        '<div class="no-estimate"><p>Something went wrong.</p>' +
+        '<button class="btn-generate" onclick="generateEstimate()">Try Again</button></div>';
+      var actions = document.getElementById('estimate-actions');
+      if (actions) actions.innerHTML = '<button class="btn-generate" onclick="generateEstimate()">&#10022; Generate Estimate</button>';
+    }
+
+    function copyEstimate() {
+      if (!currentEstimate || !currentEstimate.content) return;
+      navigator.clipboard.writeText(currentEstimate.content).then(function() {
+        var toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(function() { toast.classList.remove('show'); }, 2500);
+      });
+    }
+
+    function downloadEstimate() {
+      if (!currentEstimate || !currentEstimate.content) return;
+      var filename = 'estimate-' + (currentEstimate.homeowner_name || 'client').replace(/\s+/g, '-').toLowerCase() + '.txt';
+      var blob = new Blob([currentEstimate.content], { type: 'text/plain' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+  </script>
+</body>
+</html>

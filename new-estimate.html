@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BuildOrder.ai &mdash; New Estimate</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:    #090E1A;
+      --bg2:   #111827;
+      --bg3:   #1A2438;
+      --amber: #F59E0B;
+      --amber2:#FCD34D;
+      --white: #F8FAFC;
+      --muted: #94A3B8;
+      --dim:   #475569;
+      --border:rgba(255,255,255,0.07);
+      --red:   #EF4444;
+      --green: #34D399;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; }
+    .nav { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-size: 1.2rem; font-weight: 900; letter-spacing: -0.03em; text-decoration: none; color: var(--white); }
+    .logo em { font-style: normal; color: var(--amber); }
+    .back-link { font-size: 0.82rem; color: var(--muted); text-decoration: none; }
+    .back-link:hover { color: var(--amber); }
+    .main { max-width: 720px; margin: 0 auto; padding: 2.5rem 2rem; }
+    .page-title { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.4rem; }
+    .page-sub { font-size: 0.875rem; color: var(--muted); margin-bottom: 2.5rem; }
+    .section-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 14px; padding: 1.75rem; margin-bottom: 1.25rem; }
+    .section-label { font-size: 0.72rem; font-weight: 700; color: var(--dim); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 1.25rem; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .field { margin-bottom: 1rem; }
+    .field.full { grid-column: 1 / -1; }
+    label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--muted); margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    label .opt { color: var(--dim); font-weight: 400; text-transform: none; letter-spacing: 0; }
+    input, select, textarea { width: 100%; background: var(--bg2); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.9rem; color: var(--white); font-family: inherit; outline: none; transition: border-color 0.2s; }
+    input::placeholder, textarea::placeholder { color: var(--dim); }
+    input:focus, select:focus, textarea:focus { border-color: var(--amber); }
+    select option { background: var(--bg2); color: var(--white); }
+    textarea { resize: vertical; min-height: 100px; }
+
+    /* Line items */
+    .line-items-header {
+      display: grid;
+      grid-template-columns: 1fr 80px 80px 110px 40px;
+      gap: 0.5rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--dim);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.5rem;
+      padding: 0 0.25rem;
+    }
+    .line-item-row {
+      display: grid;
+      grid-template-columns: 1fr 80px 80px 110px 40px;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+      align-items: center;
+    }
+    .line-item-row input { margin-bottom: 0; padding: 0.6rem 0.75rem; font-size: 0.85rem; }
+    .btn-remove {
+      background: none;
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 6px;
+      color: var(--red);
+      cursor: pointer;
+      font-size: 1rem;
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+    .btn-remove:hover { background: rgba(239,68,68,0.1); }
+    .btn-add-line {
+      background: none;
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      padding: 0.6rem 1rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: inherit;
+      width: 100%;
+      margin-top: 0.5rem;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-add-line:hover { border-color: var(--amber); color: var(--amber); }
+    .ai-note {
+      background: rgba(245,158,11,0.07);
+      border: 1px solid rgba(245,158,11,0.15);
+      border-radius: 8px;
+      padding: 0.7rem 1rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 0.75rem;
+    }
+    .ai-note strong { color: var(--amber); }
+
+    /* Submit */
+    .submit-area { padding: 1.5rem 0 2rem; text-align: center; }
+    .btn-generate {
+      background: var(--amber);
+      color: #090E1A;
+      border: none;
+      border-radius: 12px;
+      padding: 1rem 2.5rem;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s;
+    }
+    .btn-generate:hover { background: var(--amber2); }
+    .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; }
+    .gen-note { font-size: 0.78rem; color: var(--dim); margin-top: 0.75rem; }
+    .msg { font-size: 0.82rem; color: var(--red); margin-top: 0.75rem; min-height: 1rem; }
+
+    @media (max-width: 640px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      .line-items-header { display: none; }
+      .line-item-row { grid-template-columns: 1fr 1fr; }
+      .line-item-row input:first-child { grid-column: 1 / -1; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="/dashboard.html" class="logo">Build<em>Order</em></a>
+    <a href="/dashboard.html" class="back-link">&larr; Dashboard</a>
+  </nav>
+
+  <main class="main">
+    <div class="page-title">New Estimate</div>
+    <div class="page-sub">Fill in the job details. BuildOrder will generate a professional, itemized estimate you can send to your client.</div>
+
+    <!-- Client Info -->
+    <div class="section-card">
+      <div class="section-label">Client Information</div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Client / Homeowner Name</label>
+          <input type="text" id="homeowner_name" placeholder="Jane Smith">
+        </div>
+        <div class="field">
+          <label>Phone <span class="opt">(optional)</span></label>
+          <input type="tel" id="homeowner_phone" placeholder="(555) 555-5555">
+        </div>
+        <div class="field">
+          <label>Email <span class="opt">(optional)</span></label>
+          <input type="email" id="homeowner_email" placeholder="client@email.com">
+        </div>
+      </div>
+    </div>
+
+    <!-- Job Location -->
+    <div class="section-card">
+      <div class="section-label">Job Location</div>
+      <div class="grid-2">
+        <div class="field full">
+          <label>Street Address</label>
+          <input type="text" id="job_address" placeholder="123 Oak Street">
+        </div>
+        <div class="field">
+          <label>City</label>
+          <input type="text" id="job_city" placeholder="Atlanta">
+        </div>
+        <div class="field">
+          <label>State</label>
+          <select id="job_state">
+            <option value="">Select state...</option>
+            <option>AL</option><option>AK</option><option>AZ</option><option>AR</option>
+            <option>CA</option><option>CO</option><option>CT</option><option>DE</option>
+            <option>FL</option><option>GA</option><option>HI</option><option>ID</option>
+            <option>IL</option><option>IN</option><option>IA</option><option>KS</option>
+            <option>KY</option><option>LA</option><option>ME</option><option>MD</option>
+            <option>MA</option><option>MI</option><option>MN</option><option>MS</option>
+            <option>MO</option><option>MT</option><option>NE</option><option>NV</option>
+            <option>NH</option><option>NJ</option><option>NM</option><option>NY</option>
+            <option>NC</option><option>ND</option><option>OH</option><option>OK</option>
+            <option>OR</option><option>PA</option><option>RI</option><option>SC</option>
+            <option>SD</option><option>TN</option><option>TX</option><option>UT</option>
+            <option>VT</option><option>VA</option><option>WA</option><option>WV</option>
+            <option>WI</option><option>WY</option><option>DC</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>ZIP Code</label>
+          <input type="text" id="job_zip" placeholder="30101" maxlength="10">
+        </div>
+      </div>
+    </div>
+
+    <!-- Job Details -->
+    <div class="section-card">
+      <div class="section-label">Job Details</div>
+      <div class="grid-2">
+        <div class="field full">
+          <label>Type of Work</label>
+          <select id="work_type">
+            <option value="">Select work type...</option>
+            <option>Roofing</option>
+            <option>Siding &amp; Exterior</option>
+            <option>Windows &amp; Doors</option>
+            <option>Kitchen Remodel</option>
+            <option>Bathroom Remodel</option>
+            <option>Flooring</option>
+            <option>Painting &amp; Drywall</option>
+            <option>Electrical</option>
+            <option>Plumbing</option>
+            <option>HVAC</option>
+            <option>Deck &amp; Patio</option>
+            <option>Fencing</option>
+            <option>Concrete &amp; Masonry</option>
+            <option>Insulation</option>
+            <option>Landscaping</option>
+            <option>General Contracting</option>
+            <option>Handyman Services</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label>Project Description</label>
+          <textarea id="project_description" placeholder="Describe the work in detail. The more specific you are, the better the AI-generated line items will be. Example: Replace 25-year-old architectural shingles on a 2,200 sq ft single-story home. Remove existing two layers of shingles, inspect and replace any rotted decking, install new felt underlayment, install new 30-year architectural shingles, replace all flashing, and install new ridge cap."></textarea>
+        </div>
+        <div class="field">
+          <label>Tax Rate % <span class="opt">(optional)</span></label>
+          <input type="number" id="tax_rate" placeholder="0" min="0" max="20" step="0.1" value="0">
+        </div>
+        <div class="field">
+          <label>Estimate Valid For (days)</label>
+          <input type="number" id="valid_days" placeholder="30" min="7" max="90" value="30">
+        </div>
+        <div class="field full">
+          <label>Additional Notes / Terms <span class="opt">(optional)</span></label>
+          <input type="text" id="notes" placeholder="e.g. Price includes haul-away of all debris. Permit fees not included.">
+        </div>
+      </div>
+    </div>
+
+    <!-- Line Items -->
+    <div class="section-card">
+      <div class="section-label">Line Items <span style="color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0;">(optional &mdash; AI will generate if left blank)</span></div>
+      <div class="line-items-header">
+        <div>Description</div>
+        <div>Qty</div>
+        <div>Unit</div>
+        <div>Unit Price</div>
+        <div></div>
+      </div>
+      <div id="line-items-container"></div>
+      <button class="btn-add-line" onclick="addLineItem()">+ Add Line Item</button>
+      <div class="ai-note"><strong>Tip:</strong> Leave line items empty and BuildOrder will generate realistic, itemized pricing from your project description.</div>
+    </div>
+
+    <div class="submit-area">
+      <button class="btn-generate" id="gen-btn" onclick="createEstimate()">Generate Estimate &rarr;</button>
+      <div class="gen-note">BuildOrder will generate a professional, itemized estimate ready to send to your client.</div>
+      <div class="msg" id="msg"></div>
+    </div>
+  </main>
+
+  <script>
+    var SUPABASE_URL = 'https://pxqwtesczfhfjwdhxiyl.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDI3MDcsImV4cCI6MjA5NTIxODcwN30.rNmcfsteMK_IdyWkGLrNA5ZOlRVHQYahDrnIWmPGCLM';
+    var db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, storageKey: 'bo-auth' } });
+
+    db.auth.getSession().then(function(res) {
+      if (!res.data.session) window.location.href = '/login.html';
+    });
+
+    var lineItemCount = 0;
+
+    function addLineItem(desc, qty, unit, price) {
+      lineItemCount++;
+      var id = lineItemCount;
+      var container = document.getElementById('line-items-container');
+      var row = document.createElement('div');
+      row.className = 'line-item-row';
+      row.id = 'line-item-' + id;
+      row.innerHTML =
+        '<input type="text" placeholder="e.g. Remove existing shingles" id="li-desc-' + id + '" value="' + (desc || '') + '">' +
+        '<input type="number" placeholder="1" min="0" step="0.5" id="li-qty-' + id + '" value="' + (qty || '') + '">' +
+        '<input type="text" placeholder="sq ft" id="li-unit-' + id + '" value="' + (unit || '') + '">' +
+        '<input type="number" placeholder="0.00" min="0" step="0.01" id="li-price-' + id + '" value="' + (price || '') + '">' +
+        '<button class="btn-remove" onclick="removeLineItem(' + id + ')" title="Remove">&times;</button>';
+      container.appendChild(row);
+    }
+
+    function removeLineItem(id) {
+      var row = document.getElementById('line-item-' + id);
+      if (row) row.remove();
+    }
+
+    function getLineItems() {
+      var items = [];
+      var container = document.getElementById('line-items-container');
+      var rows = container.querySelectorAll('.line-item-row');
+      rows.forEach(function(row) {
+        var id = row.id.replace('line-item-', '');
+        var desc = document.getElementById('li-desc-' + id);
+        var qty = document.getElementById('li-qty-' + id);
+        var unit = document.getElementById('li-unit-' + id);
+        var price = document.getElementById('li-price-' + id);
+        if (desc && desc.value.trim()) {
+          items.push({
+            description: desc.value.trim(),
+            quantity: parseFloat(qty.value) || 1,
+            unit: unit.value.trim() || 'unit',
+            unit_price: parseFloat(price.value) || 0
+          });
+        }
+      });
+      return items;
+    }
+
+    function createEstimate() {
+      var btn = document.getElementById('gen-btn');
+      var msgEl = document.getElementById('msg');
+
+      var homeownerName = document.getElementById('homeowner_name').value.trim();
+      var jobAddress = document.getElementById('job_address').value.trim();
+      var workType = document.getElementById('work_type').value;
+      var projectDesc = document.getElementById('project_description').value.trim();
+
+      if (!homeownerName) { msgEl.textContent = 'Client name is required.'; return; }
+      if (!projectDesc) { msgEl.textContent = 'Project description is required.'; return; }
+
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+      msgEl.textContent = '';
+
+      var lineItems = getLineItems();
+
+      db.auth.getUser().then(function(res) {
+        var user = res.data.user;
+        if (!user) { window.location.href = '/login.html'; return; }
+
+        var estimateData = {
+          user_id: user.id,
+          homeowner_name: homeownerName,
+          homeowner_phone: document.getElementById('homeowner_phone').value.trim() || null,
+          homeowner_email: document.getElementById('homeowner_email').value.trim() || null,
+          job_address: jobAddress || null,
+          job_city: document.getElementById('job_city').value.trim() || null,
+          job_state: document.getElementById('job_state').value || null,
+          job_zip: document.getElementById('job_zip').value.trim() || null,
+          work_type: workType || null,
+          project_description: projectDesc,
+          line_items: lineItems.length > 0 ? lineItems : null,
+          tax_rate: parseFloat(document.getElementById('tax_rate').value) || 0,
+          valid_days: parseInt(document.getElementById('valid_days').value) || 30,
+          notes: document.getElementById('notes').value.trim() || null,
+          status: 'draft'
+        };
+
+        db.from('estimates').insert(estimateData).select().single().then(function(res2) {
+          if (res2.error) {
+            msgEl.textContent = 'Error saving estimate: ' + res2.error.message;
+            btn.disabled = false;
+            btn.textContent = 'Generate Estimate';
+            return;
+          }
+          window.location.href = '/estimate.html?id=' + res2.data.id + '&generate=true';
+        });
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BuildOrder.ai â€” Dashboard</title>
+  <title>BuildOrder.ai &mdash; Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -23,7 +23,6 @@
     }
     body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; }
 
-    /* Nav */
     .nav {
       background: var(--bg2);
       border-bottom: 1px solid var(--border);
@@ -53,104 +52,114 @@
     }
     .btn-signout:hover { color: var(--white); border-color: var(--amber); }
 
-    /* Main */
     .main { max-width: 1000px; margin: 0 auto; padding: 2.5rem 2rem; }
-    .page-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 2rem;
-    }
-    .page-title { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; }
-    .btn-new {
-      background: var(--amber);
-      color: #090E1A;
-      border: none;
-      border-radius: 10px;
-      padding: 0.7rem 1.4rem;
-      font-size: 0.875rem;
-      font-weight: 800;
-      cursor: pointer;
-      font-family: inherit;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      transition: background 0.15s;
-    }
-    .btn-new:hover { background: var(--amber2); }
 
-    /* Stats row */
-    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
+    /* Stats */
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2.5rem; }
     .stat {
       background: var(--bg2);
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 1.25rem 1.5rem;
     }
-    .stat-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 600; margin-bottom: 0.4rem; }
+    .stat-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 600; margin-bottom: 0.4rem; }
     .stat-value { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.03em; }
 
-    /* Jobs list */
-    .jobs-header {
-      font-size: 0.75rem;
+    /* Section header */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    .section-title { font-size: 1rem; font-weight: 800; letter-spacing: -0.01em; }
+    .btn-new {
+      background: var(--amber);
+      color: #090E1A;
+      border: none;
+      border-radius: 8px;
+      padding: 0.5rem 1.1rem;
+      font-size: 0.8rem;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: inherit;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      transition: background 0.15s;
+    }
+    .btn-new:hover { background: var(--amber2); }
+
+    /* Table headers */
+    .list-header {
+      font-size: 0.72rem;
       font-weight: 700;
       color: var(--dim);
       text-transform: uppercase;
       letter-spacing: 0.07em;
-      padding: 0 1rem 0.75rem;
-      display: grid;
-      grid-template-columns: 1fr 180px 120px 100px;
-      gap: 1rem;
+      padding: 0 1.5rem 0.6rem;
     }
-    .job-card {
+    .jobs-cols { display: grid; grid-template-columns: 1fr 170px 110px 90px; gap: 1rem; }
+    .est-cols  { display: grid; grid-template-columns: 1fr 170px 120px 90px; gap: 1rem; }
+
+    /* Cards */
+    .row-card {
       background: var(--bg2);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 1.25rem 1.5rem;
-      display: grid;
-      grid-template-columns: 1fr 180px 120px 100px;
-      gap: 1rem;
+      padding: 1.1rem 1.5rem;
       align-items: center;
-      margin-bottom: 0.75rem;
+      gap: 1rem;
+      margin-bottom: 0.6rem;
       cursor: pointer;
       transition: border-color 0.2s;
       text-decoration: none;
       color: inherit;
+      display: grid;
     }
-    .job-card:hover { border-color: rgba(245,158,11,0.3); }
-    .job-title { font-weight: 700; font-size: 0.92rem; margin-bottom: 0.2rem; }
-    .job-sub { font-size: 0.78rem; color: var(--muted); }
-    .job-price { font-weight: 700; font-size: 0.9rem; }
-    .job-date { font-size: 0.8rem; color: var(--muted); }
+    .row-card:hover { border-color: rgba(245,158,11,0.3); }
+    .row-title { font-weight: 700; font-size: 0.88rem; margin-bottom: 0.15rem; }
+    .row-sub { font-size: 0.76rem; color: var(--muted); }
+    .row-value { font-weight: 700; font-size: 0.88rem; }
+    .row-date { font-size: 0.78rem; color: var(--muted); }
+
     .status-badge {
       display: inline-block;
-      padding: 0.25rem 0.7rem;
+      padding: 0.22rem 0.65rem;
       border-radius: 100px;
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
-    .status-active { background: rgba(52,211,153,0.12); color: var(--green); }
-    .status-draft { background: rgba(148,163,184,0.12); color: var(--muted); }
+    .status-active   { background: rgba(52,211,153,0.12); color: var(--green); }
+    .status-draft    { background: rgba(148,163,184,0.12); color: var(--muted); }
     .status-complete { background: rgba(245,158,11,0.12); color: var(--amber); }
+    .status-sent     { background: rgba(245,158,11,0.12); color: var(--amber); }
+    .status-accepted { background: rgba(52,211,153,0.12); color: var(--green); }
+
+    /* Divider between sections */
+    .section-divider { margin: 2.5rem 0; border: none; border-top: 1px solid var(--border); }
 
     /* Empty state */
     .empty {
       text-align: center;
-      padding: 5rem 2rem;
+      padding: 3rem 2rem;
       color: var(--muted);
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 0.6rem;
     }
-    .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
-    .empty h3 { font-size: 1.1rem; font-weight: 700; color: var(--white); margin-bottom: 0.5rem; }
-    .empty p { font-size: 0.875rem; margin-bottom: 1.5rem; }
+    .empty h3 { font-size: 0.95rem; font-weight: 700; color: var(--white); margin-bottom: 0.4rem; }
+    .empty p { font-size: 0.82rem; margin-bottom: 1.25rem; }
 
-    @media (max-width: 640px) {
+    @media (max-width: 700px) {
       .stats { grid-template-columns: repeat(2, 1fr); }
-      .jobs-header { display: none; }
-      .job-card { grid-template-columns: 1fr auto; }
-      .job-price, .job-date { display: none; }
+      .list-header { display: none; }
+      .jobs-cols, .est-cols { grid-template-columns: 1fr auto; }
+      .row-value, .row-date { display: none; }
     }
   </style>
 </head>
@@ -165,35 +174,55 @@
   </nav>
 
   <main class="main">
-    <div class="page-header">
-      <div class="page-title">My Jobs</div>
-      <a href="/new-job.html" class="btn-new">+ New Job</a>
-    </div>
 
+    <!-- Stats -->
     <div class="stats">
       <div class="stat">
         <div class="stat-label">Total Jobs</div>
-        <div class="stat-value" id="stat-total">â€”</div>
+        <div class="stat-value" id="stat-jobs">&mdash;</div>
       </div>
       <div class="stat">
-        <div class="stat-label">Active</div>
-        <div class="stat-value" id="stat-active">â€”</div>
+        <div class="stat-label">Active Jobs</div>
+        <div class="stat-value" id="stat-active">&mdash;</div>
       </div>
       <div class="stat">
-        <div class="stat-label">Documents Generated</div>
-        <div class="stat-value" id="stat-docs">â€”</div>
+        <div class="stat-label">Estimates</div>
+        <div class="stat-value" id="stat-estimates">&mdash;</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Documents</div>
+        <div class="stat-value" id="stat-docs">&mdash;</div>
       </div>
     </div>
 
-    <div id="jobs-container">
-      <div class="jobs-header">
-        <div>Job</div>
-        <div>Homeowner</div>
-        <div>Value</div>
-        <div>Status</div>
-      </div>
-      <div id="jobs-list"></div>
+    <!-- Jobs Section -->
+    <div class="section-header">
+      <div class="section-title">&#128196; Jobs &amp; Contracts</div>
+      <a href="/new-job.html" class="btn-new">+ New Job</a>
     </div>
+    <div class="list-header jobs-cols">
+      <div>Job</div>
+      <div>Homeowner</div>
+      <div>Value</div>
+      <div>Status</div>
+    </div>
+    <div id="jobs-list"></div>
+
+    <hr class="section-divider">
+
+    <!-- Estimates Section -->
+    <div class="section-header">
+      <div class="section-title">&#128203; Estimates</div>
+      <a href="/new-estimate.html" class="btn-new">+ New Estimate</a>
+    </div>
+    <div class="list-header est-cols">
+      <div>Client</div>
+      <div>Work Type</div>
+      <div>Created</div>
+      <div>Status</div>
+    </div>
+    <div id="estimates-list"></div>
+
   </main>
 
   <script>
@@ -201,59 +230,82 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDI3MDcsImV4cCI6MjA5NTIxODcwN30.rNmcfsteMK_IdyWkGLrNA5ZOlRVHQYahDrnIWmPGCLM';
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, storageKey: 'bo-auth' } });
 
+    function fmtDate(str) {
+      if (!str) return '&mdash;';
+      return new Date(str).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
     async function init() {
       const { data: { session } } = await db.auth.getSession();
       if (!session) { window.location.href = '/login.html'; return; }
 
-      // Load profile
       const { data: profile } = await db.from('contractor_profiles').select('*').single();
       if (!profile || !profile.onboarding_complete) { window.location.href = '/onboarding.html'; return; }
 
-      const name = profile.business_name || profile.contractor_name;
-      document.getElementById('nav-name').textContent = name;
+      document.getElementById('nav-name').textContent = profile.business_name || profile.contractor_name;
 
-      // Load jobs
-      const { data: jobs } = await db.from('jobs').select('*').order('created_at', { ascending: false });
-      const { count: docCount } = await db.from('documents').select('*', { count: 'exact', head: true });
+      const [jobsRes, estRes, docRes] = await Promise.all([
+        db.from('jobs').select('*').order('created_at', { ascending: false }),
+        db.from('estimates').select('*').order('created_at', { ascending: false }),
+        db.from('documents').select('*', { count: 'exact', head: true })
+      ]);
 
-      // Stats
-      document.getElementById('stat-total').textContent = jobs?.length || 0;
-      document.getElementById('stat-active').textContent = jobs?.filter(j => j.status === 'active').length || 0;
-      document.getElementById('stat-docs').textContent = docCount || 0;
+      const jobs = jobsRes.data || [];
+      const estimates = estRes.data || [];
+      const docCount = docRes.count || 0;
 
-      // Jobs list
-      const list = document.getElementById('jobs-list');
-      if (!jobs || jobs.length === 0) {
-        list.innerHTML = `
-          <div class=”empty”>
-            <div class=”empty-icon”>📋</div>
-            <h3>No jobs yet</h3>
-            <p>Create your first job to generate a state-compliant contract.</p>
-            <a href=”/new-job.html” class=”btn-new”>+ Create First Job</a>
-          </div>`;
-        document.querySelector('.jobs-header').style.display = 'none';
-        return;
+      document.getElementById('stat-jobs').textContent = jobs.length;
+      document.getElementById('stat-active').textContent = jobs.filter(function(j) { return j.status === 'active'; }).length;
+      document.getElementById('stat-estimates').textContent = estimates.length;
+      document.getElementById('stat-docs').textContent = docCount;
+
+      // Render jobs
+      var jobsList = document.getElementById('jobs-list');
+      if (jobs.length === 0) {
+        jobsList.innerHTML =
+          '<div class="empty">' +
+          '<h3>No jobs yet</h3>' +
+          '<p>Create your first job to generate a state-compliant contract.</p>' +
+          '<a href="/new-job.html" class="btn-new">+ Create First Job</a>' +
+          '</div>';
+      } else {
+        jobsList.innerHTML = jobs.map(function(job) {
+          var sc = { active: 'status-active', draft: 'status-draft', complete: 'status-complete' }[job.status] || 'status-draft';
+          var price = job.contract_price ? '$' + Number(job.contract_price).toLocaleString() : '&mdash;';
+          var city = [job.job_city, job.job_state].filter(Boolean).join(', ');
+          var addr = (job.job_address || 'No address') + (city ? ', ' + city : '');
+          var desc = job.project_description ? job.project_description.substring(0, 45) + (job.project_description.length > 45 ? '&hellip;' : '') : 'No description';
+          return '<a href="/job.html?id=' + job.id + '" class="row-card jobs-cols">' +
+            '<div><div class="row-title">' + addr + '</div><div class="row-sub">' + desc + '</div></div>' +
+            '<div><div class="row-title" style="font-size:0.83rem;">' + (job.homeowner_name || '&mdash;') + '</div><div class="row-date">' + (job.work_type || '') + '</div></div>' +
+            '<div class="row-value">' + price + '</div>' +
+            '<div><span class="status-badge ' + sc + '">' + job.status + '</span></div>' +
+            '</a>';
+        }).join('');
       }
 
-      list.innerHTML = jobs.map(job => {
-        const statusClass = { active: 'status-active', draft: 'status-draft', complete: 'status-complete' }[job.status] || 'status-draft';
-        const price = job.contract_price ? '$' + Number(job.contract_price).toLocaleString() : '—';
-        const date = job.created_at ? new Date(job.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
-        const desc = job.project_description ? job.project_description.substring(0, 50) + (job.project_description.length > 50 ? '…' : '') : 'No description';
-        return `
-          <a href=”/job.html?id=${job.id}” class=”job-card”>
-            <div>
-              <div class=”job-title”>${job.job_address || 'No address'}, ${job.job_city || ''} ${job.job_state || ''}</div>
-              <div class=”job-sub”>${desc}</div>
-            </div>
-            <div>
-              <div class=”job-title” style=”font-size:0.85rem;”>${job.homeowner_name || '—'}</div>
-              <div class=”job-date”>${job.work_type || ''}</div>
-            </div>
-            <div class=”job-price”>${price}</div>
-            <div><span class=”status-badge ${statusClass}”>${job.status}</span></div>
-          </a>`;
-      }).join('');
+      // Render estimates
+      var estList = document.getElementById('estimates-list');
+      if (estimates.length === 0) {
+        estList.innerHTML =
+          '<div class="empty">' +
+          '<h3>No estimates yet</h3>' +
+          '<p>Generate a professional itemized estimate for any job in seconds.</p>' +
+          '<a href="/new-estimate.html" class="btn-new">+ Create First Estimate</a>' +
+          '</div>';
+      } else {
+        estList.innerHTML = estimates.map(function(est) {
+          var sc = { draft: 'status-draft', sent: 'status-sent', accepted: 'status-accepted' }[est.status] || 'status-draft';
+          var location = [est.job_city, est.job_state].filter(Boolean).join(', ') || '';
+          var sub = [est.work_type, location].filter(Boolean).join(' &middot; ') || 'No details';
+          return '<a href="/estimate.html?id=' + est.id + '" class="row-card est-cols">' +
+            '<div><div class="row-title">' + (est.homeowner_name || 'No client') + '</div><div class="row-sub">' + sub + '</div></div>' +
+            '<div class="row-date" style="font-size:0.83rem;font-weight:600;">' + (est.work_type || '&mdash;') + '</div>' +
+            '<div class="row-date">' + fmtDate(est.created_at) + '</div>' +
+            '<div><span class="status-badge ' + sc + '">' + est.status + '</span></div>' +
+            '</a>';
+        }).join('');
+      }
     }
 
     async function signOut() {
