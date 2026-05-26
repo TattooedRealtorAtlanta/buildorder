@@ -11,7 +11,7 @@ function formatDate(dateStr) {
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { change_order_id } = req.body || {};
+  const { change_order_id, lang } = req.body || {};
   if (!change_order_id) return res.status(400).json({ error: 'change_order_id required' });
 
   const supabase = createClient(
@@ -44,7 +44,7 @@ module.exports = async (req, res) => {
       ? Math.abs(addDays) + ' fewer calendar day' + (Math.abs(addDays) === 1 ? '' : 's')
       : 'No change to project timeline';
 
-  const prompt = `You are generating a professional contractor change order document. Output ONLY the document — no commentary.
+  let prompt = `You are generating a professional contractor change order document. Output ONLY the document — no commentary.
 
 CONTRACTOR:
 Name: ${profile.contractor_name}
@@ -92,6 +92,10 @@ FORMAT:
    - AUTHORIZATION REQUIRED: note that unsigned change orders are not valid and no additional work will proceed without written authorization
    - SIGNATURE BLOCK: Contractor signature/date and Client signature/date with printed name lines
 3. Keep language professional but readable — a homeowner should understand every line`;
+
+  if (lang === 'es') {
+    prompt += '\n\nIMPORTANT: Generate this entire document in Spanish. All headers, labels, legal language, and content must be in Spanish.';
+  }
 
   try {
     const message = await anthropic.messages.create({

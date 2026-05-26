@@ -11,7 +11,7 @@ function formatDate(dateStr) {
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { estimate_id } = req.body || {};
+  const { estimate_id, lang } = req.body || {};
   if (!estimate_id) return res.status(400).json({ error: 'estimate_id required' });
 
   const supabase = createClient(
@@ -49,7 +49,7 @@ module.exports = async (req, res) => {
     ? `Apply ${estimate.tax_rate}% tax to materials only (not labor).`
     : 'No tax applies to this estimate.';
 
-  const prompt = `You are a professional estimating specialist generating a detailed home improvement estimate. Generate a complete, ready-to-send estimate using the information below.
+  let prompt = `You are a professional estimating specialist generating a detailed home improvement estimate. Generate a complete, ready-to-send estimate using the information below.
 
 CONTRACTOR INFORMATION:
 Name: ${profile.contractor_name}
@@ -100,6 +100,10 @@ INSTRUCTIONS:
 4. Format numbers with dollar signs and two decimal places
 5. Keep language professional but plain — a homeowner should understand every line
 6. Do not add commentary before or after the estimate — output only the estimate itself`;
+
+  if (lang === 'es') {
+    prompt += '\n\nIMPORTANT: Generate this entire document in Spanish. All headers, labels, legal language, and content must be in Spanish.';
+  }
 
   try {
     const message = await anthropic.messages.create({

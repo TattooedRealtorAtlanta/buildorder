@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/lang.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -137,33 +138,39 @@
       .line-item-row .unit-col { display: none; }
       .line-items-header .unit-head { display: none; }
     }
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
+    .lang-toggle { display: flex; align-items: center; gap: 0.25rem; }
+    .lang-btn { background: none; border: none; color: var(--dim); font-size: 0.75rem; font-weight: 700; cursor: pointer; font-family: inherit; padding: 0.2rem 0.4rem; border-radius: 4px; transition: color 0.15s; }
+    .lang-btn.active { color: var(--amber); }
+    .lang-btn:hover { color: var(--white); }
+    .lang-sep { color: var(--dim); font-size: 0.75rem; }
   </style>
 </head>
 <body>
 
   <nav class="nav">
     <a href="/dashboard.html" class="logo">Build<em>Order</em></a>
-    <a href="/dashboard.html" class="btn-back">&larr; Dashboard</a>
+    <div class="nav-right"><div class="lang-toggle"><button class="lang-btn" id="lang-btn-en" onclick="setLang('en')">EN</button><span class="lang-sep">|</span><button class="lang-btn" id="lang-btn-es" onclick="setLang('es')">ES</button></div><a href="/dashboard.html" class="btn-back" data-i18n="nav.back">&larr; Dashboard</a></div>
   </nav>
 
   <main class="main">
-    <div class="page-title">New Invoice</div>
-    <div class="page-sub">Generate a professional invoice for completed work or a billing milestone.</div>
+    <div class="page-title" data-i18n="inv.new.title">New Invoice</div>
+    <div class="page-sub" data-i18n="inv.new.sub">Generate a professional invoice for completed work or a billing milestone.</div>
 
     <!-- Client Info -->
     <div class="form-section">
-      <div class="form-section-title">Client Information</div>
+      <div class="form-section-title" data-i18n="inv.sec.client">Client Information</div>
       <div class="form-grid">
         <div class="form-group full">
-          <label>Client Name *</label>
+          <label data-i18n="inv.lbl.name">Client Name *</label>
           <input type="text" id="homeowner_name" placeholder="Jane Smith">
         </div>
         <div class="form-group">
-          <label>Phone</label>
+          <label data-i18n="inv.lbl.phone">Phone</label>
           <input type="tel" id="homeowner_phone" placeholder="(555) 555-5555">
         </div>
         <div class="form-group">
-          <label>Email</label>
+          <label data-i18n="inv.lbl.email">Email</label>
           <input type="email" id="homeowner_email" placeholder="jane@email.com">
         </div>
       </div>
@@ -171,26 +178,26 @@
 
     <!-- Job Location -->
     <div class="form-section">
-      <div class="form-section-title">Service Address</div>
+      <div class="form-section-title" data-i18n="inv.sec.address">Service Address</div>
       <div class="form-grid">
         <div class="form-group full">
-          <label>Street Address</label>
+          <label data-i18n="inv.lbl.address">Street Address</label>
           <input type="text" id="job_address" placeholder="123 Main St">
         </div>
         <div class="form-group">
-          <label>City</label>
+          <label data-i18n="inv.lbl.city">City</label>
           <input type="text" id="job_city" placeholder="Atlanta">
         </div>
         <div class="form-group">
-          <label>State</label>
+          <label data-i18n="inv.lbl.state">State</label>
           <input type="text" id="job_state" placeholder="GA" maxlength="2">
         </div>
         <div class="form-group">
-          <label>ZIP</label>
+          <label data-i18n="inv.lbl.zip">ZIP</label>
           <input type="text" id="job_zip" placeholder="30301">
         </div>
         <div class="form-group">
-          <label>Work Type</label>
+          <label data-i18n="inv.lbl.work_type">Work Type</label>
           <input type="text" id="work_type" placeholder="Kitchen Remodel">
         </div>
       </div>
@@ -198,51 +205,51 @@
 
     <!-- Line Items -->
     <div class="form-section">
-      <div class="form-section-title">Line Items</div>
+      <div class="form-section-title" data-i18n="inv.sec.items">Line Items</div>
       <div class="line-items-header">
-        <div>Description</div>
-        <div>Qty</div>
-        <div class="unit-head">Unit</div>
-        <div>Unit Price</div>
+        <div data-i18n="inv.col.desc">Description</div>
+        <div data-i18n="inv.col.qty">Qty</div>
+        <div class="unit-head" data-i18n="inv.col.unit">Unit</div>
+        <div data-i18n="inv.col.price">Unit Price</div>
         <div></div>
       </div>
       <div id="line-items-container"></div>
-      <button class="btn-add-line" onclick="addLineItem('','1','','')">+ Add Line Item</button>
+      <button class="btn-add-line" data-i18n="inv.btn.add" onclick="addLineItem('','1','','')">+ Add Line Item</button>
 
       <div class="totals-preview" id="totals-preview">
-        <div class="totals-row"><span class="totals-label">Subtotal</span><span id="prev-subtotal">$0.00</span></div>
-        <div class="totals-row"><span class="totals-label">Tax (<span id="prev-tax-rate">0</span>%)</span><span id="prev-tax">$0.00</span></div>
-        <div class="totals-row total-line"><span>Invoice Total</span><span id="prev-total">$0.00</span></div>
-        <div class="totals-row" id="deposit-preview-row" style="display:none;"><span class="totals-label">Payments Received</span><span id="prev-deposit" style="color:#34D399;">-$0.00</span></div>
-        <div class="totals-row balance-line"><span>Balance Due</span><span id="prev-balance">$0.00</span></div>
+        <div class="totals-row"><span class="totals-label" data-i18n="inv.tot.subtotal">Subtotal</span><span id="prev-subtotal">$0.00</span></div>
+        <div class="totals-row"><span class="totals-label"><span data-i18n="inv.tot.tax">Tax</span> (<span id="prev-tax-rate">0</span>%)</span><span id="prev-tax">$0.00</span></div>
+        <div class="totals-row total-line"><span data-i18n="inv.tot.total">Invoice Total</span><span id="prev-total">$0.00</span></div>
+        <div class="totals-row" id="deposit-preview-row" style="display:none;"><span class="totals-label" data-i18n="inv.tot.payments">Payments Received</span><span id="prev-deposit" style="color:#34D399;">-$0.00</span></div>
+        <div class="totals-row balance-line"><span data-i18n="inv.tot.balance">Balance Due</span><span id="prev-balance">$0.00</span></div>
       </div>
     </div>
 
     <!-- Terms -->
     <div class="form-section">
-      <div class="form-section-title">Invoice Terms</div>
+      <div class="form-section-title" data-i18n="inv.sec.terms">Invoice Terms</div>
       <div class="form-grid">
         <div class="form-group">
-          <label>Tax Rate (%)</label>
+          <label data-i18n="inv.lbl.tax">Tax Rate (%)</label>
           <input type="number" id="tax_rate" placeholder="0" min="0" max="20" step="0.1" value="0" oninput="recalc()">
         </div>
         <div class="form-group">
-          <label>Payment Due (days)</label>
+          <label data-i18n="inv.lbl.due_days">Payment Due (days)</label>
           <input type="number" id="due_days" placeholder="30" value="30" min="1">
         </div>
         <div class="form-group">
-          <label>Payments Already Received ($)</label>
+          <label data-i18n="inv.lbl.deposit">Payments Already Received ($)</label>
           <input type="number" id="deposit_paid" placeholder="0.00" min="0" step="0.01" value="0" oninput="recalc()">
         </div>
         <div class="form-group full">
-          <label>Notes (optional)</label>
+          <label data-i18n="inv.lbl.notes">Notes (optional)</label>
           <textarea id="notes" placeholder="Any additional notes for the client..."></textarea>
         </div>
       </div>
     </div>
 
     <div class="error-msg" id="error-msg"></div>
-    <button class="btn-submit" id="submit-btn" onclick="createInvoice()">&#9733; Generate Invoice</button>
+    <button class="btn-submit" id="submit-btn" data-i18n="inv.btn.submit" onclick="createInvoice()">&#9733; Generate Invoice</button>
   </main>
 
   <script>
@@ -329,7 +336,7 @@
 
     function createInvoice() {
       var name = document.getElementById('homeowner_name').value.trim();
-      if (!name) { showError('Client name is required.'); return; }
+      if (!name) { showError(T('inv.err.name')); return; }
 
       var items = getLineItems();
       var subtotal = 0;
@@ -366,13 +373,13 @@
       document.getElementById('error-msg').style.display = 'none';
       var btn = document.getElementById('submit-btn');
       btn.disabled = true;
-      btn.textContent = 'Saving...';
+      btn.textContent = T('btn.saving');
 
       db.auth.getUser().then(function(userRes) {
         if (!userRes.data.user) { window.location.href = '/login.html'; return; }
         invoiceData.user_id = userRes.data.user.id;
         db.from('invoices').insert(invoiceData).select().single().then(function(res) {
-          if (res.error) { showError('Error saving invoice: ' + res.error.message); btn.disabled = false; btn.textContent = 'Generate Invoice'; return; }
+          if (res.error) { showError('Error saving invoice: ' + res.error.message); btn.disabled = false; btn.textContent = T('inv.btn.submit'); return; }
           window.location.href = '/invoice.html?id=' + res.data.id + '&generate=true';
         });
       });

@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/lang.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -131,33 +132,39 @@
       .line-item-row { grid-template-columns: 1fr 1fr; }
       .line-item-row input:first-child { grid-column: 1 / -1; }
     }
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
+    .lang-toggle { display: flex; align-items: center; gap: 0.25rem; }
+    .lang-btn { background: none; border: none; color: var(--dim); font-size: 0.75rem; font-weight: 700; cursor: pointer; font-family: inherit; padding: 0.2rem 0.4rem; border-radius: 4px; transition: color 0.15s; }
+    .lang-btn.active { color: var(--amber); }
+    .lang-btn:hover { color: var(--white); }
+    .lang-sep { color: var(--dim); font-size: 0.75rem; }
   </style>
 </head>
 <body>
 
   <nav class="nav">
     <a href="/dashboard.html" class="logo">Build<em>Order</em></a>
-    <a href="/dashboard.html" class="back-link">&larr; Dashboard</a>
+    <div class="nav-right"><div class="lang-toggle"><button class="lang-btn" id="lang-btn-en" onclick="setLang('en')">EN</button><span class="lang-sep">|</span><button class="lang-btn" id="lang-btn-es" onclick="setLang('es')">ES</button></div><a href="/dashboard.html" class="back-link" data-i18n="nav.back">&larr; Dashboard</a></div>
   </nav>
 
   <main class="main">
-    <div class="page-title">New Estimate</div>
-    <div class="page-sub">Fill in the job details. BuildOrder will generate a professional, itemized estimate you can send to your client.</div>
+    <div class="page-title" data-i18n="est.new.title">New Estimate</div>
+    <div class="page-sub" data-i18n="est.new.sub">Fill in the job details. BuildOrder will generate a professional, itemized estimate you can send to your client.</div>
 
     <!-- Client Info -->
     <div class="section-card">
-      <div class="section-label">Client Information</div>
+      <div class="section-label" data-i18n="est.sec.client">Client Information</div>
       <div class="grid-2">
         <div class="field">
-          <label>Client / Homeowner Name</label>
+          <label data-i18n="est.lbl.name">Client / Homeowner Name</label>
           <input type="text" id="homeowner_name" placeholder="Jane Smith">
         </div>
         <div class="field">
-          <label>Phone <span class="opt">(optional)</span></label>
+          <label><span data-i18n="est.lbl.phone">Phone</span> <span class="opt">(optional)</span></label>
           <input type="tel" id="homeowner_phone" placeholder="(555) 555-5555">
         </div>
         <div class="field">
-          <label>Email <span class="opt">(optional)</span></label>
+          <label><span data-i18n="est.lbl.email">Email</span> <span class="opt">(optional)</span></label>
           <input type="email" id="homeowner_email" placeholder="client@email.com">
         </div>
       </div>
@@ -165,18 +172,18 @@
 
     <!-- Job Location -->
     <div class="section-card">
-      <div class="section-label">Job Location</div>
+      <div class="section-label" data-i18n="est.sec.location">Job Location</div>
       <div class="grid-2">
         <div class="field full">
-          <label>Street Address</label>
+          <label data-i18n="est.lbl.address">Street Address</label>
           <input type="text" id="job_address" placeholder="123 Oak Street">
         </div>
         <div class="field">
-          <label>City</label>
+          <label data-i18n="est.lbl.city">City</label>
           <input type="text" id="job_city" placeholder="Atlanta">
         </div>
         <div class="field">
-          <label>State</label>
+          <label data-i18n="est.lbl.state">State</label>
           <select id="job_state">
             <option value="">Select state...</option>
             <option>AL</option><option>AK</option><option>AZ</option><option>AR</option>
@@ -195,7 +202,7 @@
           </select>
         </div>
         <div class="field">
-          <label>ZIP Code</label>
+          <label data-i18n="est.lbl.zip">ZIP Code</label>
           <input type="text" id="job_zip" placeholder="30101" maxlength="10">
         </div>
       </div>
@@ -203,10 +210,10 @@
 
     <!-- Job Details -->
     <div class="section-card">
-      <div class="section-label">Job Details</div>
+      <div class="section-label" data-i18n="est.sec.job">Job Details</div>
       <div class="grid-2">
         <div class="field full">
-          <label>Type of Work</label>
+          <label data-i18n="est.lbl.work_type">Type of Work</label>
           <select id="work_type">
             <option value="">Select work type...</option>
             <option>Roofing</option>
@@ -230,19 +237,19 @@
           </select>
         </div>
         <div class="field full">
-          <label>Project Description</label>
+          <label data-i18n="est.lbl.description">Project Description</label>
           <textarea id="project_description" placeholder="Describe the work in detail. The more specific you are, the better the AI-generated line items will be. Example: Replace 25-year-old architectural shingles on a 2,200 sq ft single-story home. Remove existing two layers of shingles, inspect and replace any rotted decking, install new felt underlayment, install new 30-year architectural shingles, replace all flashing, and install new ridge cap."></textarea>
         </div>
         <div class="field">
-          <label>Tax Rate % <span class="opt">(optional)</span></label>
+          <label><span data-i18n="est.lbl.tax">Tax Rate %</span> <span class="opt">(optional)</span></label>
           <input type="number" id="tax_rate" placeholder="0" min="0" max="20" step="0.1" value="0">
         </div>
         <div class="field">
-          <label>Estimate Valid For (days)</label>
+          <label data-i18n="est.lbl.valid_days">Estimate Valid For (days)</label>
           <input type="number" id="valid_days" placeholder="30" min="7" max="90" value="30">
         </div>
         <div class="field full">
-          <label>Additional Notes / Terms <span class="opt">(optional)</span></label>
+          <label><span data-i18n="est.lbl.notes">Additional Notes / Terms</span> <span class="opt">(optional)</span></label>
           <input type="text" id="notes" placeholder="e.g. Price includes haul-away of all debris. Permit fees not included.">
         </div>
       </div>
@@ -250,22 +257,22 @@
 
     <!-- Line Items -->
     <div class="section-card">
-      <div class="section-label">Line Items <span style="color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0;">(optional &mdash; AI will generate if left blank)</span></div>
+      <div class="section-label"><span data-i18n="est.sec.items">Line Items</span> <span style="color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0;" data-i18n="est.items.sub">(optional &mdash; AI will generate if left blank)</span></div>
       <div class="line-items-header">
-        <div>Description</div>
-        <div>Qty</div>
-        <div>Unit</div>
-        <div>Unit Price</div>
+        <div data-i18n="est.col.desc">Description</div>
+        <div data-i18n="est.col.qty">Qty</div>
+        <div data-i18n="est.col.unit">Unit</div>
+        <div data-i18n="est.col.price">Unit Price</div>
         <div></div>
       </div>
       <div id="line-items-container"></div>
-      <button class="btn-add-line" onclick="addLineItem()">+ Add Line Item</button>
-      <div class="ai-note"><strong>Tip:</strong> Leave line items empty and BuildOrder will generate realistic, itemized pricing from your project description.</div>
+      <button class="btn-add-line" data-i18n="est.btn.add" onclick="addLineItem()">+ Add Line Item</button>
+      <div class="ai-note" data-i18n="est.tip">Leave line items empty and BuildOrder will generate realistic, itemized pricing from your project description.</div>
     </div>
 
     <div class="submit-area">
-      <button class="btn-generate" id="gen-btn" onclick="createEstimate()">Generate Estimate &rarr;</button>
-      <div class="gen-note">BuildOrder will generate a professional, itemized estimate ready to send to your client.</div>
+      <button class="btn-generate" id="gen-btn" data-i18n="est.btn.submit" onclick="createEstimate()">Generate Estimate &rarr;</button>
+      <div class="gen-note" data-i18n="est.btn.note">BuildOrder will generate a professional, itemized estimate ready to send to your client.</div>
       <div class="msg" id="msg"></div>
     </div>
   </main>
@@ -333,11 +340,11 @@
       var workType = document.getElementById('work_type').value;
       var projectDesc = document.getElementById('project_description').value.trim();
 
-      if (!homeownerName) { msgEl.textContent = 'Client name is required.'; return; }
-      if (!projectDesc) { msgEl.textContent = 'Project description is required.'; return; }
+      if (!homeownerName) { msgEl.textContent = T('est.err.name'); return; }
+      if (!projectDesc) { msgEl.textContent = T('est.err.desc'); return; }
 
       btn.disabled = true;
-      btn.textContent = 'Saving...';
+      btn.textContent = T('btn.saving');
       msgEl.textContent = '';
 
       var lineItems = getLineItems();
@@ -368,7 +375,7 @@
           if (res2.error) {
             msgEl.textContent = 'Error saving estimate: ' + res2.error.message;
             btn.disabled = false;
-            btn.textContent = 'Generate Estimate';
+            btn.textContent = T('est.btn.submit');
             return;
           }
           window.location.href = '/estimate.html?id=' + res2.data.id + '&generate=true';

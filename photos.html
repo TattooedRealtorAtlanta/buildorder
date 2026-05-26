@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/lang.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -115,22 +116,28 @@
 
     @media (max-width: 900px) { .photo-grid { columns: 3; } }
     @media (max-width: 640px) { .photo-grid { columns: 2; } }
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
+    .lang-toggle { display: flex; align-items: center; gap: 0.25rem; }
+    .lang-btn { background: none; border: none; color: var(--dim); font-size: 0.75rem; font-weight: 700; cursor: pointer; font-family: inherit; padding: 0.2rem 0.4rem; border-radius: 4px; transition: color 0.15s; }
+    .lang-btn.active { color: var(--amber); }
+    .lang-btn:hover { color: var(--white); }
+    .lang-sep { color: var(--dim); font-size: 0.75rem; }
   </style>
 </head>
 <body>
 
   <nav class="nav">
     <a href="/dashboard.html" class="logo">Build<em>Order</em></a>
-    <a href="/dashboard.html" class="btn-back">&larr; Dashboard</a>
+    <div class="nav-right"><div class="lang-toggle"><button class="lang-btn" id="lang-btn-en" onclick="setLang('en')">EN</button><span class="lang-sep">|</span><button class="lang-btn" id="lang-btn-es" onclick="setLang('es')">ES</button></div><a href="/dashboard.html" class="btn-back" data-i18n="nav.back">&larr; Dashboard</a></div>
   </nav>
 
   <main class="main">
 
     <div class="page-header">
-      <div class="page-title">&#128247; Job Photo Log</div>
+      <div class="page-title">&#128247; <span data-i18n="ph.title">Job Photo Log</span></div>
       <div class="header-right">
         <select class="job-filter" id="job-filter" onchange="filterPhotos()">
-          <option value="">All Photos</option>
+          <option value="" data-i18n="ph.all_jobs">All Jobs</option>
         </select>
         <span id="photo-count" style="font-size:0.78rem;color:var(--muted);"></span>
       </div>
@@ -140,9 +147,9 @@
     <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
       <input type="file" id="file-input" accept="image/*" multiple onchange="onFileSelect(event)">
       <div class="upload-icon">&#128247;</div>
-      <div class="upload-title">Drop photos here or click to upload</div>
+      <div class="upload-title" data-i18n="ph.drag">Drag &amp; drop photos here or click to browse</div>
       <div class="upload-sub">JPG, PNG, HEIC &mdash; up to 10 photos at once &mdash; 20 MB per photo</div>
-      <button class="btn-upload" onclick="event.stopPropagation(); document.getElementById('file-input').click()">Choose Photos</button>
+      <button class="btn-upload" data-i18n="ph.upload" onclick="event.stopPropagation(); document.getElementById('file-input').click()">Upload Photos</button>
     </div>
 
     <!-- Progress -->
@@ -154,8 +161,8 @@
     <!-- Photo Grid -->
     <div class="photo-grid" id="photo-grid"></div>
     <div class="empty" id="empty-state" style="display:none;">
-      <h3>No photos yet</h3>
-      <p>Drop your first job site photo above to get started.</p>
+      <h3 data-i18n="ph.no.h">No photos yet</h3>
+      <p data-i18n="ph.no.p">Upload your first job site photo to get started.</p>
     </div>
 
   </main>
@@ -163,16 +170,16 @@
   <!-- Caption Modal -->
   <div class="modal-overlay" id="caption-modal">
     <div class="modal">
-      <div class="modal-title">Add Photo Details</div>
+      <div class="modal-title" data-i18n="ph.modal.title">Add Photo Details</div>
       <div class="modal-sub">Describe what this photo shows so you can find it later.</div>
       <img id="modal-preview" src="" alt="Preview" class="modal-preview">
-      <input type="text" id="modal-caption" placeholder="Caption (e.g. Before demo, Rough plumbing, Final tile)">
+      <input type="text" id="modal-caption" data-i18n-ph="ph.lbl.caption" placeholder="Caption (optional)">
       <select id="modal-job">
-        <option value="">No specific job</option>
+        <option value="" data-i18n="ph.lbl.no_job">No job assigned</option>
       </select>
       <div class="modal-actions">
-        <button class="btn-cancel" onclick="cancelUpload()">Skip</button>
-        <button class="btn-save" id="modal-save" onclick="confirmUpload()">Upload Photo</button>
+        <button class="btn-cancel" data-i18n="ph.btn.cancel" onclick="cancelUpload()">Cancel</button>
+        <button class="btn-save" id="modal-save" data-i18n="ph.btn.upload" onclick="confirmUpload()">Upload</button>
       </div>
     </div>
   </div>

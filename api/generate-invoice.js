@@ -6,7 +6,7 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { invoice_id } = req.body || {};
+  const { invoice_id, lang } = req.body || {};
   if (!invoice_id) return res.status(400).json({ error: 'invoice_id required' });
 
   const supabase = createClient(
@@ -109,6 +109,10 @@ FORMAT:
    - LATE FEE NOTICE: balances unpaid after due date subject to 1.5% monthly finance charge
    - Thank you line
 3. Every number must match exactly — never round or recalculate`;
+
+  if (lang === 'es') {
+    prompt += '\n\nIMPORTANT: Generate this entire document in Spanish. All headers, labels, legal language, and content must be in Spanish.';
+  }
 
   try {
     const message = await anthropic.messages.create({

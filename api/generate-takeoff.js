@@ -6,7 +6,7 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { takeoff_id } = req.body || {};
+  const { takeoff_id, lang } = req.body || {};
   if (!takeoff_id) return res.status(400).json({ error: 'takeoff_id required' });
 
   const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
@@ -32,7 +32,7 @@ module.exports = async (req, res) => {
   if (dims.perimeter) dimensionText += 'Perimeter: ' + dims.perimeter + ' ft\n';
   if (dims.custom) dimensionText += 'Additional Dimensions: ' + dims.custom + '\n';
 
-  const prompt = `You are a professional estimator generating a detailed material takeoff for a contractor. Output ONLY the takeoff document — no commentary.
+  let prompt = `You are a professional estimator generating a detailed material takeoff for a contractor. Output ONLY the takeoff document — no commentary.
 
 CONTRACTOR: ${profile.business_name || profile.contractor_name}
 Date: ${today}
@@ -81,6 +81,10 @@ GENERATE A COMPLETE MATERIAL TAKEOFF including:
 6. WASTE DISPOSAL note: estimated debris/waste for this project
 
 Be thorough — a contractor should be able to hand this to a supplier and order everything needed without missing a single item.`;
+
+  if (lang === 'es') {
+    prompt += '\n\nIMPORTANT: Generate this entire document in Spanish. All headers, labels, legal language, and content must be in Spanish.';
+  }
 
   try {
     const message = await anthropic.messages.create({

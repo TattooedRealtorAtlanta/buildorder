@@ -11,7 +11,7 @@ function formatDate(dateStr) {
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { waiver_id } = req.body || {};
+  const { waiver_id, lang } = req.body || {};
   if (!waiver_id) return res.status(400).json({ error: 'waiver_id required' });
 
   const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
@@ -47,7 +47,7 @@ module.exports = async (req, res) => {
     ? 'Claimant releases ALL claims, liens, and rights to lien for ALL labor, services, equipment, and materials provided through the date stated, and acknowledges this constitutes payment in full.'
     : 'Claimant releases all claims, liens, and rights to lien for labor, services, equipment, and materials provided through the Through Date stated, while reserving all rights for work performed after that date.';
 
-  const prompt = `You are generating a professional lien waiver document. Output ONLY the document — no commentary.
+  let prompt = `You are generating a professional lien waiver document. Output ONLY the document — no commentary.
 
 DOCUMENT TYPE: ${waiverLabel}
 
@@ -92,6 +92,10 @@ FORMAT — generate a formal lien waiver with:
 11. EXECUTION: signature line and date for claimant
 
 Plain text, === and --- separators, ALL CAPS headers. Short and direct — lien waivers should be dense and legally precise, not verbose.`;
+
+  if (lang === 'es') {
+    prompt += '\n\nIMPORTANT: Generate this entire document in Spanish. All headers, labels, legal language, and content must be in Spanish.';
+  }
 
   try {
     const message = await anthropic.messages.create({

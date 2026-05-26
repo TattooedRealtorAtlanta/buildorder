@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/lang.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -79,13 +80,19 @@
       .est-header { flex-direction: column; }
       .estimate-actions { flex-wrap: wrap; }
     }
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
+    .lang-toggle { display: flex; align-items: center; gap: 0.25rem; }
+    .lang-btn { background: none; border: none; color: var(--dim); font-size: 0.75rem; font-weight: 700; cursor: pointer; font-family: inherit; padding: 0.2rem 0.4rem; border-radius: 4px; transition: color 0.15s; }
+    .lang-btn.active { color: var(--amber); }
+    .lang-btn:hover { color: var(--white); }
+    .lang-sep { color: var(--dim); font-size: 0.75rem; }
   </style>
 </head>
 <body>
 
   <nav class="nav">
     <a href="/dashboard.html" class="logo">Build<em>Order</em></a>
-    <a href="/dashboard.html" class="btn-back">&larr; Dashboard</a>
+    <div class="nav-right"><div class="lang-toggle"><button class="lang-btn" id="lang-btn-en" onclick="setLang('en')">EN</button><span class="lang-sep">|</span><button class="lang-btn" id="lang-btn-es" onclick="setLang('es')">ES</button></div><a href="/dashboard.html" class="btn-back" data-i18n="nav.back">&larr; Dashboard</a></div>
   </nav>
 
   <main class="main">
@@ -150,18 +157,18 @@
 
         '<div class="info-grid">' +
           '<div class="info-card">' +
-            '<div class="info-card-title">Client</div>' +
-            '<div class="info-row"><span class="info-label">Name</span><span class="info-value">' + (est.homeowner_name || '&mdash;') + '</span></div>' +
-            '<div class="info-row"><span class="info-label">Phone</span><span class="info-value">' + (est.homeowner_phone || '&mdash;') + '</span></div>' +
-            '<div class="info-row"><span class="info-label">Email</span><span class="info-value">' + (est.homeowner_email || '&mdash;') + '</span></div>' +
-            '<div class="info-row"><span class="info-label">Address</span><span class="info-value">' + (est.job_address || '&mdash;') + '</span></div>' +
+            '<div class="info-card-title">' + T('est.card.client') + '</div>' +
+            '<div class="info-row"><span class="info-label">' + T('est.lbl.name2') + '</span><span class="info-value">' + (est.homeowner_name || '&mdash;') + '</span></div>' +
+            '<div class="info-row"><span class="info-label">' + T('est.lbl.phone') + '</span><span class="info-value">' + (est.homeowner_phone || '&mdash;') + '</span></div>' +
+            '<div class="info-row"><span class="info-label">' + T('est.lbl.email') + '</span><span class="info-value">' + (est.homeowner_email || '&mdash;') + '</span></div>' +
+            '<div class="info-row"><span class="info-label">' + T('est.lbl.address2') + '</span><span class="info-value">' + (est.job_address || '&mdash;') + '</span></div>' +
           '</div>' +
           '<div class="info-card">' +
-            '<div class="info-card-title">Estimate Details</div>' +
-            '<div class="info-row"><span class="info-label">Work Type</span><span class="info-value">' + (est.work_type || '&mdash;') + '</span></div>' +
-            '<div class="info-row"><span class="info-label">Tax Rate</span><span class="info-value">' + (est.tax_rate || 0) + '%</span></div>' +
-            '<div class="info-row"><span class="info-label">Valid For</span><span class="info-value">' + (est.valid_days || 30) + ' days</span></div>' +
-            '<div class="info-row"><span class="info-label">Created</span><span class="info-value">' + formatDate(est.created_at) + '</span></div>' +
+            '<div class="info-card-title">' + T('est.card.details') + '</div>' +
+            '<div class="info-row"><span class="info-label">' + T('est.lbl.work_type2') + '</span><span class="info-value">' + (est.work_type || '&mdash;') + '</span></div>' +
+            '<div class="info-row"><span class="info-label">' + T('est.lbl.tax2') + '</span><span class="info-value">' + (est.tax_rate || 0) + '%</span></div>' +
+            '<div class="info-row"><span class="info-label">' + T('est.lbl.valid2') + '</span><span class="info-value">' + (est.valid_days || 30) + T('est.lbl.days') + '</span></div>' +
+            '<div class="info-row"><span class="info-label">' + T('est.lbl.created') + '</span><span class="info-value">' + formatDate(est.created_at) + '</span></div>' +
           '</div>' +
         '</div>' +
 
@@ -170,16 +177,16 @@
             '<div class="estimate-title">&#128196; Estimate</div>' +
             '<div class="estimate-actions" id="estimate-actions">' +
               (est.content
-                ? '<button class="btn-action" onclick="copyEstimate()">Copy</button>' +
-                  '<button class="btn-action" onclick="downloadEstimate()">Download .txt</button>' +
-                  '<button class="btn-generate" onclick="generateEstimate()">Regenerate</button>'
-                : '<button class="btn-generate" onclick="generateEstimate()">&#10022; Generate Estimate</button>') +
+                ? '<button class="btn-action" onclick="copyEstimate()">' + T('btn.copy') + '</button>' +
+                  '<button class="btn-action" onclick="downloadEstimate()">' + T('btn.download') + '</button>' +
+                  '<button class="btn-generate" onclick="generateEstimate()">' + T('est.btn.regen') + '</button>'
+                : '<button class="btn-generate" onclick="generateEstimate()">' + T('est.btn.gen') + '</button>') +
             '</div>' +
           '</div>' +
           '<div id="estimate-body">' +
             (est.content
               ? '<div class="estimate-body"><pre class="estimate-text">' + escapeHtml(est.content) + '</pre></div>'
-              : '<div class="no-estimate"><h3>No estimate generated yet</h3><p>Click Generate Estimate to create a professional, itemized estimate.</p></div>') +
+              : '<div class="no-estimate"><h3>' + T('est.no.h') + '</h3><p>' + T('est.no.p') + '</p></div>') +
           '</div>' +
         '</div>';
     }
@@ -193,12 +200,12 @@
         '</div>';
 
       var actions = document.getElementById('estimate-actions');
-      if (actions) actions.innerHTML = '<button class="btn-generate" disabled>Generating&hellip;</button>';
+      if (actions) actions.innerHTML = '<button class="btn-generate" disabled>' + T('gen.generating') + '</button>';
 
       fetch('/api/generate-estimate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ estimate_id: estimateId })
+        body: JSON.stringify({ estimate_id: estimateId, lang: getLang() })
       }).then(function(res) {
         return res.json().then(function(data) { return { ok: res.ok, data: data }; });
       }).then(function(result) {

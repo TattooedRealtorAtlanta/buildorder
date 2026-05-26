@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/lang.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -81,13 +82,19 @@
       .info-grid { grid-template-columns: 1fr; }
       .inv-header { flex-direction: column; }
     }
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
+    .lang-toggle { display: flex; align-items: center; gap: 0.25rem; }
+    .lang-btn { background: none; border: none; color: var(--dim); font-size: 0.75rem; font-weight: 700; cursor: pointer; font-family: inherit; padding: 0.2rem 0.4rem; border-radius: 4px; transition: color 0.15s; }
+    .lang-btn.active { color: var(--amber); }
+    .lang-btn:hover { color: var(--white); }
+    .lang-sep { color: var(--dim); font-size: 0.75rem; }
   </style>
 </head>
 <body>
 
   <nav class="nav">
     <a href="/dashboard.html" class="logo">Build<em>Order</em></a>
-    <a href="/dashboard.html" class="btn-back">&larr; Dashboard</a>
+    <div class="nav-right"><div class="lang-toggle"><button class="lang-btn" id="lang-btn-en" onclick="setLang('en')">EN</button><span class="lang-sep">|</span><button class="lang-btn" id="lang-btn-es" onclick="setLang('es')">ES</button></div><a href="/dashboard.html" class="btn-back" data-i18n="nav.back">&larr; Dashboard</a></div>
   </nav>
 
   <main class="main">
@@ -145,15 +152,15 @@
       var balanceLabel = inv.status === 'paid' ? 'PAID' : fmt(inv.balance_due);
 
       var paidBtn = inv.status !== 'paid'
-        ? '<button class="btn-paid" onclick="markPaid()">&#10003; Mark as Paid</button>'
+        ? '<button class="btn-paid" onclick="markPaid()">' + T('inv.btn.mark_paid') + '</button>'
         : '';
 
       var actionsHtml = inv.content
-        ? '<button class="btn-action" onclick="copyInvoice()">Copy</button>' +
-          '<button class="btn-action" onclick="downloadInvoice()">Download .txt</button>' +
+        ? '<button class="btn-action" onclick="copyInvoice()">' + T('btn.copy') + '</button>' +
+          '<button class="btn-action" onclick="downloadInvoice()">' + T('btn.download') + '</button>' +
           paidBtn +
-          '<button class="btn-generate" onclick="generateInvoice()">Regenerate</button>'
-        : '<button class="btn-generate" onclick="generateInvoice()">&#10022; Generate Invoice</button>';
+          '<button class="btn-generate" onclick="generateInvoice()">' + T('inv.btn.regen') + '</button>'
+        : '<button class="btn-generate" onclick="generateInvoice()">' + T('inv.btn.gen') + '</button>';
 
       document.getElementById('page-content').innerHTML =
         '<div class="inv-header">' +
@@ -166,19 +173,19 @@
 
         '<div class="info-grid">' +
           '<div class="info-card">' +
-            '<div class="info-card-title">Client</div>' +
-            '<div class="info-row"><span class="info-label">Name</span><span class="info-value">' + (inv.homeowner_name || '&mdash;') + '</span></div>' +
-            '<div class="info-row"><span class="info-label">Phone</span><span class="info-value">' + (inv.homeowner_phone || '&mdash;') + '</span></div>' +
-            '<div class="info-row"><span class="info-label">Email</span><span class="info-value">' + (inv.homeowner_email || '&mdash;') + '</span></div>' +
-            '<div class="info-row"><span class="info-label">Address</span><span class="info-value">' + (inv.job_address || '&mdash;') + '</span></div>' +
+            '<div class="info-card-title">' + T('inv.card.client') + '</div>' +
+            '<div class="info-row"><span class="info-label">' + T('inv.lbl.name2') + '</span><span class="info-value">' + (inv.homeowner_name || '&mdash;') + '</span></div>' +
+            '<div class="info-row"><span class="info-label">' + T('inv.lbl.phone2') + '</span><span class="info-value">' + (inv.homeowner_phone || '&mdash;') + '</span></div>' +
+            '<div class="info-row"><span class="info-label">' + T('inv.lbl.email2') + '</span><span class="info-value">' + (inv.homeowner_email || '&mdash;') + '</span></div>' +
+            '<div class="info-row"><span class="info-label">' + T('inv.lbl.address2') + '</span><span class="info-value">' + (inv.job_address || '&mdash;') + '</span></div>' +
           '</div>' +
           '<div class="info-card">' +
-            '<div class="info-card-title">Invoice Summary</div>' +
-            '<div class="info-row"><span class="info-label">Subtotal</span><span class="info-value">' + fmt(inv.subtotal) + '</span></div>' +
+            '<div class="info-card-title">' + T('inv.card.summary') + '</div>' +
+            '<div class="info-row"><span class="info-label">' + T('inv.lbl.subtotal') + '</span><span class="info-value">' + fmt(inv.subtotal) + '</span></div>' +
             '<div class="info-row"><span class="info-label">Tax (' + (inv.tax_rate || 0) + '%)</span><span class="info-value">' + fmt(inv.tax_amount) + '</span></div>' +
-            '<div class="info-row"><span class="info-label">Invoice Total</span><span class="info-value">' + fmt(inv.total) + '</span></div>' +
-            (inv.deposit_paid > 0 ? '<div class="info-row"><span class="info-label">Paid</span><span class="info-value" style="color:var(--green);">-' + fmt(inv.deposit_paid) + '</span></div>' : '') +
-            '<div class="info-row" style="margin-top:0.5rem;"><span class="info-label" style="font-weight:700;color:var(--white);">Balance Due</span><span class="balance-highlight">' + balanceLabel + '</span></div>' +
+            '<div class="info-row"><span class="info-label">' + T('inv.lbl.total') + '</span><span class="info-value">' + fmt(inv.total) + '</span></div>' +
+            (inv.deposit_paid > 0 ? '<div class="info-row"><span class="info-label">' + T('inv.lbl.paid') + '</span><span class="info-value" style="color:var(--green);">-' + fmt(inv.deposit_paid) + '</span></div>' : '') +
+            '<div class="info-row" style="margin-top:0.5rem;"><span class="info-label" style="font-weight:700;color:var(--white);">' + T('inv.lbl.balance') + '</span><span class="balance-highlight">' + balanceLabel + '</span></div>' +
           '</div>' +
         '</div>' +
 
@@ -190,7 +197,7 @@
           '<div id="invoice-body">' +
             (inv.content
               ? '<div class="invoice-body"><pre class="invoice-text">' + escapeHtml(inv.content) + '</pre></div>'
-              : '<div class="no-invoice"><h3>No invoice generated yet</h3><p>Click Generate Invoice to create a professional invoice ready to send.</p></div>') +
+              : '<div class="no-invoice"><h3>' + T('inv.no.h') + '</h3><p>' + T('inv.no.p') + '</p></div>') +
           '</div>' +
         '</div>';
     }
@@ -208,7 +215,7 @@
       fetch('/api/generate-invoice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ invoice_id: invoiceId })
+        body: JSON.stringify({ invoice_id: invoiceId, lang: getLang() })
       }).then(function(res) {
         return res.json().then(function(data) { return { ok: res.ok, data: data }; });
       }).then(function(result) {

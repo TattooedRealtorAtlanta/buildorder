@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/lang.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -30,6 +31,11 @@
     .nav-name { font-size: 0.82rem; color: var(--muted); }
     .btn-signout { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.9rem; font-size: 0.78rem; color: var(--dim); cursor: pointer; font-family: inherit; transition: color 0.2s, border-color 0.2s; }
     .btn-signout:hover { color: var(--white); border-color: var(--amber); }
+    .lang-toggle { display: flex; align-items: center; gap: 0.25rem; }
+    .lang-btn { background: none; border: none; color: var(--dim); font-size: 0.75rem; font-weight: 700; cursor: pointer; font-family: inherit; padding: 0.2rem 0.4rem; border-radius: 4px; transition: color 0.15s; }
+    .lang-btn.active { color: var(--amber); }
+    .lang-btn:hover { color: var(--white); }
+    .lang-sep { color: var(--dim); font-size: 0.75rem; }
 
     .main { max-width: 1000px; margin: 0 auto; padding: 2rem 2rem 4rem; }
 
@@ -119,8 +125,9 @@
   <nav class="nav">
     <a href="/dashboard.html" class="logo">Build<em>Order</em></a>
     <div class="nav-right">
+      <div class="lang-toggle"><button class="lang-btn" id="lang-btn-en" onclick="setLang('en')">EN</button><span class="lang-sep">|</span><button class="lang-btn" id="lang-btn-es" onclick="setLang('es')">ES</button></div>
       <span class="nav-name" id="nav-name"></span>
-      <button class="btn-signout" onclick="signOut()">Sign Out</button>
+      <button class="btn-signout" onclick="signOut()" data-i18n="btn.signout">Sign Out</button>
     </div>
   </nav>
 
@@ -128,10 +135,10 @@
 
     <!-- Stats -->
     <div class="stats">
-      <div class="stat"><div class="stat-label">Total Docs</div><div class="stat-value" id="stat-total">&mdash;</div></div>
-      <div class="stat"><div class="stat-label">Contracts</div><div class="stat-value" id="stat-jobs">&mdash;</div></div>
-      <div class="stat"><div class="stat-label">Invoices</div><div class="stat-value" id="stat-inv">&mdash;</div></div>
-      <div class="stat"><div class="stat-label">Outstanding</div><div class="stat-value" id="stat-outstanding">&mdash;</div></div>
+      <div class="stat"><div class="stat-label" data-i18n="dash.stat.total">Total Docs</div><div class="stat-value" id="stat-total">&mdash;</div></div>
+      <div class="stat"><div class="stat-label" data-i18n="dash.stat.contracts">Contracts</div><div class="stat-value" id="stat-jobs">&mdash;</div></div>
+      <div class="stat"><div class="stat-label" data-i18n="dash.stat.invoices">Invoices</div><div class="stat-value" id="stat-inv">&mdash;</div></div>
+      <div class="stat"><div class="stat-label" data-i18n="dash.stat.outstanding">Outstanding</div><div class="stat-value" id="stat-outstanding">&mdash;</div></div>
     </div>
 
     <!-- Tools -->
@@ -139,66 +146,66 @@
     <div class="tools-grid">
       <a href="/new-job.html" class="tool-card">
         <div class="tool-icon">&#128196;</div>
-        <div class="tool-name">Contract</div>
-        <div class="tool-desc">State-compliant scope of work</div>
+        <div class="tool-name" data-i18n="tool.contract">Contract</div>
+        <div class="tool-desc" data-i18n="tool.contract.desc">State-compliant scope of work</div>
         <div class="tool-count" id="tc-jobs">0 contracts</div>
       </a>
       <a href="/new-estimate.html" class="tool-card">
         <div class="tool-icon">&#128203;</div>
-        <div class="tool-name">Estimate</div>
-        <div class="tool-desc">Itemized project estimate</div>
+        <div class="tool-name" data-i18n="tool.estimate">Estimate</div>
+        <div class="tool-desc" data-i18n="tool.estimate.desc">Itemized project estimate</div>
         <div class="tool-count" id="tc-est">0 estimates</div>
       </a>
       <a href="/new-invoice.html" class="tool-card">
         <div class="tool-icon">&#128176;</div>
-        <div class="tool-name">Invoice</div>
-        <div class="tool-desc">Professional payment invoice</div>
+        <div class="tool-name" data-i18n="tool.invoice">Invoice</div>
+        <div class="tool-desc" data-i18n="tool.invoice.desc">Professional payment invoice</div>
         <div class="tool-count" id="tc-inv">0 invoices</div>
       </a>
       <a href="/new-change-order.html" class="tool-card">
         <div class="tool-icon">&#128221;</div>
-        <div class="tool-name">Change Order</div>
-        <div class="tool-desc">Document scope changes</div>
+        <div class="tool-name" data-i18n="tool.change_order">Change Order</div>
+        <div class="tool-desc" data-i18n="tool.change_order.desc">Document scope changes</div>
         <div class="tool-count" id="tc-co">0 change orders</div>
       </a>
       <a href="/new-subcontractor.html" class="tool-card">
         <div class="tool-icon">&#129309;</div>
-        <div class="tool-name">Subcontractor</div>
-        <div class="tool-desc">Sub agreement &amp; scope</div>
+        <div class="tool-name" data-i18n="tool.subcontractor">Subcontractor</div>
+        <div class="tool-desc" data-i18n="tool.subcontractor.desc">Sub agreement &amp; scope</div>
         <div class="tool-count" id="tc-sub">0 agreements</div>
       </a>
       <a href="/new-lien-waiver.html" class="tool-card">
         <div class="tool-icon">&#9875;</div>
-        <div class="tool-name">Lien Waiver</div>
-        <div class="tool-desc">All 4 waiver types</div>
+        <div class="tool-name" data-i18n="tool.lien_waiver">Lien Waiver</div>
+        <div class="tool-desc" data-i18n="tool.lien_waiver.desc">All 4 waiver types</div>
         <div class="tool-count" id="tc-lien">0 waivers</div>
       </a>
       <a href="/new-takeoff.html" class="tool-card">
         <div class="tool-icon">&#128296;</div>
-        <div class="tool-name">Material Takeoff</div>
-        <div class="tool-desc">Quantities &amp; cost estimates</div>
+        <div class="tool-name" data-i18n="tool.takeoff">Material Takeoff</div>
+        <div class="tool-desc" data-i18n="tool.takeoff.desc">Quantities &amp; cost estimates</div>
         <div class="tool-count" id="tc-tkof">0 takeoffs</div>
       </a>
       <a href="/photos.html" class="tool-card">
         <div class="tool-icon">&#128247;</div>
-        <div class="tool-name">Photo Log</div>
-        <div class="tool-desc">Upload &amp; organize job site photos</div>
+        <div class="tool-name" data-i18n="tool.photos">Photo Log</div>
+        <div class="tool-desc" data-i18n="tool.photos.desc">Upload &amp; organize job site photos</div>
         <div class="tool-count" id="tc-photos">Photo log</div>
       </a>
     </div>
 
     <!-- Recent Docs -->
     <div class="recent-header">
-      <div class="section-label" style="margin-bottom:0;">Recent Documents</div>
+      <div class="section-label" style="margin-bottom:0;" data-i18n="dash.recent">Recent Documents</div>
       <div class="filter-tabs">
-        <button class="filter-btn active" onclick="filter('all')">All</button>
-        <button class="filter-btn" onclick="filter('job')">Contracts</button>
-        <button class="filter-btn" onclick="filter('est')">Estimates</button>
-        <button class="filter-btn" onclick="filter('inv')">Invoices</button>
-        <button class="filter-btn" onclick="filter('co')">Change Orders</button>
-        <button class="filter-btn" onclick="filter('sub')">Subcontractors</button>
-        <button class="filter-btn" onclick="filter('lien')">Lien Waivers</button>
-        <button class="filter-btn" onclick="filter('tkof')">Takeoffs</button>
+        <button class="filter-btn active" onclick="filter('all')" data-i18n="dash.filter.all">All</button>
+        <button class="filter-btn" onclick="filter('job')" data-i18n="dash.filter.contracts">Contracts</button>
+        <button class="filter-btn" onclick="filter('est')" data-i18n="dash.filter.estimates">Estimates</button>
+        <button class="filter-btn" onclick="filter('inv')" data-i18n="dash.filter.invoices">Invoices</button>
+        <button class="filter-btn" onclick="filter('co')" data-i18n="dash.filter.change_orders">Change Orders</button>
+        <button class="filter-btn" onclick="filter('sub')" data-i18n="dash.filter.subcontractors">Subcontractors</button>
+        <button class="filter-btn" onclick="filter('lien')" data-i18n="dash.filter.lien_waivers">Lien Waivers</button>
+        <button class="filter-btn" onclick="filter('tkof')" data-i18n="dash.filter.takeoffs">Takeoffs</button>
       </div>
     </div>
     <div class="doc-list" id="doc-list">
@@ -233,7 +240,7 @@
       var docs = currentFilter === 'all' ? allDocs : allDocs.filter(function(d) { return d._type === currentFilter; });
       var list = document.getElementById('doc-list');
       if (docs.length === 0) {
-        list.innerHTML = '<div class="empty-state"><h3>No documents yet</h3><p>Use the tools above to create your first document.</p></div>';
+        list.innerHTML = '<div class="empty-state"><h3>' + T('dash.empty') + '</h3><p>' + T('dash.empty.sub') + '</p></div>';
         return;
       }
       list.innerHTML = docs.map(function(d) {

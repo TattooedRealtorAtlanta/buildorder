@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/lang.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root { --bg:#090E1A; --bg2:#111827; --bg3:#1A2438; --amber:#F59E0B; --amber2:#FCD34D; --white:#F8FAFC; --muted:#94A3B8; --dim:#475569; --border:rgba(255,255,255,0.07); --red:#EF4444; }
@@ -37,24 +38,30 @@
     .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
     .error-msg { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.85rem; color: var(--red); margin-top: 1rem; display: none; }
     @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } .dim-grid { grid-template-columns: 1fr 1fr; } }
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
+    .lang-toggle { display: flex; align-items: center; gap: 0.25rem; }
+    .lang-btn { background: none; border: none; color: var(--dim); font-size: 0.75rem; font-weight: 700; cursor: pointer; font-family: inherit; padding: 0.2rem 0.4rem; border-radius: 4px; transition: color 0.15s; }
+    .lang-btn.active { color: var(--amber); }
+    .lang-btn:hover { color: var(--white); }
+    .lang-sep { color: var(--dim); font-size: 0.75rem; }
   </style>
 </head>
 <body>
   <nav class="nav">
     <a href="/dashboard.html" class="logo">Build<em>Order</em></a>
-    <a href="/dashboard.html" class="btn-back">&larr; Dashboard</a>
+    <div class="nav-right"><div class="lang-toggle"><button class="lang-btn" id="lang-btn-en" onclick="setLang('en')">EN</button><span class="lang-sep">|</span><button class="lang-btn" id="lang-btn-es" onclick="setLang('es')">ES</button></div><a href="/dashboard.html" class="btn-back" data-i18n="nav.back">&larr; Dashboard</a></div>
   </nav>
   <main class="main">
-    <div class="page-title">Material Takeoff Calculator</div>
-    <div class="page-sub">Enter your project dimensions and get a complete materials list with quantities and cost estimates.</div>
+    <div class="page-title" data-i18n="to.new.title">Material Takeoff Calculator</div>
+    <div class="page-sub" data-i18n="to.new.sub">Enter your project dimensions and BuildOrder will generate a complete materials list.</div>
 
     <div class="form-section">
       <div class="form-section-title">Project Info</div>
       <div class="form-grid">
         <div class="form-group"><label>Project Name (optional)</label><input type="text" id="project_name" placeholder="Smith Kitchen Remodel"></div>
-        <div class="form-group"><label>Job Address (optional)</label><input type="text" id="job_address" placeholder="123 Main St, Atlanta GA"></div>
+        <div class="form-group"><label data-i18n="to.lbl.address">Job Address (optional)</label><input type="text" id="job_address" placeholder="123 Main St, Atlanta GA"></div>
         <div class="form-group full">
-          <label>Project Type *</label>
+          <label data-i18n="to.lbl.type">Project Type *</label>
           <select id="project_type">
             <option value="">Select project type...</option>
             <option value="Hardwood Flooring">Hardwood Flooring</option>
@@ -80,55 +87,55 @@
           </select>
         </div>
         <div class="form-group full">
-          <label>Project Description *</label>
+          <label data-i18n="to.lbl.description">Project Description *</label>
           <textarea id="description" placeholder="Describe the project in detail — materials preference (tile size, wood species, shingle type, etc.), any special conditions, existing conditions that need to be removed, etc."></textarea>
         </div>
       </div>
     </div>
 
     <div class="form-section">
-      <div class="form-section-title">Dimensions</div>
+      <div class="form-section-title" data-i18n="to.sec.dims">Dimensions</div>
       <div class="form-grid">
         <div class="form-group">
-          <label>Total Square Footage</label>
+          <label data-i18n="to.lbl.sqft">Total Square Footage</label>
           <input type="number" id="total_sqft" placeholder="e.g. 850" min="0" step="1">
           <div class="hint">OR enter length x width below</div>
         </div>
         <div class="form-group">
-          <label>Linear Feet (for fencing, trim, etc.)</label>
+          <label data-i18n="to.lbl.linear">Linear Feet (for fencing, trim, etc.)</label>
           <input type="number" id="linear_ft" placeholder="e.g. 120" min="0" step="1">
         </div>
       </div>
       <div class="dim-grid" style="margin-top:1rem;">
         <div class="form-group">
-          <label>Length (ft)</label>
+          <label data-i18n="to.lbl.length">Length (ft)</label>
           <input type="number" id="dim_length" placeholder="0" min="0" step="0.5">
         </div>
         <div class="form-group">
-          <label>Width (ft)</label>
+          <label data-i18n="to.lbl.width">Width (ft)</label>
           <input type="number" id="dim_width" placeholder="0" min="0" step="0.5">
         </div>
         <div class="form-group">
-          <label>Height / Depth (ft)</label>
+          <label data-i18n="to.lbl.height">Height (ft)</label>
           <input type="number" id="dim_height" placeholder="0" min="0" step="0.5">
         </div>
         <div class="form-group">
-          <label>Rooms / Areas</label>
+          <label data-i18n="to.lbl.rooms">Number of Rooms</label>
           <input type="number" id="dim_rooms" placeholder="1" min="1" step="1">
         </div>
         <div class="form-group">
-          <label>Perimeter (ft)</label>
+          <label data-i18n="to.lbl.perimeter">Perimeter (ft)</label>
           <input type="number" id="dim_perimeter" placeholder="0" min="0" step="1">
         </div>
         <div class="form-group">
-          <label>Waste Factor (%)</label>
+          <label data-i18n="to.lbl.waste">Waste Factor (%)</label>
           <input type="number" id="waste_factor" placeholder="10" min="0" max="30" step="1" value="10">
           <div class="hint">10% is standard. Use 15% for tile/diagonal cuts.</div>
         </div>
       </div>
       <div style="margin-top:1rem;">
         <div class="form-group">
-          <label>Additional Dimension Notes</label>
+          <label data-i18n="to.lbl.custom">Custom Dimension</label>
           <input type="text" id="dim_custom" placeholder="e.g. 3 windows 3x4ft each, subtract for openings, irregular shape...">
         </div>
       </div>
@@ -137,13 +144,13 @@
     <div class="form-section">
       <div class="form-section-title">Notes</div>
       <div class="form-group">
-        <label>Special Requirements or Preferences (optional)</label>
+        <label data-i18n="to.lbl.notes">Notes (optional)</label>
         <textarea id="notes" placeholder="Budget constraints, preferred brands, specific product specs, local supplier preferences..."></textarea>
       </div>
     </div>
 
     <div class="error-msg" id="error-msg"></div>
-    <button class="btn-submit" id="submit-btn" onclick="createTakeoff()">&#9733; Generate Material Takeoff</button>
+    <button class="btn-submit" id="submit-btn" data-i18n="to.btn.submit" onclick="createTakeoff()">&#9733; Generate Material Takeoff</button>
   </main>
 
   <script>
@@ -157,8 +164,8 @@
     function createTakeoff() {
       var projectType = document.getElementById('project_type').value;
       var description = document.getElementById('description').value.trim();
-      if (!projectType) { showError('Please select a project type.'); return; }
-      if (!description) { showError('Project description is required.'); return; }
+      if (!projectType) { showError(T('to.err.type')); return; }
+      if (!description) { showError(T('to.err.desc')); return; }
 
       var dims = {};
       var sqft = parseFloat(document.getElementById('total_sqft').value);
@@ -179,7 +186,7 @@
       if (!isNaN(perim) && perim > 0) dims.perimeter = perim;
       if (custom) dims.custom = custom;
 
-      if (Object.keys(dims).length === 0) { showError('Please enter at least one dimension (square footage, length x width, or linear feet).'); return; }
+      if (Object.keys(dims).length === 0) { showError(T('to.err.dims')); return; }
 
       var data = {
         project_name:  document.getElementById('project_name').value.trim() || null,
@@ -194,13 +201,13 @@
 
       document.getElementById('error-msg').style.display = 'none';
       var btn = document.getElementById('submit-btn');
-      btn.disabled = true; btn.textContent = 'Saving...';
+      btn.disabled = true; btn.textContent = T('btn.saving');
 
       db.auth.getUser().then(function(userRes) {
         if (!userRes.data.user) { window.location.href = '/login.html'; return; }
         data.user_id = userRes.data.user.id;
         db.from('material_takeoffs').insert(data).select().single().then(function(res) {
-          if (res.error) { showError('Error saving: ' + res.error.message); btn.disabled = false; btn.textContent = 'Generate Material Takeoff'; return; }
+          if (res.error) { showError('Error saving: ' + res.error.message); btn.disabled = false; btn.textContent = T('to.btn.submit'); return; }
           window.location.href = '/takeoff.html?id=' + res.data.id + '&generate=true';
         });
       });

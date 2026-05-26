@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/lang.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root { --bg:#090E1A; --bg2:#111827; --bg3:#1A2438; --amber:#F59E0B; --amber2:#FCD34D; --white:#F8FAFC; --muted:#94A3B8; --dim:#475569; --border:rgba(255,255,255,0.07); --green:#34D399; --red:#EF4444; }
@@ -55,12 +56,18 @@
     .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1.25rem; font-size: 0.85rem; font-weight: 600; color: var(--green); opacity: 0; transform: translateY(10px); transition: opacity 0.2s, transform 0.2s; pointer-events: none; z-index: 100; }
     .toast.show { opacity: 1; transform: translateY(0); }
     @media (max-width: 640px) { .info-grid { grid-template-columns: 1fr; } .doc-header { flex-direction: column; } }
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
+    .lang-toggle { display: flex; align-items: center; gap: 0.25rem; }
+    .lang-btn { background: none; border: none; color: var(--dim); font-size: 0.75rem; font-weight: 700; cursor: pointer; font-family: inherit; padding: 0.2rem 0.4rem; border-radius: 4px; transition: color 0.15s; }
+    .lang-btn.active { color: var(--amber); }
+    .lang-btn:hover { color: var(--white); }
+    .lang-sep { color: var(--dim); font-size: 0.75rem; }
   </style>
 </head>
 <body>
   <nav class="nav">
     <a href="/dashboard.html" class="logo">Build<em>Order</em></a>
-    <a href="/dashboard.html" class="btn-back">&larr; Dashboard</a>
+    <div class="nav-right"><div class="lang-toggle"><button class="lang-btn" id="lang-btn-en" onclick="setLang('en')">EN</button><span class="lang-sep">|</span><button class="lang-btn" id="lang-btn-es" onclick="setLang('es')">ES</button></div><a href="/dashboard.html" class="btn-back" data-i18n="nav.back">&larr; Dashboard</a></div>
   </nav>
   <main class="main"><div id="page-content"></div></main>
   <div class="toast" id="toast"></div>
@@ -89,24 +96,24 @@
     function render() {
       var d = current;
       var sc = { draft: 'status-draft', sent: 'status-sent', accepted: 'status-accepted' }[d.status] || 'status-draft';
-      var acceptBtn = d.status !== 'accepted' ? '<button class="btn-accepted" onclick="markAccepted()">&#10003; Mark Accepted</button>' : '';
+      var acceptBtn = d.status !== 'accepted' ? '<button class="btn-accepted" onclick="markAccepted()">' + T('sub.btn.accept') + '</button>' : '';
       var actions = d.content
-        ? '<button class="btn-action" onclick="copyDoc()">Copy</button><button class="btn-action" onclick="dlDoc()">Download .txt</button>' + acceptBtn + '<button class="btn-generate" onclick="generate()">Regenerate</button>'
-        : '<button class="btn-generate" onclick="generate()">&#10022; Generate Agreement</button>';
+        ? '<button class="btn-action" onclick="copyDoc()">' + T('btn.copy') + '</button><button class="btn-action" onclick="dlDoc()">' + T('btn.download') + '</button>' + acceptBtn + '<button class="btn-generate" onclick="generate()">' + T('sub.btn.regen') + '</button>'
+        : '<button class="btn-generate" onclick="generate()">' + T('sub.btn.gen') + '</button>';
 
       document.getElementById('page-content').innerHTML =
-        '<div class="doc-header"><div><div class="doc-title">' + (d.sub_company || d.sub_name || 'Subcontractor') + '</div><div class="doc-meta">Subcontractor Agreement &middot; ' + (d.work_type || '') + ' &middot; ' + fmtDate(d.created_at) + '</div></div><span class="status-badge ' + sc + '">' + d.status + '</span></div>' +
-        '<div class="info-grid"><div class="info-card"><div class="info-card-title">Subcontractor</div><div class="info-row"><span class="info-label">Name</span><span class="info-value">' + (d.sub_name || '&mdash;') + '</span></div><div class="info-row"><span class="info-label">Company</span><span class="info-value">' + (d.sub_company || '&mdash;') + '</span></div><div class="info-row"><span class="info-label">Phone</span><span class="info-value">' + (d.sub_phone || '&mdash;') + '</span></div><div class="info-row"><span class="info-label">License</span><span class="info-value">' + (d.sub_license || '&mdash;') + '</span></div></div>' +
-        '<div class="info-card"><div class="info-card-title">Contract</div><div class="info-row"><span class="info-label">Amount</span><span class="info-value" style="font-size:1.1rem;font-weight:900;color:var(--amber);">$' + Number(d.contract_amount || 0).toLocaleString() + '</span></div><div class="info-row"><span class="info-label">Payment Terms</span><span class="info-value">' + (d.payment_terms || '&mdash;') + '</span></div><div class="info-row"><span class="info-label">Start</span><span class="info-value">' + fmtDate(d.start_date) + '</span></div><div class="info-row"><span class="info-label">End</span><span class="info-value">' + fmtDate(d.end_date) + '</span></div></div></div>' +
-        '<div class="doc-section"><div class="doc-sec-header"><div class="doc-sec-title">&#128221; Subcontractor Agreement</div><div class="doc-actions" id="doc-actions">' + actions + '</div></div>' +
-        '<div id="doc-body">' + (d.content ? '<div class="doc-body"><pre class="doc-text">' + escapeHtml(d.content) + '</pre></div>' : '<div class="no-doc"><h3>No document generated yet</h3><p>Click Generate Agreement to create a binding subcontractor agreement.</p></div>') + '</div></div>';
+        '<div class="doc-header"><div><div class="doc-title">' + (d.sub_company || d.sub_name || 'Subcontractor') + '</div><div class="doc-meta">' + T('tool.subcontractor') + ' &middot; ' + (d.work_type || '') + ' &middot; ' + fmtDate(d.created_at) + '</div></div><span class="status-badge ' + sc + '">' + T('status.' + d.status) + '</span></div>' +
+        '<div class="info-grid"><div class="info-card"><div class="info-card-title">' + T('sub.card.sub') + '</div><div class="info-row"><span class="info-label">' + T('sub.lbl.name2') + '</span><span class="info-value">' + (d.sub_name || '&mdash;') + '</span></div><div class="info-row"><span class="info-label">' + T('sub.lbl.company2') + '</span><span class="info-value">' + (d.sub_company || '&mdash;') + '</span></div><div class="info-row"><span class="info-label">' + T('sub.lbl.phone2') + '</span><span class="info-value">' + (d.sub_phone || '&mdash;') + '</span></div><div class="info-row"><span class="info-label">' + T('sub.lbl.license2') + '</span><span class="info-value">' + (d.sub_license || '&mdash;') + '</span></div></div>' +
+        '<div class="info-card"><div class="info-card-title">' + T('sub.card.contract') + '</div><div class="info-row"><span class="info-label">' + T('sub.lbl.amount2') + '</span><span class="info-value" style="font-size:1.1rem;font-weight:900;color:var(--amber);">$' + Number(d.contract_amount || 0).toLocaleString() + '</span></div><div class="info-row"><span class="info-label">' + T('sub.lbl.payment2') + '</span><span class="info-value">' + (d.payment_terms || '&mdash;') + '</span></div><div class="info-row"><span class="info-label">' + T('sub.lbl.start2') + '</span><span class="info-value">' + fmtDate(d.start_date) + '</span></div><div class="info-row"><span class="info-label">' + T('sub.lbl.end2') + '</span><span class="info-value">' + fmtDate(d.end_date) + '</span></div></div></div>' +
+        '<div class="doc-section"><div class="doc-sec-header"><div class="doc-sec-title">&#128221; ' + T('tool.subcontractor') + '</div><div class="doc-actions" id="doc-actions">' + actions + '</div></div>' +
+        '<div id="doc-body">' + (d.content ? '<div class="doc-body"><pre class="doc-text">' + escapeHtml(d.content) + '</pre></div>' : '<div class="no-doc"><h3>' + T('sub.no.h') + '</h3><p>' + T('sub.no.p') + '</p></div>') + '</div></div>';
     }
 
     function generate() {
-      document.getElementById('doc-body').innerHTML = '<div class="generating"><div class="generating-spinner"></div><h3>Generating agreement&hellip;</h3><p>BuildOrder is creating a subcontractor agreement for ' + (current.sub_company || current.sub_name || 'your sub') + '.</p></div>';
+      document.getElementById('doc-body').innerHTML = '<div class="generating"><div class="generating-spinner"></div><h3>' + T('sub.generating.h') + '</h3><p>BuildOrder is creating a subcontractor agreement for ' + (current.sub_company || current.sub_name || 'your sub') + '.</p></div>';
       var el = document.getElementById('doc-actions');
-      if (el) el.innerHTML = '<button class="btn-generate" disabled>Generating&hellip;</button>';
-      fetch('/api/generate-subcontractor', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ agreement_id: docId }) })
+      if (el) el.innerHTML = '<button class="btn-generate" disabled>' + T('gen.generating') + '</button>';
+      fetch('/api/generate-subcontractor', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ agreement_id: docId, lang: getLang() }) })
         .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
         .then(function(result) {
           if (!result.ok || !result.data.success) { showErr(result.data.error || 'Generation failed.'); return; }
@@ -124,9 +131,9 @@
     }
 
     function showErr(msg) {
-      document.getElementById('doc-body').innerHTML = '<div class="error-msg">&#9888; ' + msg + '</div><div class="no-doc"><button class="btn-generate" onclick="generate()">Try Again</button></div>';
+      document.getElementById('doc-body').innerHTML = '<div class="error-msg">&#9888; ' + msg + '</div><div class="no-doc"><button class="btn-generate" onclick="generate()">' + T('btn.try_again') + '</button></div>';
       var el = document.getElementById('doc-actions');
-      if (el) el.innerHTML = '<button class="btn-generate" onclick="generate()">&#10022; Generate Agreement</button>';
+      if (el) el.innerHTML = '<button class="btn-generate" onclick="generate()">' + T('sub.btn.gen') + '</button>';
     }
 
     function copyDoc() { if (!current || !current.content) return; navigator.clipboard.writeText(current.content).then(function() { showToast('Copied!'); }); }

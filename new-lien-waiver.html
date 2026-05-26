@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/lang.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root { --bg:#090E1A; --bg2:#111827; --bg3:#1A2438; --amber:#F59E0B; --amber2:#FCD34D; --white:#F8FAFC; --muted:#94A3B8; --dim:#475569; --border:rgba(255,255,255,0.07); --red:#EF4444; }
@@ -41,71 +42,77 @@
     .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
     .error-msg { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.85rem; color: var(--red); margin-top: 1rem; display: none; }
     @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } .type-grid { grid-template-columns: 1fr; } }
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
+    .lang-toggle { display: flex; align-items: center; gap: 0.25rem; }
+    .lang-btn { background: none; border: none; color: var(--dim); font-size: 0.75rem; font-weight: 700; cursor: pointer; font-family: inherit; padding: 0.2rem 0.4rem; border-radius: 4px; transition: color 0.15s; }
+    .lang-btn.active { color: var(--amber); }
+    .lang-btn:hover { color: var(--white); }
+    .lang-sep { color: var(--dim); font-size: 0.75rem; }
   </style>
 </head>
 <body>
   <nav class="nav">
     <a href="/dashboard.html" class="logo">Build<em>Order</em></a>
-    <a href="/dashboard.html" class="btn-back">&larr; Dashboard</a>
+    <div class="nav-right"><div class="lang-toggle"><button class="lang-btn" id="lang-btn-en" onclick="setLang('en')">EN</button><span class="lang-sep">|</span><button class="lang-btn" id="lang-btn-es" onclick="setLang('es')">ES</button></div><a href="/dashboard.html" class="btn-back" data-i18n="nav.back">&larr; Dashboard</a></div>
   </nav>
   <main class="main">
-    <div class="page-title">New Lien Waiver</div>
+    <div class="page-title" data-i18n="lw.new.title">New Lien Waiver</div>
     <div class="page-sub">Generate a legally correct lien waiver for any payment milestone.</div>
 
     <div class="form-section">
-      <div class="form-section-title">Waiver Type</div>
+      <div class="form-section-title" data-i18n="lw.sec.type">Select Waiver Type</div>
       <div class="type-grid">
         <label class="type-card selected" onclick="selectType('conditional_progress')">
           <input type="radio" name="waiver_type" value="conditional_progress" checked>
-          <div class="type-name">Conditional Progress</div>
-          <div class="type-desc">For a progress payment. Takes effect only when the check clears. Most common.</div>
+          <div class="type-name" data-i18n="lw.type.cp">Conditional Waiver &mdash; Progress Payment</div>
+          <div class="type-desc" data-i18n="lw.type.cp.desc">Waiver takes effect when check clears</div>
         </label>
         <label class="type-card" onclick="selectType('unconditional_progress')">
           <input type="radio" name="waiver_type" value="unconditional_progress">
-          <div class="type-name">Unconditional Progress</div>
-          <div class="type-desc">Effective immediately. Use only after you&rsquo;ve confirmed the payment cleared.</div>
+          <div class="type-name" data-i18n="lw.type.up">Unconditional Waiver &mdash; Progress Payment</div>
+          <div class="type-desc" data-i18n="lw.type.up.desc">Rights waived immediately upon signing</div>
         </label>
         <label class="type-card" onclick="selectType('conditional_final')">
           <input type="radio" name="waiver_type" value="conditional_final">
-          <div class="type-name">Conditional Final</div>
-          <div class="type-desc">For the final payment. Waives all claims conditional on final check clearing.</div>
+          <div class="type-name" data-i18n="lw.type.cf">Conditional Waiver &mdash; Final Payment</div>
+          <div class="type-desc" data-i18n="lw.type.cf.desc">Final conditional on check clearing</div>
         </label>
         <label class="type-card" onclick="selectType('unconditional_final')">
           <input type="radio" name="waiver_type" value="unconditional_final">
-          <div class="type-name">Unconditional Final</div>
-          <div class="type-desc">Complete release of all lien rights. Use only after final payment confirmed received.</div>
+          <div class="type-name" data-i18n="lw.type.uf">Unconditional Waiver &mdash; Final Payment</div>
+          <div class="type-desc" data-i18n="lw.type.uf.desc">All claims released immediately</div>
         </label>
       </div>
     </div>
 
     <div class="form-section">
-      <div class="form-section-title">Parties</div>
+      <div class="form-section-title" data-i18n="lw.sec.claimant">Claimant (Your Info)</div>
       <div class="form-grid">
-        <div class="form-group"><label>Claimant Name (you)</label><input type="text" id="claimant_name" placeholder="Your name (auto-fills from profile)"></div>
-        <div class="form-group"><label>Claimant Company</label><input type="text" id="claimant_company" placeholder="Your business name"></div>
-        <div class="form-group"><label>Customer / Owner Name *</label><input type="text" id="customer_name" placeholder="Property owner or GC name"></div>
-        <div class="form-group"><label>Customer Company</label><input type="text" id="customer_company" placeholder="Owner or GC company"></div>
+        <div class="form-group"><label data-i18n="lw.lbl.cl_name">Your Name *</label><input type="text" id="claimant_name" placeholder="Your name (auto-fills from profile)"></div>
+        <div class="form-group"><label data-i18n="lw.lbl.cl_company">Your Company</label><input type="text" id="claimant_company" placeholder="Your business name"></div>
+        <div class="form-group"><label data-i18n="lw.lbl.customer">Customer / Owner Name *</label><input type="text" id="customer_name" placeholder="Property owner or GC name"></div>
+        <div class="form-group"><label data-i18n="lw.lbl.customer_co">Customer Company (optional)</label><input type="text" id="customer_company" placeholder="Owner or GC company"></div>
         <div class="form-group"><label>Property Owner (if different)</label><input type="text" id="property_owner" placeholder="Name on property title"></div>
       </div>
     </div>
 
     <div class="form-section">
-      <div class="form-section-title">Property &amp; Payment</div>
+      <div class="form-section-title" data-i18n="lw.sec.details">Waiver Details</div>
       <div class="form-grid">
-        <div class="form-group full"><label>Job / Property Address *</label><input type="text" id="job_address" placeholder="123 Main St"></div>
-        <div class="form-group"><label>City</label><input type="text" id="job_city" placeholder="Atlanta"></div>
-        <div class="form-group"><label>State</label><input type="text" id="job_state" placeholder="GA" maxlength="2"></div>
+        <div class="form-group full"><label data-i18n="lw.lbl.job_address">Job Address *</label><input type="text" id="job_address" placeholder="123 Main St"></div>
+        <div class="form-group"><label data-i18n="lw.lbl.city">City</label><input type="text" id="job_city" placeholder="Atlanta"></div>
+        <div class="form-group"><label data-i18n="lw.lbl.state">State</label><input type="text" id="job_state" placeholder="GA" maxlength="2"></div>
         <div class="form-group"><label>ZIP</label><input type="text" id="job_zip" placeholder="30301"></div>
-        <div class="form-group"><label>Amount of This Waiver ($) *</label><input type="number" id="amount" placeholder="0.00" min="0" step="0.01"></div>
-        <div class="form-group"><label>Through Date (work covered through)</label><input type="date" id="through_date"></div>
-        <div class="form-group"><label>Payment Date</label><input type="date" id="payment_date"></div>
-        <div class="form-group"><label>Check / Reference Number</label><input type="text" id="check_number" placeholder="Check #12345"></div>
+        <div class="form-group"><label data-i18n="lw.lbl.amount">Waiver Amount ($) *</label><input type="number" id="amount" placeholder="0.00" min="0" step="0.01"></div>
+        <div class="form-group"><label data-i18n="lw.lbl.through">Through Date *</label><input type="date" id="through_date"></div>
+        <div class="form-group"><label data-i18n="lw.lbl.payment_date">Payment Date (optional)</label><input type="date" id="payment_date"></div>
+        <div class="form-group"><label data-i18n="lw.lbl.check">Check # (optional)</label><input type="text" id="check_number" placeholder="Check #12345"></div>
         <div class="form-group full"><label>Notes (optional)</label><textarea id="notes" placeholder="Any special conditions or exceptions..."></textarea></div>
       </div>
     </div>
 
     <div class="error-msg" id="error-msg"></div>
-    <button class="btn-submit" id="submit-btn" onclick="createWaiver()">&#9733; Generate Lien Waiver</button>
+    <button class="btn-submit" id="submit-btn" data-i18n="lw.btn.submit" onclick="createWaiver()">&#9733; Generate Lien Waiver</button>
   </main>
 
   <script>
@@ -141,9 +148,9 @@
       var customer = document.getElementById('customer_name').value.trim();
       var addr     = document.getElementById('job_address').value.trim();
       var amount   = parseFloat(document.getElementById('amount').value);
-      if (!customer) { showError('Customer / owner name is required.'); return; }
-      if (!addr)     { showError('Property address is required.'); return; }
-      if (isNaN(amount) || amount <= 0) { showError('A valid waiver amount is required.'); return; }
+      if (!customer) { showError(T('lw.err.customer')); return; }
+      if (!addr)     { showError(T('lw.err.address')); return; }
+      if (isNaN(amount) || amount <= 0) { showError(T('lw.err.amount')); return; }
 
       var data = {
         waiver_type:      selectedType,
@@ -166,13 +173,13 @@
 
       document.getElementById('error-msg').style.display = 'none';
       var btn = document.getElementById('submit-btn');
-      btn.disabled = true; btn.textContent = 'Saving...';
+      btn.disabled = true; btn.textContent = T('btn.saving');
 
       db.auth.getUser().then(function(userRes) {
         if (!userRes.data.user) { window.location.href = '/login.html'; return; }
         data.user_id = userRes.data.user.id;
         db.from('lien_waivers').insert(data).select().single().then(function(res) {
-          if (res.error) { showError('Error saving: ' + res.error.message); btn.disabled = false; btn.textContent = 'Generate Lien Waiver'; return; }
+          if (res.error) { showError('Error saving: ' + res.error.message); btn.disabled = false; btn.textContent = T('lw.btn.submit'); return; }
           window.location.href = '/lien-waiver.html?id=' + res.data.id + '&generate=true';
         });
       });

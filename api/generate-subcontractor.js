@@ -11,7 +11,7 @@ function formatDate(dateStr) {
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { agreement_id } = req.body || {};
+  const { agreement_id, lang } = req.body || {};
   if (!agreement_id) return res.status(400).json({ error: 'agreement_id required' });
 
   const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
@@ -29,7 +29,7 @@ module.exports = async (req, res) => {
   const jobAddr = [agr.job_address, agr.job_city, agr.job_state, agr.job_zip].filter(Boolean).join(', ');
   const agrNum = 'SUB-' + Date.now().toString().slice(-6);
 
-  const prompt = `You are generating a professional subcontractor agreement for a general contractor. Output ONLY the agreement — no commentary.
+  let prompt = `You are generating a professional subcontractor agreement for a general contractor. Output ONLY the agreement — no commentary.
 
 GENERAL CONTRACTOR (Hiring Party):
 Name: ${profile.contractor_name}
@@ -79,6 +79,10 @@ INSTRUCTIONS — generate a complete subcontractor agreement with these sections
 14. SIGNATURE BLOCK: GC and Subcontractor with date lines
 
 Format: plain text, === and --- separators, ALL CAPS headers. Professional but readable.`;
+
+  if (lang === 'es') {
+    prompt += '\n\nIMPORTANT: Generate this entire document in Spanish. All headers, labels, legal language, and content must be in Spanish.';
+  }
 
   try {
     const message = await anthropic.messages.create({

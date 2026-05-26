@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/lang.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root { --bg:#090E1A; --bg2:#111827; --bg3:#1A2438; --amber:#F59E0B; --amber2:#FCD34D; --white:#F8FAFC; --muted:#94A3B8; --dim:#475569; --border:rgba(255,255,255,0.07); --red:#EF4444; }
@@ -34,53 +35,59 @@
     .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
     .error-msg { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.85rem; color: var(--red); margin-top: 1rem; display: none; }
     @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
+    .lang-toggle { display: flex; align-items: center; gap: 0.25rem; }
+    .lang-btn { background: none; border: none; color: var(--dim); font-size: 0.75rem; font-weight: 700; cursor: pointer; font-family: inherit; padding: 0.2rem 0.4rem; border-radius: 4px; transition: color 0.15s; }
+    .lang-btn.active { color: var(--amber); }
+    .lang-btn:hover { color: var(--white); }
+    .lang-sep { color: var(--dim); font-size: 0.75rem; }
   </style>
 </head>
 <body>
   <nav class="nav">
     <a href="/dashboard.html" class="logo">Build<em>Order</em></a>
-    <a href="/dashboard.html" class="btn-back">&larr; Dashboard</a>
+    <div class="nav-right"><div class="lang-toggle"><button class="lang-btn" id="lang-btn-en" onclick="setLang('en')">EN</button><span class="lang-sep">|</span><button class="lang-btn" id="lang-btn-es" onclick="setLang('es')">ES</button></div><a href="/dashboard.html" class="btn-back" data-i18n="nav.back">&larr; Dashboard</a></div>
   </nav>
   <main class="main">
-    <div class="page-title">New Subcontractor Agreement</div>
-    <div class="page-sub">Create a binding agreement with any subcontractor working on your job.</div>
+    <div class="page-title" data-i18n="sub.new.title">New Subcontractor Agreement</div>
+    <div class="page-sub" data-i18n="sub.new.sub">Create a binding agreement with any subcontractor working on your job.</div>
 
     <div class="form-section">
-      <div class="form-section-title">Subcontractor Information</div>
+      <div class="form-section-title" data-i18n="sub.sec.info">Subcontractor Information</div>
       <div class="form-grid">
-        <div class="form-group full"><label>Subcontractor Name *</label><input type="text" id="sub_name" placeholder="John Rivera"></div>
-        <div class="form-group"><label>Company Name</label><input type="text" id="sub_company" placeholder="Rivera Plumbing LLC"></div>
-        <div class="form-group"><label>Phone</label><input type="tel" id="sub_phone" placeholder="(555) 555-5555"></div>
-        <div class="form-group"><label>Email</label><input type="email" id="sub_email" placeholder="john@email.com"></div>
-        <div class="form-group"><label>License Number</label><input type="text" id="sub_license" placeholder="LIC-123456"></div>
-        <div class="form-group"><label>Insurance / GL Policy #</label><input type="text" id="sub_insurance" placeholder="GL-789012"></div>
+        <div class="form-group full"><label data-i18n="sub.lbl.name">Subcontractor Name *</label><input type="text" id="sub_name" placeholder="John Rivera"></div>
+        <div class="form-group"><label data-i18n="sub.lbl.company">Company Name</label><input type="text" id="sub_company" placeholder="Rivera Plumbing LLC"></div>
+        <div class="form-group"><label data-i18n="sub.lbl.phone">Phone</label><input type="tel" id="sub_phone" placeholder="(555) 555-5555"></div>
+        <div class="form-group"><label data-i18n="sub.lbl.email">Email</label><input type="email" id="sub_email" placeholder="john@email.com"></div>
+        <div class="form-group"><label data-i18n="sub.lbl.license">License Number</label><input type="text" id="sub_license" placeholder="LIC-123456"></div>
+        <div class="form-group"><label data-i18n="sub.lbl.insurance">Insurance / GL Policy #</label><input type="text" id="sub_insurance" placeholder="GL-789012"></div>
       </div>
     </div>
 
     <div class="form-section">
-      <div class="form-section-title">Job Information</div>
+      <div class="form-section-title" data-i18n="sub.sec.job">Job Information</div>
       <div class="form-grid">
-        <div class="form-group full"><label>Job Address</label><input type="text" id="job_address" placeholder="123 Main St"></div>
-        <div class="form-group"><label>City</label><input type="text" id="job_city" placeholder="Atlanta"></div>
-        <div class="form-group"><label>State</label><input type="text" id="job_state" placeholder="GA" maxlength="2"></div>
-        <div class="form-group"><label>Work Type</label><input type="text" id="work_type" placeholder="Plumbing, Electrical, HVAC..."></div>
+        <div class="form-group full"><label data-i18n="sub.lbl.address">Job Address</label><input type="text" id="job_address" placeholder="123 Main St"></div>
+        <div class="form-group"><label data-i18n="sub.lbl.city">City</label><input type="text" id="job_city" placeholder="Atlanta"></div>
+        <div class="form-group"><label data-i18n="sub.lbl.state">State</label><input type="text" id="job_state" placeholder="GA" maxlength="2"></div>
+        <div class="form-group"><label data-i18n="sub.lbl.work_type">Work Type</label><input type="text" id="work_type" placeholder="Plumbing, Electrical, HVAC..."></div>
       </div>
     </div>
 
     <div class="form-section">
-      <div class="form-section-title">Contract Details</div>
+      <div class="form-section-title" data-i18n="sub.sec.contract">Contract Details</div>
       <div class="form-grid">
-        <div class="form-group full"><label>Scope of Work *</label><textarea id="scope_of_work" placeholder="Describe exactly what this subcontractor is responsible for..."></textarea></div>
-        <div class="form-group"><label>Contract Amount ($) *</label><input type="number" id="contract_amount" placeholder="0.00" min="0" step="0.01"></div>
-        <div class="form-group"><label>Payment Terms</label><input type="text" id="payment_terms" placeholder="50% upon start, 50% upon completion"></div>
-        <div class="form-group"><label>Start Date</label><input type="date" id="start_date"></div>
-        <div class="form-group"><label>Estimated Completion</label><input type="date" id="end_date"></div>
-        <div class="form-group full"><label>Notes (optional)</label><textarea id="notes" placeholder="Any special requirements or conditions..."></textarea></div>
+        <div class="form-group full"><label data-i18n="sub.lbl.scope">Scope of Work *</label><textarea id="scope_of_work" placeholder="Describe exactly what this subcontractor is responsible for..."></textarea></div>
+        <div class="form-group"><label data-i18n="sub.lbl.amount">Contract Amount ($) *</label><input type="number" id="contract_amount" placeholder="0.00" min="0" step="0.01"></div>
+        <div class="form-group"><label data-i18n="sub.lbl.payment_terms">Payment Terms</label><input type="text" id="payment_terms" placeholder="50% upon start, 50% upon completion"></div>
+        <div class="form-group"><label data-i18n="sub.lbl.start">Start Date</label><input type="date" id="start_date"></div>
+        <div class="form-group"><label data-i18n="sub.lbl.end">Estimated Completion</label><input type="date" id="end_date"></div>
+        <div class="form-group full"><label data-i18n="sub.lbl.notes">Notes (optional)</label><textarea id="notes" placeholder="Any special requirements or conditions..."></textarea></div>
       </div>
     </div>
 
     <div class="error-msg" id="error-msg"></div>
-    <button class="btn-submit" id="submit-btn" onclick="createAgreement()">&#9733; Generate Subcontractor Agreement</button>
+    <button class="btn-submit" id="submit-btn" data-i18n="sub.btn.submit" onclick="createAgreement()">&#9733; Generate Subcontractor Agreement</button>
   </main>
 
   <script>
@@ -95,9 +102,9 @@
       var subName = document.getElementById('sub_name').value.trim();
       var scope   = document.getElementById('scope_of_work').value.trim();
       var amount  = parseFloat(document.getElementById('contract_amount').value);
-      if (!subName) { showError('Subcontractor name is required.'); return; }
-      if (!scope)   { showError('Scope of work is required.'); return; }
-      if (isNaN(amount)) { showError('Contract amount is required.'); return; }
+      if (!subName) { showError(T('sub.err.name')); return; }
+      if (!scope)   { showError(T('sub.err.scope')); return; }
+      if (isNaN(amount)) { showError(T('sub.err.amount')); return; }
 
       var data = {
         sub_name:        subName,
@@ -121,13 +128,13 @@
 
       document.getElementById('error-msg').style.display = 'none';
       var btn = document.getElementById('submit-btn');
-      btn.disabled = true; btn.textContent = 'Saving...';
+      btn.disabled = true; btn.textContent = T('btn.saving');
 
       db.auth.getUser().then(function(userRes) {
         if (!userRes.data.user) { window.location.href = '/login.html'; return; }
         data.user_id = userRes.data.user.id;
         db.from('subcontractor_agreements').insert(data).select().single().then(function(res) {
-          if (res.error) { showError('Error saving: ' + res.error.message); btn.disabled = false; btn.textContent = 'Generate Subcontractor Agreement'; return; }
+          if (res.error) { showError('Error saving: ' + res.error.message); btn.disabled = false; btn.textContent = T('sub.btn.submit'); return; }
           window.location.href = '/subcontractor.html?id=' + res.data.id + '&generate=true';
         });
       });
