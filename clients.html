@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BuildOrder.ai &mdash; Clients</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/lang.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --bg:#090E1A; --bg2:#111827; --bg3:#1A2438; --amber:#F59E0B; --amber2:#FCD34D; --white:#F8FAFC; --muted:#94A3B8; --dim:#475569; --border:rgba(255,255,255,0.07); --green:#34D399; --red:#EF4444; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; }
+    .nav { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+    .logo { font-size: 1.2rem; font-weight: 900; letter-spacing: -0.03em; text-decoration: none; color: var(--white); }
+    .logo em { font-style: normal; color: var(--amber); }
+    .nav-right { display: flex; align-items: center; gap: 0.75rem; }
+    .btn-back { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.9rem; font-size: 0.78rem; color: var(--dim); cursor: pointer; font-family: inherit; text-decoration: none; transition: color 0.2s, border-color 0.2s; }
+    .btn-back:hover { color: var(--white); border-color: var(--amber); }
+    .main { max-width: 900px; margin: 0 auto; padding: 2.5rem 2rem; }
+    .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+    .page-title { font-size: 1.4rem; font-weight: 900; letter-spacing: -0.02em; }
+    .btn-new { background: var(--amber); color: #090E1A; border: none; border-radius: 10px; padding: 0.55rem 1.2rem; font-size: 0.82rem; font-weight: 900; cursor: pointer; font-family: inherit; }
+    .btn-new:hover { background: var(--amber2); }
+    .search-bar { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 0.6rem 1rem; font-size: 0.85rem; color: var(--white); font-family: inherit; outline: none; width: 100%; margin-bottom: 1.25rem; }
+    .search-bar:focus { border-color: var(--amber); }
+    .client-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    .client-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem 1.35rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: border-color 0.2s; }
+    .client-card:hover { border-color: rgba(245,158,11,0.35); }
+    .client-avatar { width: 38px; height: 38px; border-radius: 50%; background: rgba(245,158,11,0.12); display: flex; align-items: center; justify-content: center; font-size: 0.95rem; font-weight: 800; color: var(--amber); flex-shrink: 0; }
+    .client-info { flex: 1; min-width: 0; }
+    .client-name { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.15rem; }
+    .client-sub { font-size: 0.75rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .client-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+    .btn-edit { background: none; border: 1px solid var(--border); border-radius: 7px; padding: 0.3rem 0.7rem; font-size: 0.72rem; font-weight: 600; color: var(--muted); cursor: pointer; font-family: inherit; transition: color 0.15s, border-color 0.15s; }
+    .btn-edit:hover { color: var(--white); border-color: var(--amber); }
+    .btn-del { background: none; border: 1px solid transparent; border-radius: 7px; padding: 0.3rem 0.7rem; font-size: 0.72rem; font-weight: 600; color: var(--dim); cursor: pointer; font-family: inherit; transition: color 0.15s; }
+    .btn-del:hover { color: var(--red); }
+    .empty-state { text-align: center; padding: 3.5rem 2rem; color: var(--muted); }
+    .empty-state h3 { font-size: 1rem; font-weight: 700; color: var(--white); margin-bottom: 0.4rem; }
+    .empty-state p { font-size: 0.82rem; margin-bottom: 1.5rem; }
+    /* Modal */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 1rem; }
+    .modal-overlay.hidden { display: none; }
+    .modal-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; max-width: 520px; width: 100%; max-height: 90vh; overflow-y: auto; }
+    .modal-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 1.5rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    .form-field { margin-bottom: 1rem; }
+    .form-label { font-size: 0.75rem; font-weight: 600; color: var(--muted); display: block; margin-bottom: 0.35rem; }
+    .form-input { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem 0.9rem; font-size: 0.85rem; color: var(--white); font-family: inherit; outline: none; }
+    .form-input:focus { border-color: var(--amber); }
+    .modal-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; }
+    .btn-cancel { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.55rem 1.2rem; font-size: 0.82rem; font-weight: 600; color: var(--muted); cursor: pointer; font-family: inherit; }
+    .btn-save { background: var(--amber); color: #090E1A; border: none; border-radius: 8px; padding: 0.55rem 1.2rem; font-size: 0.82rem; font-weight: 800; cursor: pointer; font-family: inherit; }
+    .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+    .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1.25rem; font-size: 0.85rem; font-weight: 600; color: var(--green); opacity: 0; transform: translateY(10px); transition: opacity 0.2s, transform 0.2s; pointer-events: none; z-index: 100; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    @media (max-width: 550px) { .form-row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a href="/dashboard.html" class="logo">Build<em>Order</em></a>
+    <div class="nav-right">
+      <a href="/dashboard.html" class="btn-back">&larr; Dashboard</a>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div class="page-header">
+      <div class="page-title">&#128100; Clients</div>
+      <button class="btn-new" onclick="openModal()">+ Add Client</button>
+    </div>
+
+    <input type="text" class="search-bar" id="search-input" placeholder="Search clients by name, company, or email…" oninput="filterClients()">
+
+    <div class="client-list" id="client-list">
+      <div class="empty-state"><p>Loading&hellip;</p></div>
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- Add / Edit modal -->
+  <div class="modal-overlay hidden" id="client-modal">
+    <div class="modal-box">
+      <div class="modal-title" id="modal-title">Add Client</div>
+      <input type="hidden" id="edit-id">
+      <div class="form-row">
+        <div class="form-field"><label class="form-label">Full Name *</label><input class="form-input" type="text" id="f-name" placeholder="John Smith"></div>
+        <div class="form-field"><label class="form-label">Company</label><input class="form-input" type="text" id="f-company" placeholder="Smith Construction"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label class="form-label">Phone</label><input class="form-input" type="tel" id="f-phone" placeholder="(555) 000-0000"></div>
+        <div class="form-field"><label class="form-label">Email</label><input class="form-input" type="email" id="f-email" placeholder="john@example.com"></div>
+      </div>
+      <div class="form-field"><label class="form-label">Address</label><input class="form-input" type="text" id="f-address" placeholder="123 Main St"></div>
+      <div class="form-row">
+        <div class="form-field"><label class="form-label">City</label><input class="form-input" type="text" id="f-city"></div>
+        <div class="form-field"><label class="form-label">State</label><input class="form-input" type="text" id="f-state" maxlength="2" placeholder="GA"></div>
+      </div>
+      <div class="form-field"><label class="form-label">Notes</label><input class="form-input" type="text" id="f-notes" placeholder="Repeat customer, prefers text…"></div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-save" id="save-btn" onclick="saveClient()">Save Client</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var SUPABASE_URL = 'https://pxqwtesczfhfjwdhxiyl.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDI3MDcsImV4cCI6MjA5NTIxODcwN30.rNmcfsteMK_IdyWkGLrNA5ZOlRVHQYahDrnIWmPGCLM';
+    var db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, storageKey: 'bo-auth' } });
+
+    var allClients = [];
+    var sessionToken = '';
+
+    async function init() {
+      var sessionRes = await db.auth.getSession();
+      if (!sessionRes.data.session) { window.location.href = '/login.html'; return; }
+      sessionToken = sessionRes.data.session.access_token;
+      loadClients();
+    }
+
+    async function loadClients() {
+      var res = await fetch('/api/clients', {
+        headers: { 'Authorization': 'Bearer ' + sessionToken }
+      });
+      var data = await res.json();
+      allClients = Array.isArray(data) ? data : (data.clients || []);
+      renderClients(allClients);
+    }
+
+    function filterClients() {
+      var q = document.getElementById('search-input').value.toLowerCase();
+      if (!q) { renderClients(allClients); return; }
+      var filtered = allClients.filter(function(c) {
+        return (c.name || '').toLowerCase().includes(q) ||
+               (c.company || '').toLowerCase().includes(q) ||
+               (c.email || '').toLowerCase().includes(q) ||
+               (c.phone || '').includes(q);
+      });
+      renderClients(filtered);
+    }
+
+    function renderClients(clients) {
+      var list = document.getElementById('client-list');
+      if (!clients.length) {
+        list.innerHTML = '<div class="empty-state"><h3>No clients yet</h3><p>Add your first client to keep their info handy when creating documents.</p></div>';
+        return;
+      }
+      list.innerHTML = clients.map(function(c) {
+        var initials = (c.name || '?').split(' ').map(function(w) { return w[0]; }).slice(0,2).join('').toUpperCase();
+        var sub = [c.company, c.email, c.phone].filter(Boolean).join(' &middot; ');
+        return '<div class="client-card">' +
+          '<div class="client-avatar">' + initials + '</div>' +
+          '<div class="client-info">' +
+            '<div class="client-name">' + (c.name || '—') + '</div>' +
+            '<div class="client-sub">' + (sub || '&mdash;') + '</div>' +
+          '</div>' +
+          '<div class="client-actions">' +
+            '<button class="btn-edit" onclick="editClient(\'' + c.id + '\')">Edit</button>' +
+            '<button class="btn-del" onclick="deleteClient(\'' + c.id + '\',\'' + (c.name||'').replace(/'/g,"\\'") + '\')">Delete</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function openModal(client) {
+      document.getElementById('modal-title').textContent = client ? 'Edit Client' : 'Add Client';
+      document.getElementById('edit-id').value = client ? client.id : '';
+      document.getElementById('f-name').value    = client ? (client.name || '') : '';
+      document.getElementById('f-company').value = client ? (client.company || '') : '';
+      document.getElementById('f-phone').value   = client ? (client.phone || '') : '';
+      document.getElementById('f-email').value   = client ? (client.email || '') : '';
+      document.getElementById('f-address').value = client ? (client.address || '') : '';
+      document.getElementById('f-city').value    = client ? (client.city || '') : '';
+      document.getElementById('f-state').value   = client ? (client.state || '') : '';
+      document.getElementById('f-notes').value   = client ? (client.notes || '') : '';
+      document.getElementById('client-modal').classList.remove('hidden');
+      document.getElementById('f-name').focus();
+    }
+
+    function editClient(id) {
+      var c = allClients.find(function(x) { return x.id === id; });
+      if (c) openModal(c);
+    }
+
+    function closeModal() { document.getElementById('client-modal').classList.add('hidden'); }
+
+    async function saveClient() {
+      var name = document.getElementById('f-name').value.trim();
+      if (!name) { alert('Name is required.'); return; }
+      var saveBtn = document.getElementById('save-btn');
+      saveBtn.disabled = true; saveBtn.textContent = 'Saving…';
+      var editId = document.getElementById('edit-id').value;
+      var body = {
+        name: name,
+        company: document.getElementById('f-company').value.trim(),
+        phone: document.getElementById('f-phone').value.trim(),
+        email: document.getElementById('f-email').value.trim(),
+        address: document.getElementById('f-address').value.trim(),
+        city: document.getElementById('f-city').value.trim(),
+        state: document.getElementById('f-state').value.trim().toUpperCase(),
+        notes: document.getElementById('f-notes').value.trim()
+      };
+      if (editId) body.id = editId;
+      var res = await fetch('/api/clients', {
+        method: editId ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionToken },
+        body: JSON.stringify(body)
+      });
+      saveBtn.disabled = false; saveBtn.textContent = 'Save Client';
+      if (res.ok) {
+        closeModal();
+        await loadClients();
+        showToast(editId ? 'Client updated!' : 'Client added!');
+      } else {
+        var err = await res.json();
+        alert('Error: ' + (err.error || 'Failed to save'));
+      }
+    }
+
+    async function deleteClient(id, name) {
+      if (!confirm('Delete ' + name + '? This cannot be undone.')) return;
+      var res = await fetch('/api/clients', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionToken },
+        body: JSON.stringify({ id: id })
+      });
+      if (res.ok) { await loadClients(); showToast('Client deleted.'); }
+      else { alert('Failed to delete client.'); }
+    }
+
+    function showToast(msg) {
+      var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+      setTimeout(function() { t.classList.remove('show'); }, 2500);
+    }
+
+    init();
+  </script>
+</body>
+</html>

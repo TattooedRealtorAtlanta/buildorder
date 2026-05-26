@@ -24,6 +24,17 @@ module.exports = async (req, res) => {
     .from('contractor_profiles').select('*').eq('id', waiver.user_id).single();
   if (profErr || !profile) return res.status(404).json({ error: 'Profile not found' });
 
+  // Usage limit check (free plan: 5 docs/month)
+  if (profile.plan === 'free') {
+    const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+    const { count } = await supabase.from('usage_events')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', waiver.user_id).gte('created_at', monthStart);
+    if (count !== null && count >= 5) {
+      return res.status(402).json({ error: 'usage_limit', message: 'Free plan limit reached (5 docs/month). Upgrade to Pro for unlimited documents.' });
+    }
+  }
+
   const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   const jobAddr = [waiver.job_address, waiver.job_city, waiver.job_state, waiver.job_zip].filter(Boolean).join(', ');
   const claimantCompany = waiver.claimant_company || profile.business_name || profile.contractor_name;
@@ -116,6 +127,7 @@ Plain text, === and --- separators, ALL CAPS headers. Short and direct — lien 
       return res.status(500).json({ error: 'Failed to save waiver' });
     }
 
+    await supabase.from('usage_events').insert({ user_id: waiver.user_id, doc_type: 'lien_waiver' });
     return res.status(200).json({ success: true, waiver_id, content: waiverText });
   } catch (err) {
     console.error('Anthropic error:', err);

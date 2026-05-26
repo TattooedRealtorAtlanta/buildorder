@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BuildOrder.ai &mdash; Pricing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/lang.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --bg:#090E1A; --bg2:#111827; --bg3:#1A2438; --amber:#F59E0B; --amber2:#FCD34D; --white:#F8FAFC; --muted:#94A3B8; --dim:#475569; --border:rgba(255,255,255,0.07); --green:#34D399; --red:#EF4444; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; }
+    .nav { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+    .logo { font-size: 1.2rem; font-weight: 900; letter-spacing: -0.03em; text-decoration: none; color: var(--white); }
+    .logo em { font-style: normal; color: var(--amber); }
+    .btn-back { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.9rem; font-size: 0.78rem; color: var(--dim); cursor: pointer; font-family: inherit; text-decoration: none; transition: color 0.2s, border-color 0.2s; }
+    .btn-back:hover { color: var(--white); border-color: var(--amber); }
+    .main { max-width: 900px; margin: 0 auto; padding: 3rem 2rem; }
+    .page-hero { text-align: center; margin-bottom: 3rem; }
+    .page-hero h1 { font-size: 2rem; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+    .page-hero p { font-size: 0.95rem; color: var(--muted); }
+    .plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+    .plan-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 2rem 1.75rem; display: flex; flex-direction: column; gap: 1.5rem; position: relative; }
+    .plan-card.featured { border-color: var(--amber); background: linear-gradient(135deg, rgba(245,158,11,0.06) 0%, var(--bg2) 100%); }
+    .plan-badge { position: absolute; top: -0.6rem; left: 50%; transform: translateX(-50%); background: var(--amber); color: #090E1A; font-size: 0.65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; padding: 0.2rem 0.75rem; border-radius: 100px; white-space: nowrap; }
+    .plan-name { font-size: 0.78rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    .plan-price { display: flex; align-items: flex-end; gap: 0.25rem; }
+    .plan-price-amount { font-size: 2.8rem; font-weight: 900; letter-spacing: -0.04em; line-height: 1; }
+    .plan-price-period { font-size: 0.82rem; color: var(--muted); padding-bottom: 0.4rem; }
+    .plan-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+    .plan-features { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; flex: 1; }
+    .plan-features li { font-size: 0.83rem; display: flex; align-items: flex-start; gap: 0.6rem; }
+    .plan-features li::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; margin-top: 0.05rem; }
+    .plan-features li.no::before { content: '✕'; color: var(--dim); }
+    .plan-features li.no { color: var(--dim); }
+    .btn-plan { display: block; text-align: center; border-radius: 10px; padding: 0.75rem; font-size: 0.9rem; font-weight: 800; cursor: pointer; font-family: inherit; text-decoration: none; transition: background 0.15s; border: none; }
+    .btn-plan-primary { background: var(--amber); color: #090E1A; }
+    .btn-plan-primary:hover { background: var(--amber2); }
+    .btn-plan-secondary { background: none; border: 1px solid var(--border); color: var(--white); }
+    .btn-plan-secondary:hover { border-color: var(--amber); }
+    .btn-plan:disabled { opacity: 0.5; cursor: not-allowed; }
+    .current-label { text-align: center; font-size: 0.78rem; color: var(--green); font-weight: 700; padding: 0.65rem; }
+    .faq { margin-top: 3rem; }
+    .faq h2 { font-size: 1.1rem; font-weight: 800; margin-bottom: 1.5rem; }
+    .faq-item { border-top: 1px solid var(--border); padding: 1rem 0; }
+    .faq-q { font-size: 0.88rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .faq-a { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+    .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1.25rem; font-size: 0.85rem; font-weight: 600; color: var(--green); opacity: 0; transform: translateY(10px); transition: opacity 0.2s, transform 0.2s; pointer-events: none; z-index: 100; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    @media (max-width: 700px) { .plans { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a href="/dashboard.html" class="logo">Build<em>Order</em></a>
+    <a href="/dashboard.html" class="btn-back">&larr; Dashboard</a>
+  </nav>
+
+  <main class="main">
+    <div class="page-hero">
+      <h1>Simple, honest pricing.</h1>
+      <p>Start free. Upgrade when your business is ready.</p>
+    </div>
+
+    <div class="plans" id="plans-grid">
+      <div style="text-align:center;padding:3rem;color:var(--muted);">Loading&hellip;</div>
+    </div>
+
+    <div class="faq">
+      <h2>Questions</h2>
+      <div class="faq-item">
+        <div class="faq-q">What counts as a document?</div>
+        <div class="faq-a">Every generated document counts — contracts, estimates, invoices, change orders, subcontractor agreements, lien waivers, and material takeoffs. Regenerating an existing document counts as a new generation.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Can I cancel anytime?</div>
+        <div class="faq-a">Yes. Cancel from your Settings page and your plan stays active through the end of the billing period. No questions asked.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">What's the difference between Pro and Business?</div>
+        <div class="faq-a">Business is built for contractors running multiple crews or managing projects in multiple states. It includes multi-user support and priority support — coming soon.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Do you store my documents?</div>
+        <div class="faq-a">Yes. All generated documents are saved to your account and accessible from your dashboard. They're yours to download, email, or re-open any time.</div>
+      </div>
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    var SUPABASE_URL = 'https://pxqwtesczfhfjwdhxiyl.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDI3MDcsImV4cCI6MjA5NTIxODcwN30.rNmcfsteMK_IdyWkGLrNA5ZOlRVHQYahDrnIWmPGCLM';
+    var db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, storageKey: 'bo-auth' } });
+
+    var currentPlan = 'free';
+
+    async function init() {
+      var sessionRes = await db.auth.getSession();
+      if (!sessionRes.data.session) { window.location.href = '/login.html'; return; }
+      var profileRes = await db.from('contractor_profiles').select('plan').single();
+      currentPlan = (profileRes.data && profileRes.data.plan) || 'free';
+      renderPlans();
+    }
+
+    function renderPlans() {
+      var grid = document.getElementById('plans-grid');
+      grid.innerHTML =
+        planCard('free',     'Free',     '$0',   '/mo', 'Try BuildOrder at no cost.', [
+          '5 documents per month',
+          'All 7 document types',
+          'State-compliant contracts (52 states)',
+          'TXT download',
+        ], [
+          'PDF export',
+          'Email to client',
+          'Unlimited documents',
+        ], currentPlan === 'free' ? 'current' : null, 'btn-plan-secondary') +
+
+        planCard('pro',      'Pro',      '$19',  '/mo', 'For active contractors doing real volume.', [
+          'Unlimited documents',
+          'All 7 document types',
+          'PDF export',
+          'Email documents to clients',
+          'Client address book',
+          'Bilingual (English + Spanish)',
+          'Priority support',
+        ], [], currentPlan === 'pro' ? 'current' : null, 'btn-plan-primary', true) +
+
+        planCard('business', 'Business', '$39',  '/mo', 'For teams and multi-crew operations.', [
+          'Everything in Pro',
+          'Multi-user support (coming soon)',
+          'Branded document header (coming soon)',
+          'Dedicated support',
+        ], [], currentPlan === 'business' ? 'current' : null, 'btn-plan-secondary');
+    }
+
+    function planCard(plan, name, price, period, desc, features, missing, state, btnClass, featured) {
+      var isCurrentPlan = state === 'current';
+      var cardClass = 'plan-card' + (featured ? ' featured' : '');
+      var badge = featured ? '<div class="plan-badge">Most Popular</div>' : '';
+      var featureList = features.map(function(f) { return '<li>' + f + '</li>'; }).join('');
+      var missingList = (missing || []).map(function(f) { return '<li class="no">' + f + '</li>'; }).join('');
+      var cta;
+      if (isCurrentPlan) {
+        cta = '<div class="current-label">&#10003; Your current plan</div>';
+      } else if (plan === 'free') {
+        cta = '<button class="btn-plan btn-plan-secondary" disabled>Free plan</button>';
+      } else {
+        cta = '<button class="btn-plan ' + btnClass + '" onclick="checkout(\'' + plan + '\')" id="btn-' + plan + '">Upgrade to ' + name + '</button>';
+      }
+      return '<div class="' + cardClass + '">' + badge +
+        '<div><div class="plan-name">' + name + '</div><div class="plan-price"><span class="plan-price-amount">' + price + '</span><span class="plan-price-period">' + period + '</span></div><div class="plan-desc">' + desc + '</div></div>' +
+        '<ul class="plan-features">' + featureList + missingList + '</ul>' +
+        cta + '</div>';
+    }
+
+    async function checkout(plan) {
+      var btn = document.getElementById('btn-' + plan);
+      if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
+      var sessionRes = await db.auth.getSession();
+      var token = sessionRes.data.session ? sessionRes.data.session.access_token : '';
+      try {
+        var res = await fetch('/api/create-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ plan: plan })
+        });
+        var data = await res.json();
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          alert(data.error || 'Failed to start checkout.');
+          if (btn) { btn.disabled = false; btn.textContent = 'Upgrade to ' + plan.charAt(0).toUpperCase() + plan.slice(1); }
+        }
+      } catch(e) {
+        alert('Network error. Please try again.');
+        if (btn) { btn.disabled = false; btn.textContent = 'Upgrade to ' + plan.charAt(0).toUpperCase() + plan.slice(1); }
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

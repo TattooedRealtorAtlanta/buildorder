@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BuildOrder.ai &mdash; Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --bg:#090E1A; --bg2:#111827; --bg3:#1A2438; --amber:#F59E0B; --amber2:#FCD34D; --white:#F8FAFC; --muted:#94A3B8; --dim:#475569; --border:rgba(255,255,255,0.07); --green:#34D399; --red:#EF4444; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; }
+    .nav { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-size: 1.2rem; font-weight: 900; letter-spacing: -0.03em; color: var(--white); }
+    .logo em { font-style: normal; color: var(--amber); }
+    .badge-admin { background: rgba(239,68,68,0.15); color: var(--red); font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; padding: 0.2rem 0.6rem; border-radius: 100px; }
+    .main { max-width: 1100px; margin: 0 auto; padding: 2.5rem 2rem; }
+    /* Login gate */
+    .login-gate { max-width: 380px; margin: 6rem auto; background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 2.5rem; text-align: center; }
+    .login-gate h2 { font-size: 1.1rem; font-weight: 800; margin-bottom: 0.4rem; }
+    .login-gate p { font-size: 0.82rem; color: var(--muted); margin-bottom: 1.5rem; }
+    .login-input { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 0.7rem 1rem; font-size: 0.88rem; color: var(--white); font-family: inherit; outline: none; margin-bottom: 1rem; }
+    .login-input:focus { border-color: var(--amber); }
+    .btn-login { width: 100%; background: var(--amber); color: #090E1A; border: none; border-radius: 10px; padding: 0.75rem; font-size: 0.9rem; font-weight: 900; cursor: pointer; font-family: inherit; }
+    /* Stats grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2.5rem; }
+    .stat { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem 1.4rem; }
+    .stat-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 600; margin-bottom: 0.3rem; }
+    .stat-value { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.03em; }
+    .stat-sub { font-size: 0.72rem; color: var(--dim); margin-top: 0.2rem; }
+    /* User table */
+    .section-title { font-size: 0.72rem; font-weight: 700; color: var(--dim); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.75rem; }
+    .user-table { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .table-head { display: grid; grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr 1.2fr; gap: 0.5rem; padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--border); }
+    .table-head span { font-size: 0.65rem; font-weight: 700; color: var(--dim); text-transform: uppercase; letter-spacing: 0.07em; }
+    .table-row { display: grid; grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr 1.2fr; gap: 0.5rem; padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--border); align-items: center; font-size: 0.82rem; }
+    .table-row:last-child { border-bottom: none; }
+    .table-row:hover { background: rgba(255,255,255,0.02); }
+    .plan-pill { display: inline-block; padding: 0.15rem 0.55rem; border-radius: 100px; font-size: 0.68rem; font-weight: 800; text-transform: uppercase; }
+    .pill-free { background: rgba(148,163,184,0.12); color: var(--muted); }
+    .pill-pro  { background: rgba(245,158,11,0.12); color: var(--amber); }
+    .pill-biz  { background: rgba(52,211,153,0.12); color: var(--green); }
+    .plan-select { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 0.25rem 0.5rem; font-size: 0.75rem; color: var(--white); font-family: inherit; cursor: pointer; }
+    .loading { text-align: center; padding: 3rem; color: var(--muted); font-size: 0.85rem; }
+    .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1.25rem; font-size: 0.85rem; font-weight: 600; color: var(--green); opacity: 0; transform: translateY(10px); transition: opacity 0.2s, transform 0.2s; pointer-events: none; z-index: 100; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    @media (max-width: 800px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <span class="logo">Build<em>Order</em></span>
+    <span class="badge-admin">&#128274; Admin</span>
+  </nav>
+
+  <!-- Login gate -->
+  <div id="login-gate">
+    <div class="login-gate">
+      <h2>Admin Access</h2>
+      <p>Enter the admin password to continue.</p>
+      <input type="password" class="login-input" id="admin-pw" placeholder="Admin password" onkeydown="if(event.key==='Enter')login()">
+      <button class="btn-login" onclick="login()">Enter</button>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="admin-dash" style="display:none;">
+    <main class="main">
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat"><div class="stat-label">MRR</div><div class="stat-value" id="s-mrr">&mdash;</div></div>
+        <div class="stat"><div class="stat-label">Total Users</div><div class="stat-value" id="s-users">&mdash;</div></div>
+        <div class="stat"><div class="stat-label">Docs Generated</div><div class="stat-value" id="s-docs">&mdash;</div></div>
+        <div class="stat"><div class="stat-label">Free / Pro / Biz</div><div class="stat-value" id="s-plans">&mdash;</div></div>
+      </div>
+
+      <div class="section-title">Recent Users</div>
+      <div class="user-table">
+        <div class="table-head">
+          <span>Email</span>
+          <span>Business</span>
+          <span>Plan</span>
+          <span>Docs</span>
+          <span>Joined</span>
+          <span>Set Plan</span>
+        </div>
+        <div id="user-rows"><div class="loading">Loading&hellip;</div></div>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    var adminPassword = '';
+
+    function login() {
+      var pw = document.getElementById('admin-pw').value.trim();
+      if (!pw) return;
+      adminPassword = pw;
+      loadDashboard();
+    }
+
+    async function callAdmin(action, body) {
+      var res = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Password': adminPassword },
+        body: JSON.stringify(Object.assign({ action: action }, body || {}))
+      });
+      return res.json().then(function(d) { return { ok: res.ok, data: d }; });
+    }
+
+    async function loadDashboard() {
+      var [statsR, usersR] = await Promise.all([
+        callAdmin('stats'),
+        callAdmin('users', { limit: 50 })
+      ]);
+
+      if (!statsR.ok) {
+        alert(statsR.data.error || 'Access denied.');
+        adminPassword = '';
+        return;
+      }
+
+      document.getElementById('login-gate').style.display = 'none';
+      document.getElementById('admin-dash').style.display = 'block';
+
+      var s = statsR.data;
+      document.getElementById('s-mrr').textContent = '$' + (s.mrr || 0).toLocaleString();
+      document.getElementById('s-users').textContent = (s.total_users || 0).toLocaleString();
+      document.getElementById('s-docs').textContent = (s.total_docs || 0).toLocaleString();
+      document.getElementById('s-plans').textContent = (s.free_users || 0) + ' / ' + (s.pro_users || 0) + ' / ' + (s.biz_users || 0);
+
+      renderUsers(usersR.data.users || []);
+    }
+
+    function renderUsers(users) {
+      var rows = document.getElementById('user-rows');
+      if (!users.length) { rows.innerHTML = '<div class="loading">No users found.</div>'; return; }
+      rows.innerHTML = users.map(function(u) {
+        var planClass = { free: 'pill-free', pro: 'pill-pro', business: 'pill-biz' }[u.plan] || 'pill-free';
+        var joined = u.created_at ? new Date(u.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+        return '<div class="table-row">' +
+          '<div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (u.email || '—') + '</div>' +
+          '<div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);">' + (u.business_name || u.contractor_name || '—') + '</div>' +
+          '<div><span class="plan-pill ' + planClass + '">' + (u.plan || 'free') + '</span></div>' +
+          '<div style="color:var(--muted);">' + (u.doc_count || 0) + '</div>' +
+          '<div style="color:var(--muted);">' + joined + '</div>' +
+          '<div><select class="plan-select" onchange="setPlan(\'' + u.id + '\', this.value)">' +
+            '<option value="free"' + (u.plan==='free'?' selected':'') + '>Free</option>' +
+            '<option value="pro"' + (u.plan==='pro'?' selected':'') + '>Pro</option>' +
+            '<option value="business"' + (u.plan==='business'?' selected':'') + '>Business</option>' +
+          '</select></div>' +
+          '</div>';
+      }).join('');
+    }
+
+    async function setPlan(userId, plan) {
+      var result = await callAdmin('set_plan', { user_id: userId, plan: plan });
+      if (result.ok) {
+        showToast('Plan updated to ' + plan);
+      } else {
+        alert('Failed: ' + (result.data.error || 'Unknown error'));
+      }
+    }
+
+    function showToast(msg) {
+      var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+      setTimeout(function() { t.classList.remove('show'); }, 2500);
+    }
+  </script>
+</body>
+</html>

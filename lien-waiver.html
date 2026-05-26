@@ -8,6 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/lang.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root { --bg:#090E1A; --bg2:#111827; --bg3:#1A2438; --amber:#F59E0B; --amber2:#FCD34D; --white:#F8FAFC; --muted:#94A3B8; --dim:#475569; --border:rgba(255,255,255,0.07); --green:#34D399; --red:#EF4444; }
@@ -61,6 +62,26 @@
     .lang-btn.active { color: var(--amber); }
     .lang-btn:hover { color: var(--white); }
     .lang-sep { color: var(--dim); font-size: 0.75rem; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 1rem; }
+    .modal-overlay.hidden { display: none; }
+    .modal-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; max-width: 480px; width: 100%; }
+    .modal-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 0.5rem; }
+    .modal-sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 1.5rem; }
+    .modal-field { margin-bottom: 1rem; }
+    .modal-label { font-size: 0.78rem; font-weight: 600; color: var(--muted); display: block; margin-bottom: 0.35rem; }
+    .modal-input { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem 0.9rem; font-size: 0.85rem; color: var(--white); font-family: inherit; outline: none; }
+    .modal-input:focus { border-color: var(--amber); }
+    .modal-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; }
+    .btn-cancel { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 1.1rem; font-size: 0.82rem; font-weight: 600; color: var(--muted); cursor: pointer; font-family: inherit; }
+    .btn-send { background: var(--amber); color: #090E1A; border: none; border-radius: 8px; padding: 0.5rem 1.1rem; font-size: 0.82rem; font-weight: 800; cursor: pointer; font-family: inherit; }
+    .btn-send:disabled { opacity: 0.5; cursor: not-allowed; }
+    .upgrade-box { background: var(--bg2); border: 1px solid rgba(245,158,11,0.3); border-radius: 16px; padding: 2rem; max-width: 420px; width: 100%; text-align: center; }
+    .upgrade-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+    .upgrade-title { font-size: 1.2rem; font-weight: 900; margin-bottom: 0.5rem; }
+    .upgrade-sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.5; }
+    .btn-upgrade { display: block; width: 100%; background: var(--amber); color: #090E1A; border: none; border-radius: 10px; padding: 0.75rem; font-size: 0.9rem; font-weight: 900; cursor: pointer; font-family: inherit; margin-bottom: 0.75rem; text-decoration: none; text-align: center; }
+    .btn-upgrade:hover { background: var(--amber2); }
+    .btn-dismiss { background: none; border: none; color: var(--dim); font-size: 0.82rem; cursor: pointer; font-family: inherit; }
   </style>
 </head>
 <body>
@@ -104,7 +125,7 @@
       var sc = { draft: 'status-draft', sent: 'status-sent', signed: 'status-signed' }[d.status] || 'status-draft';
       var typeLabel = T(typeKeys[d.waiver_type] || 'tool.lien_waiver');
       var actions = d.content
-        ? '<button class="btn-action" onclick="copyDoc()">' + T('btn.copy') + '</button><button class="btn-action" onclick="dlDoc()">' + T('btn.download') + '</button><button class="btn-generate" onclick="generate()">' + T('lw.btn.regen') + '</button>'
+        ? '<button class="btn-action" onclick="copyDoc()">' + T('btn.copy') + '</button><button class="btn-action" onclick="dlDoc()">' + T('btn.download') + '</button><button class="btn-action" onclick="dlPdf()">' + T('btn.pdf') + '</button><button class="btn-action" onclick="openEmail()">' + T('btn.email') + '</button><button class="btn-generate" onclick="generate()">' + T('lw.btn.regen') + '</button>'
         : '<button class="btn-generate" onclick="generate()">' + T('lw.btn.gen') + '</button>';
 
       document.getElementById('page-content').innerHTML =
@@ -123,7 +144,10 @@
       fetch('/api/generate-lien-waiver', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ waiver_id: docId, lang: getLang() }) })
         .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
         .then(function(result) {
-          if (!result.ok || !result.data.success) { showErr(result.data.error || 'Generation failed.'); return; }
+          if (!result.ok || !result.data.success) {
+            if (result.data.error === 'usage_limit') { showUpgradeModal(); return; }
+            showErr(result.data.error || 'Generation failed.'); return;
+          }
           current.content = result.data.content; current.status = 'signed';
           window.history.replaceState({}, '', '/lien-waiver.html?id=' + docId); render();
         }).catch(function() { showErr('Network error &mdash; please try again.'); });
@@ -144,6 +168,79 @@
     }
     function showToast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(function() { t.classList.remove('show'); }, 2500); }
     function escapeHtml(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+    function dlPdf() {
+      if (!current || !current.content) return;
+      var doc = new window.jspdf.jsPDF({ unit: 'pt', format: 'letter' });
+      doc.setFont('Courier'); doc.setFontSize(8);
+      var lines = doc.splitTextToSize(current.content, 512);
+      var y = 50;
+      for (var i = 0; i < lines.length; i++) {
+        if (y > 760) { doc.addPage(); y = 50; }
+        doc.text(lines[i], 50, y); y += 12;
+      }
+      doc.save('lien-waiver-' + (current.customer_name || 'waiver').replace(/\s+/g, '-').toLowerCase() + '.pdf');
+    }
+
+    function openEmail() {
+      if (!current || !current.content) return;
+      document.getElementById('email-to').value = '';
+      document.getElementById('email-name').value = current.customer_name || '';
+      document.getElementById('email-subject').value = 'Your Lien Waiver from BuildOrder';
+      document.getElementById('email-modal').classList.remove('hidden');
+    }
+
+    function closeEmail() { document.getElementById('email-modal').classList.add('hidden'); }
+
+    function sendEmail() {
+      var toEmail = document.getElementById('email-to').value.trim();
+      var toName = document.getElementById('email-name').value.trim();
+      var subject = document.getElementById('email-subject').value.trim() || 'Your Document from BuildOrder';
+      if (!toEmail) { alert('Please enter a recipient email.'); return; }
+      var sendBtn = document.getElementById('send-btn');
+      sendBtn.disabled = true; sendBtn.textContent = 'Sending…';
+      db.auth.getSession().then(function(r) {
+        var token = r.data && r.data.session ? r.data.session.access_token : '';
+        fetch('/api/send-document', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ to_email: toEmail, to_name: toName, subject: subject, content: current.content })
+        }).then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+        .then(function(result) {
+          sendBtn.disabled = false; sendBtn.textContent = 'Send Email';
+          if (!result.ok) {
+            if (result.data.error === 'upgrade_required') { closeEmail(); showUpgradeModal(); return; }
+            alert('Failed to send: ' + (result.data.message || result.data.error));
+            return;
+          }
+          closeEmail();
+          showToast('Email sent!');
+        }).catch(function() { sendBtn.disabled = false; sendBtn.textContent = 'Send Email'; alert('Network error.'); });
+      });
+    }
+
+    function showUpgradeModal() { document.getElementById('upgrade-modal').classList.remove('hidden'); }
+    function closeUpgradeModal() { document.getElementById('upgrade-modal').classList.add('hidden'); }
   </script>
+
+  <div class="modal-overlay hidden" id="email-modal">
+    <div class="modal-box">
+      <div class="modal-title">&#128231; Email Document</div>
+      <div class="modal-sub">Send this lien waiver to the property owner or GC.</div>
+      <div class="modal-field"><label class="modal-label">Recipient Email</label><input class="modal-input" type="email" id="email-to" placeholder="recipient@example.com"></div>
+      <div class="modal-field"><label class="modal-label">Recipient Name</label><input class="modal-input" type="text" id="email-name" placeholder="Recipient Name"></div>
+      <div class="modal-field"><label class="modal-label">Subject</label><input class="modal-input" type="text" id="email-subject"></div>
+      <div class="modal-actions"><button class="btn-cancel" onclick="closeEmail()">Cancel</button><button class="btn-send" id="send-btn" onclick="sendEmail()">Send Email</button></div>
+    </div>
+  </div>
+  <div class="modal-overlay hidden" id="upgrade-modal">
+    <div class="upgrade-box">
+      <div class="upgrade-icon">&#128640;</div>
+      <div class="upgrade-title">Upgrade to Pro</div>
+      <div class="upgrade-sub">You've reached the free plan limit of 5 documents per month. Upgrade to Pro for unlimited documents, PDF export, email delivery, and more.</div>
+      <a class="btn-upgrade" href="/pricing.html">Upgrade to Pro &mdash; $19/mo</a>
+      <button class="btn-dismiss" onclick="closeUpgradeModal()">Maybe later</button>
+    </div>
+  </div>
 </body>
 </html>

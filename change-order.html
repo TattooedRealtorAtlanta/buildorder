@@ -8,6 +8,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/lang.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -90,6 +92,37 @@
     .lang-btn.active { color: var(--amber); }
     .lang-btn:hover { color: var(--white); }
     .lang-sep { color: var(--dim); font-size: 0.75rem; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 1rem; }
+    .modal-overlay.hidden { display: none; }
+    .modal-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; max-width: 480px; width: 100%; }
+    .modal-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 0.5rem; }
+    .modal-sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 1.5rem; }
+    .modal-field { margin-bottom: 1rem; }
+    .modal-label { font-size: 0.78rem; font-weight: 600; color: var(--muted); display: block; margin-bottom: 0.35rem; }
+    .modal-input { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem 0.9rem; font-size: 0.85rem; color: var(--white); font-family: inherit; outline: none; }
+    .modal-input:focus { border-color: var(--amber); }
+    .modal-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; }
+    .btn-cancel { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 1.1rem; font-size: 0.82rem; font-weight: 600; color: var(--muted); cursor: pointer; font-family: inherit; }
+    .btn-send { background: var(--amber); color: #090E1A; border: none; border-radius: 8px; padding: 0.5rem 1.1rem; font-size: 0.82rem; font-weight: 800; cursor: pointer; font-family: inherit; }
+    .btn-send:disabled { opacity: 0.5; cursor: not-allowed; }
+    .upgrade-box { background: var(--bg2); border: 1px solid rgba(245,158,11,0.3); border-radius: 16px; padding: 2rem; max-width: 420px; width: 100%; text-align: center; }
+    .upgrade-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+    .upgrade-title { font-size: 1.2rem; font-weight: 900; margin-bottom: 0.5rem; }
+    .upgrade-sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.5; }
+    .btn-upgrade { display: block; width: 100%; background: var(--amber); color: #090E1A; border: none; border-radius: 10px; padding: 0.75rem; font-size: 0.9rem; font-weight: 900; cursor: pointer; font-family: inherit; margin-bottom: 0.75rem; text-decoration: none; text-align: center; }
+    .btn-upgrade:hover { background: var(--amber2); }
+    .btn-dismiss { background: none; border: none; color: var(--dim); font-size: 0.82rem; cursor: pointer; font-family: inherit; }
+    /* Signatures */
+    .btn-sign { background: none; border: 1px solid rgba(52,211,153,0.4); color: var(--green); border-radius: 8px; padding: 0.45rem 1rem; font-size: 0.78rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+    .btn-sign:hover { background: rgba(52,211,153,0.1); }
+    .sig-signed-badge { display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(52,211,153,0.12); color: var(--green); font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em; padding: 0.2rem 0.7rem; border-radius: 100px; }
+    .sig-modal-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; max-width: 520px; width: 100%; max-height: 90vh; overflow-y: auto; }
+    .sig-area-title { font-size: 0.72rem; font-weight: 700; color: var(--dim); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.5rem; }
+    .sig-canvas-wrap { background: #fff; border-radius: 8px; overflow: hidden; }
+    .sig-canvas { display: block; width: 100%; height: 120px; cursor: crosshair; touch-action: none; }
+    .sig-divider { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
+    .btn-clear-sig { background: none; border: none; color: var(--dim); font-size: 0.75rem; cursor: pointer; font-family: inherit; padding: 0.2rem 0; margin-top: 0.35rem; display: block; }
+    .btn-clear-sig:hover { color: var(--white); }
   </style>
 </head>
 <body>
@@ -165,6 +198,9 @@
         ? '<button class="btn-action" onclick="copyCO()">' + T('btn.copy') + '</button>' +
           '<button class="btn-action" onclick="downloadCO()">' + T('btn.download') + '</button>' +
           acceptedBtn +
+          '<button class="btn-action" onclick="dlPdf()">' + T('btn.pdf') + '</button>' +
+          '<button class="btn-action" onclick="openEmail()">' + T('btn.email') + '</button>' +
+          '<button class="btn-sign" onclick="openSigModal()">&#9998; Sign</button>' +
           '<button class="btn-generate" onclick="generateCO()">' + T('co.btn.regen') + '</button>'
         : '<button class="btn-generate" onclick="generateCO()">' + T('co.btn.gen') + '</button>';
 
@@ -225,6 +261,7 @@
         return res.json().then(function(data) { return { ok: res.ok, data: data }; });
       }).then(function(result) {
         if (!result.ok || !result.data.success) {
+          if (result.data.error === 'usage_limit') { showUpgradeModal(); return; }
           showError(result.data.error || 'Generation failed. Please try again.');
           return;
         }
@@ -280,6 +317,146 @@
     function escapeHtml(str) {
       return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
+
+    function dlPdf() {
+      if (!currentCO || !currentCO.content) return;
+      var doc = new window.jspdf.jsPDF({ unit: 'pt', format: 'letter' });
+      doc.setFont('Courier'); doc.setFontSize(8);
+      var lines = doc.splitTextToSize(currentCO.content, 512);
+      var y = 50;
+      for (var i = 0; i < lines.length; i++) {
+        if (y > 760) { doc.addPage(); y = 50; }
+        doc.text(lines[i], 50, y); y += 12;
+      }
+      doc.save('change-order-' + (currentCO.homeowner_name || 'client').replace(/\s+/g, '-').toLowerCase() + '.pdf');
+    }
+
+    function openEmail() {
+      if (!currentCO || !currentCO.content) return;
+      document.getElementById('email-to').value = currentCO.homeowner_email || '';
+      document.getElementById('email-name').value = currentCO.homeowner_name || '';
+      document.getElementById('email-subject').value = 'Your Change Order from BuildOrder';
+      document.getElementById('email-modal').classList.remove('hidden');
+    }
+
+    function closeEmail() { document.getElementById('email-modal').classList.add('hidden'); }
+
+    function sendEmail() {
+      var toEmail = document.getElementById('email-to').value.trim();
+      var toName = document.getElementById('email-name').value.trim();
+      var subject = document.getElementById('email-subject').value.trim() || 'Your Document from BuildOrder';
+      if (!toEmail) { alert('Please enter a recipient email.'); return; }
+      var sendBtn = document.getElementById('send-btn');
+      sendBtn.disabled = true; sendBtn.textContent = 'Sending…';
+      db.auth.getSession().then(function(r) {
+        var token = r.data && r.data.session ? r.data.session.access_token : '';
+        fetch('/api/send-document', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ to_email: toEmail, to_name: toName, subject: subject, content: currentCO.content })
+        }).then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+        .then(function(result) {
+          sendBtn.disabled = false; sendBtn.textContent = 'Send Email';
+          if (!result.ok) {
+            if (result.data.error === 'upgrade_required') { closeEmail(); showUpgradeModal(); return; }
+            alert('Failed to send: ' + (result.data.message || result.data.error));
+            return;
+          }
+          closeEmail();
+          var t = document.getElementById('toast'); t.textContent = 'Email sent!'; t.classList.add('show'); setTimeout(function() { t.classList.remove('show'); }, 2500);
+        }).catch(function() { sendBtn.disabled = false; sendBtn.textContent = 'Send Email'; alert('Network error.'); });
+      });
+    }
+
+    function showUpgradeModal() { document.getElementById('upgrade-modal').classList.remove('hidden'); }
+    function closeUpgradeModal() { document.getElementById('upgrade-modal').classList.add('hidden'); }
+
+    var sigPad1 = null, sigPad2 = null;
+
+    function openSigModal() {
+      if (!currentCO || !currentCO.content) return;
+      document.getElementById('sig-modal').classList.remove('hidden');
+      setTimeout(function() {
+        var c1 = document.getElementById('sig-canvas-contractor');
+        var c2 = document.getElementById('sig-canvas-client');
+        if (sigPad1) { try { sigPad1.off(); } catch(e) {} }
+        if (sigPad2) { try { sigPad2.off(); } catch(e) {} }
+        sigPad1 = new SignaturePad(c1, { backgroundColor: 'rgb(255,255,255)', penColor: 'rgb(9,14,26)' });
+        sigPad2 = new SignaturePad(c2, { backgroundColor: 'rgb(255,255,255)', penColor: 'rgb(9,14,26)' });
+      }, 60);
+    }
+
+    function closeSigModal() { document.getElementById('sig-modal').classList.add('hidden'); }
+    function clearSig1() { if (sigPad1) sigPad1.clear(); }
+    function clearSig2() { if (sigPad2) sigPad2.clear(); }
+
+    function saveSignatures() {
+      var conEmpty = !sigPad1 || sigPad1.isEmpty();
+      var cliEmpty = !sigPad2 || sigPad2.isEmpty();
+      if (conEmpty && cliEmpty) { alert('Please draw at least one signature.'); return; }
+      var saveBtn = document.getElementById('sig-save-btn');
+      saveBtn.disabled = true; saveBtn.textContent = 'Saving…';
+      var contractorSig = conEmpty ? null : sigPad1.toDataURL('image/png');
+      var clientSig = cliEmpty ? null : sigPad2.toDataURL('image/png');
+      db.auth.getSession().then(function(r) {
+        var userId = r.data && r.data.session ? r.data.session.user.id : null;
+        db.from('signatures').insert({
+          user_id: userId,
+          document_id: currentCO.id,
+          contractor_sig: contractorSig,
+          client_sig: clientSig
+        }).then(function(res) {
+          saveBtn.disabled = false; saveBtn.textContent = 'Save Signatures';
+          if (res.error) { alert('Error saving signatures: ' + res.error.message); return; }
+          closeSigModal();
+          showToast('Signatures saved!');
+          var actions = document.getElementById('co-actions');
+          if (actions) {
+            var badge = document.createElement('span');
+            badge.className = 'sig-signed-badge';
+            badge.innerHTML = '&#10003; Signed';
+            actions.appendChild(badge);
+          }
+        });
+      });
+    }
   </script>
+
+  <div class="modal-overlay hidden" id="email-modal">
+    <div class="modal-box">
+      <div class="modal-title">&#128231; Email Document</div>
+      <div class="modal-sub">Send this document directly to your client.</div>
+      <div class="modal-field"><label class="modal-label">Recipient Email</label><input class="modal-input" type="email" id="email-to" placeholder="client@example.com"></div>
+      <div class="modal-field"><label class="modal-label">Recipient Name</label><input class="modal-input" type="text" id="email-name" placeholder="Client Name"></div>
+      <div class="modal-field"><label class="modal-label">Subject</label><input class="modal-input" type="text" id="email-subject"></div>
+      <div class="modal-actions"><button class="btn-cancel" onclick="closeEmail()">Cancel</button><button class="btn-send" id="send-btn" onclick="sendEmail()">Send Email</button></div>
+    </div>
+  </div>
+  <div class="modal-overlay hidden" id="upgrade-modal">
+    <div class="upgrade-box">
+      <div class="upgrade-icon">&#128640;</div>
+      <div class="upgrade-title">Upgrade to Pro</div>
+      <div class="upgrade-sub">You've reached the free plan limit of 5 documents per month. Upgrade to Pro for unlimited documents, PDF export, email delivery, and more.</div>
+      <a class="btn-upgrade" href="/pricing.html">Upgrade to Pro &mdash; $19/mo</a>
+      <button class="btn-dismiss" onclick="closeUpgradeModal()">Maybe later</button>
+    </div>
+  </div>
+  <div class="modal-overlay hidden" id="sig-modal">
+    <div class="sig-modal-box">
+      <div class="modal-title">&#9998; Sign Document</div>
+      <div class="modal-sub">Draw signatures in the boxes below. Contractor signs first — client signature can be added in person or at a later time.</div>
+      <div class="sig-area-title">Your Signature (Contractor)</div>
+      <div class="sig-canvas-wrap"><canvas class="sig-canvas" id="sig-canvas-contractor" width="480" height="120"></canvas></div>
+      <button class="btn-clear-sig" onclick="clearSig1()">&#8635; Clear</button>
+      <hr class="sig-divider">
+      <div class="sig-area-title">Client Signature</div>
+      <div class="sig-canvas-wrap"><canvas class="sig-canvas" id="sig-canvas-client" width="480" height="120"></canvas></div>
+      <button class="btn-clear-sig" onclick="clearSig2()">&#8635; Clear</button>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeSigModal()">Cancel</button>
+        <button class="btn-send" id="sig-save-btn" onclick="saveSignatures()">Save Signatures</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

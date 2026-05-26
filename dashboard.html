@@ -110,6 +110,24 @@
     .empty-state { text-align: center; padding: 3rem 2rem; color: var(--muted); }
     .empty-state h3 { font-size: 0.95rem; font-weight: 700; color: var(--white); margin-bottom: 0.35rem; }
     .empty-state p { font-size: 0.82rem; }
+    .plan-bar { display: flex; align-items: center; justify-content: space-between; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1.25rem; margin-bottom: 1.5rem; gap: 1rem; flex-wrap: wrap; }
+    .plan-badge { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em; padding: 0.2rem 0.7rem; border-radius: 100px; }
+    .badge-free { background: rgba(148,163,184,0.12); color: var(--muted); }
+    .badge-pro  { background: rgba(245,158,11,0.15); color: var(--amber); }
+    .badge-biz  { background: rgba(52,211,153,0.15); color: var(--green); }
+    .usage-bar-wrap { display: flex; align-items: center; gap: 1rem; flex: 1; }
+    .usage-meter { flex: 1; min-width: 160px; }
+    .usage-track { background: rgba(255,255,255,0.06); border-radius: 100px; height: 5px; margin-top: 0.35rem; overflow: hidden; }
+    .usage-fill { height: 100%; border-radius: 100px; background: var(--amber); transition: width 0.5s; }
+    .usage-fill.danger { background: var(--red); }
+    .usage-label { font-size: 0.74rem; color: var(--muted); }
+    .usage-label strong { color: var(--white); }
+    .btn-upgrade-cta { background: var(--amber); color: #090E1A; border: none; border-radius: 8px; padding: 0.4rem 1rem; font-size: 0.78rem; font-weight: 800; cursor: pointer; font-family: inherit; text-decoration: none; white-space: nowrap; display: inline-block; }
+    .btn-upgrade-cta:hover { background: var(--amber2); }
+    .btn-manage { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.4rem 1rem; font-size: 0.78rem; font-weight: 600; color: var(--muted); cursor: pointer; font-family: inherit; text-decoration: none; white-space: nowrap; display: inline-block; }
+    .btn-manage:hover { color: var(--white); border-color: var(--amber); }
+    .nav-link { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.8rem; font-size: 0.75rem; color: var(--dim); cursor: pointer; font-family: inherit; text-decoration: none; transition: color 0.2s, border-color 0.2s; }
+    .nav-link:hover { color: var(--white); border-color: var(--amber); }
 
     @media (max-width: 750px) {
       .stats { grid-template-columns: repeat(2, 1fr); }
@@ -127,6 +145,8 @@
     <div class="nav-right">
       <div class="lang-toggle"><button class="lang-btn" id="lang-btn-en" onclick="setLang('en')">EN</button><span class="lang-sep">|</span><button class="lang-btn" id="lang-btn-es" onclick="setLang('es')">ES</button></div>
       <span class="nav-name" id="nav-name"></span>
+      <a href="/clients.html" class="nav-link">&#128100; Clients</a>
+      <a href="/settings.html" class="nav-link">&#9881; Settings</a>
       <button class="btn-signout" onclick="signOut()" data-i18n="btn.signout">Sign Out</button>
     </div>
   </nav>
@@ -139,6 +159,18 @@
       <div class="stat"><div class="stat-label" data-i18n="dash.stat.contracts">Contracts</div><div class="stat-value" id="stat-jobs">&mdash;</div></div>
       <div class="stat"><div class="stat-label" data-i18n="dash.stat.invoices">Invoices</div><div class="stat-value" id="stat-inv">&mdash;</div></div>
       <div class="stat"><div class="stat-label" data-i18n="dash.stat.outstanding">Outstanding</div><div class="stat-value" id="stat-outstanding">&mdash;</div></div>
+    </div>
+
+    <!-- Plan / Usage Bar -->
+    <div id="plan-bar" class="plan-bar" style="display:none;">
+      <div class="usage-bar-wrap">
+        <span class="plan-badge badge-free" id="plan-badge">Free Plan</span>
+        <div class="usage-meter" id="usage-meter">
+          <div class="usage-label"><strong id="usage-count">0</strong> / 5 docs used this month</div>
+          <div class="usage-track"><div class="usage-fill" id="usage-fill" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div id="plan-cta"></div>
     </div>
 
     <!-- Tools -->
@@ -261,6 +293,31 @@
       var profile = profileRes.data;
       if (!profile || !profile.onboarding_complete) { window.location.href = '/onboarding.html'; return; }
       document.getElementById('nav-name').textContent = profile.business_name || profile.contractor_name;
+
+      // Plan bar
+      var planBar = document.getElementById('plan-bar');
+      var planBadge = document.getElementById('plan-badge');
+      var planCta = document.getElementById('plan-cta');
+      planBar.style.display = 'flex';
+      if (profile.plan === 'free') {
+        planBadge.textContent = 'Free Plan'; planBadge.className = 'plan-badge badge-free';
+        var monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+        var usageRes = await db.from('usage_events').select('id', { count: 'exact', head: true }).eq('user_id', sessionRes.data.session.user.id).gte('created_at', monthStart);
+        var usageCount = usageRes.count || 0;
+        document.getElementById('usage-count').textContent = usageCount;
+        var fill = document.getElementById('usage-fill');
+        fill.style.width = Math.min(100, (usageCount / 5) * 100) + '%';
+        if (usageCount >= 4) fill.classList.add('danger');
+        planCta.innerHTML = '<a href="/pricing.html" class="btn-upgrade-cta">&#128640; Upgrade to Pro</a>';
+      } else if (profile.plan === 'pro') {
+        planBadge.innerHTML = '&#11088; Pro Plan'; planBadge.className = 'plan-badge badge-pro';
+        document.getElementById('usage-meter').style.display = 'none';
+        planCta.innerHTML = '<a href="/settings.html" class="btn-manage">Manage Billing</a>';
+      } else if (profile.plan === 'business') {
+        planBadge.innerHTML = '&#11088; Business Plan'; planBadge.className = 'plan-badge badge-biz';
+        document.getElementById('usage-meter').style.display = 'none';
+        planCta.innerHTML = '<a href="/settings.html" class="btn-manage">Manage Billing</a>';
+      }
 
       var [jR, eR, iR, cR, sR, lR, tR] = await Promise.all([
         db.from('jobs').select('*').order('created_at', { ascending: false }),

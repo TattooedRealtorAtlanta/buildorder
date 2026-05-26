@@ -19,6 +19,17 @@ module.exports = async (req, res) => {
     .from('contractor_profiles').select('*').eq('id', takeoff.user_id).single();
   if (profErr || !profile) return res.status(404).json({ error: 'Profile not found' });
 
+  // Usage limit check (free plan: 5 docs/month)
+  if (profile.plan === 'free') {
+    const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+    const { count } = await supabase.from('usage_events')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', takeoff.user_id).gte('created_at', monthStart);
+    if (count !== null && count >= 5) {
+      return res.status(402).json({ error: 'usage_limit', message: 'Free plan limit reached (5 docs/month). Upgrade to Pro for unlimited documents.' });
+    }
+  }
+
   const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   const dims = takeoff.dimensions || {};
   const wasteFactor = Number(takeoff.waste_factor || 10);
@@ -105,6 +116,7 @@ Be thorough — a contractor should be able to hand this to a supplier and order
       return res.status(500).json({ error: 'Failed to save takeoff' });
     }
 
+    await supabase.from('usage_events').insert({ user_id: takeoff.user_id, doc_type: 'takeoff' });
     return res.status(200).json({ success: true, takeoff_id, content: takeoffText });
   } catch (err) {
     console.error('Anthropic error:', err);

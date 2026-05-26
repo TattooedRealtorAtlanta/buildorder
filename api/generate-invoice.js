@@ -22,6 +22,17 @@ module.exports = async (req, res) => {
     .from('contractor_profiles').select('*').eq('id', invoice.user_id).single();
   if (profErr || !profile) return res.status(404).json({ error: 'Profile not found' });
 
+  // Usage limit check (free plan: 5 docs/month)
+  if (profile.plan === 'free') {
+    const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+    const { count } = await supabase.from('usage_events')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', invoice.user_id).gte('created_at', monthStart);
+    if (count !== null && count >= 5) {
+      return res.status(402).json({ error: 'usage_limit', message: 'Free plan limit reached (5 docs/month). Upgrade to Pro for unlimited documents.' });
+    }
+  }
+
   const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   const dueDate = new Date();
   dueDate.setDate(dueDate.getDate() + (invoice.due_days || 30));
@@ -133,6 +144,7 @@ FORMAT:
       return res.status(500).json({ error: 'Failed to save invoice' });
     }
 
+    await supabase.from('usage_events').insert({ user_id: invoice.user_id, doc_type: 'invoice' });
     return res.status(200).json({ success: true, invoice_id: invoice_id, content: invoiceText });
 
   } catch (err) {
