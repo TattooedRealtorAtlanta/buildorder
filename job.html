@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/lang.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -52,6 +53,11 @@
       transition: color 0.2s, border-color 0.2s;
     }
     .btn-back:hover { color: var(--white); border-color: var(--amber); }
+    .lang-toggle { display: flex; align-items: center; gap: 0.25rem; }
+    .lang-btn { background: none; border: none; color: var(--dim); font-size: 0.75rem; font-weight: 700; cursor: pointer; font-family: inherit; padding: 0.2rem 0.4rem; border-radius: 4px; transition: color 0.15s; }
+    .lang-btn.active { color: var(--amber); }
+    .lang-btn:hover { color: var(--white); }
+    .lang-sep { color: var(--dim); font-size: 0.75rem; }
 
     .main { max-width: 900px; margin: 0 auto; padding: 2.5rem 2rem; }
 
@@ -216,7 +222,8 @@
   <nav class="nav">
     <a href="/dashboard.html" class="logo">Build<em>Order</em></a>
     <div class="nav-right">
-      <a href="/dashboard.html" class="btn-back">&larr; Dashboard</a>
+      <div class="lang-toggle"><button class="lang-btn" id="lang-btn-en" onclick="setLang('en')">EN</button><span class="lang-sep">|</span><button class="lang-btn" id="lang-btn-es" onclick="setLang('es')">ES</button></div>
+      <a href="/dashboard.html" class="btn-back" data-i18n="nav.back">&larr; Dashboard</a>
     </div>
   </nav>
 
@@ -297,36 +304,36 @@
             <div class="job-title">${job.job_address || 'No address'}, ${job.job_city || ''} ${job.job_state || ''}</div>
             <div class="job-meta">${job.work_type || ''} &middot; Created ${formatDate(job.created_at)}</div>
           </div>
-          <span class="status-badge ${statusClass}">${job.status}</span>
+          <span class="status-badge ${statusClass}">${T('status.' + job.status) || job.status}</span>
         </div>
 
         <div class="info-grid">
           <div class="info-card">
-            <div class="info-card-title">Homeowner</div>
-            <div class="info-row"><span class="info-label">Name</span><span class="info-value">${job.homeowner_name || '&mdash;'}</span></div>
-            <div class="info-row"><span class="info-label">Phone</span><span class="info-value">${job.homeowner_phone || '&mdash;'}</span></div>
-            <div class="info-row"><span class="info-label">Email</span><span class="info-value">${job.homeowner_email || '&mdash;'}</span></div>
-            <div class="info-row"><span class="info-label">Address</span><span class="info-value">${job.homeowner_address ? job.homeowner_address + ', ' + (job.homeowner_city || '') + ' ' + (job.homeowner_state || '') : (job.job_address || '&mdash;')}</span></div>
+            <div class="info-card-title">${T('job.card.homeowner')}</div>
+            <div class="info-row"><span class="info-label">${T('job.lbl.name2')}</span><span class="info-value">${job.homeowner_name || '&mdash;'}</span></div>
+            <div class="info-row"><span class="info-label">${T('job.lbl.phone2')}</span><span class="info-value">${job.homeowner_phone || '&mdash;'}</span></div>
+            <div class="info-row"><span class="info-label">${T('job.lbl.email2')}</span><span class="info-value">${job.homeowner_email || '&mdash;'}</span></div>
+            <div class="info-row"><span class="info-label">${T('job.lbl.address2')}</span><span class="info-value">${job.homeowner_address ? job.homeowner_address + ', ' + (job.homeowner_city || '') + ' ' + (job.homeowner_state || '') : (job.job_address || '&mdash;')}</span></div>
           </div>
           <div class="info-card">
-            <div class="info-card-title">Job Details</div>
-            <div class="info-row"><span class="info-label">Contract Price</span><span class="info-value">${formatPrice(job.contract_price)}</span></div>
-            <div class="info-row"><span class="info-label">Deposit</span><span class="info-value">${formatPrice(job.deposit_amount)}</span></div>
-            <div class="info-row"><span class="info-label">Start Date</span><span class="info-value">${formatDate(job.start_date)}</span></div>
-            <div class="info-row"><span class="info-label">Est. Completion</span><span class="info-value">${formatDate(job.estimated_completion_date)}</span></div>
-            <div class="info-row"><span class="info-label">Primary Residence</span><span class="info-value">${job.is_primary_residence ? 'Yes' : 'No'}</span></div>
+            <div class="info-card-title">${T('job.card.details')}</div>
+            <div class="info-row"><span class="info-label">${T('job.lbl.price2')}</span><span class="info-value">${formatPrice(job.contract_price)}</span></div>
+            <div class="info-row"><span class="info-label">${T('job.lbl.deposit2')}</span><span class="info-value">${formatPrice(job.deposit_amount)}</span></div>
+            <div class="info-row"><span class="info-label">${T('job.lbl.start2')}</span><span class="info-value">${formatDate(job.start_date)}</span></div>
+            <div class="info-row"><span class="info-label">${T('job.lbl.completion')}</span><span class="info-value">${formatDate(job.estimated_completion_date)}</span></div>
+            <div class="info-row"><span class="info-label">${T('job.lbl.primary2')}</span><span class="info-value">${job.is_primary_residence ? T('job.primary.yes') : T('job.primary.no')}</span></div>
           </div>
         </div>
 
         <div class="contract-section">
           <div class="contract-header">
-            <div class="contract-title">&#128196; Home Improvement Contract</div>
+            <div class="contract-title">&#128196; ${T('job.contract.title')}</div>
             <div class="contract-actions" id="contract-actions">
               ${currentContract
-                ? `<button class="btn-action" onclick="copyContract()">Copy</button>
-                   <button class="btn-action" onclick="downloadContract()">Download .txt</button>
-                   <button class="btn-generate" onclick="generateContract()">Regenerate</button>`
-                : `<button class="btn-generate" id="gen-btn" onclick="generateContract()">&#10022; Generate Contract</button>`
+                ? `<button class="btn-action" onclick="copyContract()">${T('btn.copy')}</button>
+                   <button class="btn-action" onclick="downloadContract()">${T('btn.download')}</button>
+                   <button class="btn-generate" onclick="generateContract()">${T('job.btn.regen')}</button>`
+                : `<button class="btn-generate" id="gen-btn" onclick="generateContract()">${T('job.btn.gen')}</button>`
               }
             </div>
           </div>
@@ -334,8 +341,8 @@
             ${currentContract
               ? `<div class="contract-body"><pre class="contract-text">${escapeHtml(currentContract.content)}</pre></div>`
               : `<div class="no-contract">
-                   <h3>No contract generated yet</h3>
-                   <p>Click Generate Contract to create a state-compliant contract for this job.</p>
+                   <h3>${T('job.no.h')}</h3>
+                   <p>${T('job.no.p')}</p>
                  </div>`
             }
           </div>
@@ -347,12 +354,12 @@
       document.getElementById('contract-body').innerHTML = `
         <div class="generating">
           <div class="generating-spinner"></div>
-          <h3>Generating your contract&hellip;</h3>
-          <p>Pulling in state compliance rules for ${currentJob.job_state || 'your state'}. This takes about 15&ndash;20 seconds.</p>
+          <h3>${T('job.generating.h')}</h3>
+          <p>${T('job.generating.p')}${currentJob.job_state || T('job.generating.your_state')}${T('job.generating.p2')}</p>
         </div>`;
 
       const actions = document.getElementById('contract-actions');
-      if (actions) actions.innerHTML = `<button class="btn-generate" disabled>Generating&hellip;</button>`;
+      if (actions) actions.innerHTML = `<button class="btn-generate" disabled>${T('gen.generating')}</button>`;
 
       try {
         const res = await fetch('/api/generate-contract', {
@@ -364,7 +371,7 @@
         const data = await res.json();
 
         if (!res.ok || !data.success) {
-          showError(data.error || 'Contract generation failed. Please try again.');
+          showError(data.error || T('gen.failed'));
           return;
         }
 
@@ -373,7 +380,7 @@
         renderPage();
 
       } catch (err) {
-        showError('Network error &mdash; please check your connection and try again.');
+        showError(T('gen.network_err'));
       }
     }
 
@@ -381,11 +388,10 @@
       document.getElementById('contract-body').innerHTML = `
         <div class="error-msg">&#9888; ${msg}</div>
         <div class="no-contract">
-          <p>Something went wrong generating the contract.</p>
-          <button class="btn-generate" onclick="generateContract()">Try Again</button>
+          <button class="btn-generate" onclick="generateContract()">${T('btn.try_again')}</button>
         </div>`;
       const actions = document.getElementById('contract-actions');
-      if (actions) actions.innerHTML = `<button class="btn-generate" onclick="generateContract()">&#10022; Generate Contract</button>`;
+      if (actions) actions.innerHTML = `<button class="btn-generate" onclick="generateContract()">${T('job.btn.gen')}</button>`;
     }
 
     function copyContract() {
