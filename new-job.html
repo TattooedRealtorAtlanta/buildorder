@@ -393,6 +393,26 @@
       window.location.href = `/job.html?id=${job.id}&generate=true`;
     }
 
+    // Pre-fill from estimate conversion
+    (function() {
+      var urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('from_estimate') !== '1') return;
+      var fields = ['homeowner_name', 'homeowner_phone', 'homeowner_email',
+                    'job_address', 'job_city', 'job_zip', 'contract_price', 'project_description'];
+      fields.forEach(function(f) {
+        var val = urlParams.get(f);
+        if (val) { var el = document.getElementById(f); if (el) el.value = val; }
+      });
+      // work_type and job_state are <select> — set and trigger compliance hint
+      var wt = urlParams.get('work_type');
+      if (wt) { var wtEl = document.getElementById('work_type'); if (wtEl) wtEl.value = wt; }
+      var st = urlParams.get('job_state');
+      if (st) { var stEl = document.getElementById('job_state'); if (stEl) { stEl.value = st; onStateChange(); } }
+      // Update subtitle
+      var sub = document.querySelector('.page-sub');
+      if (sub) sub.textContent = 'Pre-filled from your estimate — review the details, add dates and payment schedule, then generate your contract.';
+    })();
+
     // Auth check
     db.auth.getSession().then(({ data: { session } }) => {
       if (!session) window.location.href = '/login.html';

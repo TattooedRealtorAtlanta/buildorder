@@ -105,6 +105,8 @@
     .btn-cancel { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 1.1rem; font-size: 0.82rem; font-weight: 600; color: var(--muted); cursor: pointer; font-family: inherit; }
     .btn-send { background: var(--amber); color: #090E1A; border: none; border-radius: 8px; padding: 0.5rem 1.1rem; font-size: 0.82rem; font-weight: 800; cursor: pointer; font-family: inherit; }
     .btn-send:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-contract { background: rgba(52,211,153,0.08); border: 1px solid rgba(52,211,153,0.35); border-radius: 8px; padding: 0.45rem 1rem; font-size: 0.78rem; font-weight: 700; color: #34D399; cursor: pointer; font-family: inherit; transition: background 0.2s, border-color 0.2s; }
+    .btn-contract:hover { background: rgba(52,211,153,0.18); border-color: rgba(52,211,153,0.6); }
     .upgrade-box { background: var(--bg2); border: 1px solid rgba(245,158,11,0.3); border-radius: 16px; padding: 2rem; max-width: 420px; width: 100%; text-align: center; }
     .upgrade-icon { font-size: 2.5rem; margin-bottom: 1rem; }
     .upgrade-title { font-size: 1.2rem; font-weight: 900; margin-bottom: 0.5rem; }
@@ -209,6 +211,7 @@
                   '<button class="btn-action" onclick="openEmail()">' + T('btn.email') + '</button>' +
                   '<button class="btn-action" onclick="openShare()">&#128279; Share</button>' +
                   '<button class="btn-action" onclick="duplicateDoc(\'estimate\')">Duplicate</button>' +
+                  '<button class="btn-contract" onclick="convertToContract()">&#8594; Contract</button>' +
                   '<button class="btn-generate" onclick="generateEstimate()">' + T('est.btn.regen') + '</button>'
                 : '<button class="btn-generate" onclick="generateEstimate()">' + T('est.btn.gen') + '</button>') +
             '</div>' +
@@ -396,6 +399,24 @@
           setTimeout(function() { window.location.href = window.location.pathname + '?id=' + d.new_id; }, 900);
         } else { alert('Could not duplicate: ' + (d.error || 'Unknown error')); }
       }).catch(function() { alert('Duplicate failed.'); });
+    }
+
+    function convertToContract() {
+      if (!currentEstimate) return;
+      var est = currentEstimate;
+      var p = new URLSearchParams();
+      p.set('from_estimate', '1');
+      if (est.homeowner_name)  p.set('homeowner_name',       est.homeowner_name);
+      if (est.homeowner_phone) p.set('homeowner_phone',      est.homeowner_phone);
+      if (est.homeowner_email) p.set('homeowner_email',      est.homeowner_email);
+      if (est.job_address)     p.set('job_address',          est.job_address);
+      if (est.job_city)        p.set('job_city',             est.job_city);
+      if (est.job_state)       p.set('job_state',            est.job_state);
+      if (est.job_zip)         p.set('job_zip',              est.job_zip);
+      if (est.work_type)       p.set('work_type',            est.work_type);
+      if (est.total)           p.set('contract_price',       String(est.total));
+      if (est.notes)           p.set('project_description',  est.notes);
+      window.location.href = '/new-job.html?' + p.toString();
     }
 
     function copyShareLink() {
