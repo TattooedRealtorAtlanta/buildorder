@@ -212,6 +212,9 @@
                   '<button class="btn-action" onclick="openShare()">&#128279; Share</button>' +
                   '<button class="btn-action" onclick="duplicateDoc(\'estimate\')">Duplicate</button>' +
                   '<button class="btn-contract" onclick="convertToContract()">&#8594; Contract</button>' +
+                  (est.status === 'accepted'
+                    ? '<span style="background:rgba(52,211,153,0.12);color:var(--green);border-radius:8px;padding:0.45rem 0.9rem;font-size:0.78rem;font-weight:700;">&#10003; Won</span>'
+                    : '<button class="btn-action" style="color:var(--green);border-color:rgba(52,211,153,0.3);" onclick="markWon()">&#10003; Mark Won</button>') +
                   '<button class="btn-generate" onclick="generateEstimate()">' + T('est.btn.regen') + '</button>'
                 : '<button class="btn-generate" onclick="generateEstimate()">' + T('est.btn.gen') + '</button>') +
             '</div>' +
@@ -399,6 +402,17 @@
           setTimeout(function() { window.location.href = window.location.pathname + '?id=' + d.new_id; }, 900);
         } else { alert('Could not duplicate: ' + (d.error || 'Unknown error')); }
       }).catch(function() { alert('Duplicate failed.'); });
+    }
+
+    function markWon() {
+      if (!currentEstimate) return;
+      db.from('estimates').update({ status: 'accepted' }).eq('id', estimateId).then(function(res) {
+        if (res.error) { alert('Error: ' + res.error.message); return; }
+        currentEstimate.status = 'accepted';
+        renderPage();
+        var t = document.getElementById('toast'); t.textContent = '&#10003; Marked as won!'; t.classList.add('show');
+        setTimeout(function() { t.classList.remove('show'); }, 2500);
+      });
     }
 
     function convertToContract() {

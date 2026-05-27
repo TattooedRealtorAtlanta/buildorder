@@ -156,6 +156,26 @@
     .status-pending  { background: rgba(148,163,184,0.12); color: var(--muted); }
     .status-expired  { background: rgba(239,68,68,0.1); color: var(--red); }
 
+    /* Win Rate Panel */
+    .wr-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; }
+    .wr-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.25rem; }
+    .wr-stat { text-align: center; }
+    .wr-stat-num { font-size: 1.9rem; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 0.2rem; line-height: 1; }
+    .wr-stat-lbl { font-size: 0.67rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 700; }
+    .wr-bar { height: 8px; border-radius: 100px; background: rgba(255,255,255,0.06); overflow: hidden; margin-bottom: 0.5rem; display: flex; }
+    .wr-bar-won  { background: var(--green); transition: width 0.6s ease; }
+    .wr-bar-pend { background: var(--amber); flex: 1; }
+    .wr-bar-note { font-size: 0.75rem; color: var(--muted); margin-bottom: 1rem; }
+    .wr-wins-lbl { font-size: 0.67rem; font-weight: 700; color: var(--dim); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.5rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+    .wr-win-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.45rem 0; border-bottom: 1px solid var(--border); font-size: 0.82rem; text-decoration: none; color: inherit; transition: color 0.15s; }
+    .wr-win-row:last-child { border-bottom: none; }
+    .wr-win-row:hover { color: var(--amber); }
+    .wr-check { color: var(--green); font-size: 0.85rem; flex-shrink: 0; }
+    .wr-name  { flex: 1; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+    .wr-type  { color: var(--muted); font-size: 0.72rem; flex-shrink: 0; }
+    .wr-val   { font-weight: 700; color: var(--amber); flex-shrink: 0; }
+    .wr-date  { color: var(--dim); font-size: 0.72rem; flex-shrink: 0; }
+
     @media (max-width: 750px) {
       .stats { grid-template-columns: repeat(2, 1fr); }
       .tools-grid { grid-template-columns: repeat(2, 1fr); }
@@ -254,6 +274,12 @@
         <div class="tool-desc" data-i18n="tool.photos.desc">Upload &amp; organize job site photos</div>
         <div class="tool-count" id="tc-photos">Photo log</div>
       </a>
+    </div>
+
+    <!-- Win Rate Panel -->
+    <div id="win-rate-panel" style="display:none;margin-bottom:2rem;">
+      <div class="section-label">&#128200; Estimate Performance</div>
+      <div id="win-rate-content"></div>
     </div>
 
     <!-- Recent Docs -->
@@ -412,6 +438,7 @@
         .sort(function(a, b) { return new Date(b.created_at) - new Date(a.created_at); });
 
       renderDocs();
+      renderWinRate(ests);
 
       // Photo count
       try {
@@ -497,6 +524,61 @@
           (!isExpired ? '<button class="btn-copy-link" id="' + btnId + '" onclick="copyShareLink(\'' + l.token + '\',\'' + btnId + '\')">Copy Link</button>' : '') +
         '</div>';
       }).join('');
+    }
+
+    function renderWinRate(ests) {
+      var panel = document.getElementById('win-rate-panel');
+      var sent     = ests.filter(function(e) { return e.status === 'sent'; });
+      var accepted = ests.filter(function(e) { return e.status === 'accepted'; });
+      var total    = sent.length + accepted.length;
+      if (total === 0) { panel.style.display = 'none'; return; }
+
+      panel.style.display = 'block';
+      var winPct   = Math.round((accepted.length / total) * 100);
+      var winColor = winPct >= 60 ? 'var(--green)' : winPct >= 35 ? 'var(--amber)' : 'var(--red)';
+      var valueWon = accepted.reduce(function(s, e) { return s + Number(e.total || 0); }, 0);
+
+      // This month
+      var mStart    = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+      var mAccepted = ests.filter(function(e) { return e.status === 'accepted' && new Date(e.created_at) >= mStart; }).length;
+      var mSent     = ests.filter(function(e) { return e.status === 'sent'     && new Date(e.created_at) >= mStart; }).length;
+      var mTotal    = mAccepted + mSent;
+      var mDisplay  = mTotal > 0 ? Math.round((mAccepted / mTotal) * 100) + '%' : '&mdash;';
+
+      // Bar
+      var wonPct  = Math.round((accepted.length / total) * 100);
+
+      // Recent wins
+      var wins = accepted
+        .sort(function(a, b) { return new Date(b.created_at) - new Date(a.created_at); })
+        .slice(0, 5);
+
+      var winsHtml = wins.length === 0 ? '' :
+        '<div class="wr-wins-lbl">Recent Wins</div>' +
+        wins.map(function(e) {
+          return '<a href="/estimate.html?id=' + e.id + '" class="wr-win-row">' +
+            '<span class="wr-check">&#10003;</span>' +
+            '<span class="wr-name">' + (e.homeowner_name || 'Client') + '</span>' +
+            '<span class="wr-type">' + (e.work_type || '') + '</span>' +
+            (e.total ? '<span class="wr-val">' + fmt(e.total) + '</span>' : '') +
+            '<span class="wr-date">' + fmtDate(e.created_at) + '</span>' +
+            '</a>';
+        }).join('');
+
+      document.getElementById('win-rate-content').innerHTML =
+        '<div class="wr-card">' +
+          '<div class="wr-stats">' +
+            '<div class="wr-stat"><div class="wr-stat-num" style="color:' + winColor + '">' + winPct + '%</div><div class="wr-stat-lbl">Win Rate</div></div>' +
+            '<div class="wr-stat"><div class="wr-stat-num">' + (valueWon > 0 ? fmt(valueWon) : '&mdash;') + '</div><div class="wr-stat-lbl">Value Won</div></div>' +
+            '<div class="wr-stat"><div class="wr-stat-num">' + mDisplay + '</div><div class="wr-stat-lbl">This Month</div></div>' +
+          '</div>' +
+          '<div class="wr-bar"><div class="wr-bar-won" style="width:' + wonPct + '%"></div><div class="wr-bar-pend"></div></div>' +
+          '<div class="wr-bar-note">' +
+            '<span style="color:var(--green);">&#9632;</span> ' + accepted.length + ' won &nbsp;&nbsp;' +
+            '<span style="color:var(--amber);">&#9632;</span> ' + sent.length + ' pending' +
+          '</div>' +
+          winsHtml +
+        '</div>';
     }
 
     async function signOut() {
