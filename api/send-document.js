@@ -1,5 +1,6 @@
 const { Resend } = require('resend');
 const { createClient } = require('@supabase/supabase-js');
+const { getEffectivePlan } = require('./_effectivePlan');
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -18,7 +19,7 @@ module.exports = async (req, res) => {
   const { data: profile } = await supabase
     .from('contractor_profiles').select('plan, contractor_name, business_name, email').eq('id', user.id).single();
 
-  if (!profile || profile.plan === 'free') {
+  if (!profile || getEffectivePlan(profile) === 'free') {
     return res.status(402).json({ error: 'upgrade_required', message: 'Email delivery is a Pro feature. Upgrade to send documents directly to clients.' });
   }
 

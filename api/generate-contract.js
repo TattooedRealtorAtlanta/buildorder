@@ -2,6 +2,7 @@ const Anthropic = require('@anthropic-ai/sdk');
 const { createClient } = require('@supabase/supabase-js');
 const fs = require('fs');
 const path = require('path');
+const { getEffectivePlan } = require('./_effectivePlan');
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -76,7 +77,7 @@ module.exports = async (req, res) => {
   if (profErr || !profile) return res.status(404).json({ error: 'Profile not found' });
 
   // Usage limit check (free plan: 5 docs/month)
-  if (profile.plan === 'free') {
+  if (getEffectivePlan(profile) === 'free') {
     const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
     const { count } = await supabase.from('usage_events')
       .select('id', { count: 'exact', head: true })

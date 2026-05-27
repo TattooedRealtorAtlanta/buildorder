@@ -112,10 +112,11 @@
     .empty-state p { font-size: 0.82rem; }
     .plan-bar { display: flex; align-items: center; justify-content: space-between; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1.25rem; margin-bottom: 1.5rem; gap: 1rem; flex-wrap: wrap; }
     .plan-badge { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em; padding: 0.2rem 0.7rem; border-radius: 100px; }
-    .badge-free { background: rgba(148,163,184,0.12); color: var(--muted); }
-    .badge-pro  { background: rgba(245,158,11,0.15); color: var(--amber); }
-    .badge-biz  { background: rgba(52,211,153,0.15); color: var(--green); }
-    .usage-bar-wrap { display: flex; align-items: center; gap: 1rem; flex: 1; }
+    .badge-free    { background: rgba(148,163,184,0.12); color: var(--muted); }
+    .badge-pro     { background: rgba(245,158,11,0.15); color: var(--amber); }
+    .badge-biz     { background: rgba(52,211,153,0.15); color: var(--green); }
+    .badge-founder { background: rgba(139,92,246,0.18); color: #C4B5FD; font-size: 0.62rem; }
+    .usage-bar-wrap { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; flex: 1; }
     .usage-meter { flex: 1; min-width: 160px; }
     .usage-track { background: rgba(255,255,255,0.06); border-radius: 100px; height: 5px; margin-top: 0.35rem; overflow: hidden; }
     .usage-fill { height: 100%; border-radius: 100px; background: var(--amber); transition: width 0.5s; }
@@ -324,11 +325,13 @@
       document.getElementById('nav-name').textContent = profile.business_name || profile.contractor_name;
 
       // Plan bar
+      var isFounder = profile.founding_member && profile.pro_expires_at && new Date(profile.pro_expires_at) > new Date();
+      var effectivePlan = isFounder ? 'pro' : (profile.plan || 'free');
       var planBar = document.getElementById('plan-bar');
       var planBadge = document.getElementById('plan-badge');
       var planCta = document.getElementById('plan-cta');
       planBar.style.display = 'flex';
-      if (profile.plan === 'free') {
+      if (effectivePlan === 'free') {
         planBadge.textContent = 'Free Plan'; planBadge.className = 'plan-badge badge-free';
         var monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
         var usageRes = await db.from('usage_events').select('id', { count: 'exact', head: true }).eq('user_id', sessionRes.data.session.user.id).gte('created_at', monthStart);
@@ -338,11 +341,14 @@
         fill.style.width = Math.min(100, (usageCount / 5) * 100) + '%';
         if (usageCount >= 4) fill.classList.add('danger');
         planCta.innerHTML = '<a href="/pricing.html" class="btn-upgrade-cta">&#128640; Upgrade to Pro</a>';
-      } else if (profile.plan === 'pro') {
+      } else if (effectivePlan === 'pro') {
         planBadge.innerHTML = '&#11088; Pro Plan'; planBadge.className = 'plan-badge badge-pro';
+        if (isFounder) {
+          planBadge.insertAdjacentHTML('afterend', '<span class="plan-badge badge-founder">&#10022; Founding Member</span>');
+        }
         document.getElementById('usage-meter').style.display = 'none';
-        planCta.innerHTML = '<a href="/settings.html" class="btn-manage">Manage Billing</a>';
-      } else if (profile.plan === 'business') {
+        planCta.innerHTML = isFounder ? '' : '<a href="/settings.html" class="btn-manage">Manage Billing</a>';
+      } else if (effectivePlan === 'business') {
         planBadge.innerHTML = '&#11088; Business Plan'; planBadge.className = 'plan-badge badge-biz';
         document.getElementById('usage-meter').style.display = 'none';
         planCta.innerHTML = '<a href="/settings.html" class="btn-manage">Manage Billing</a>';

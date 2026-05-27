@@ -32,9 +32,10 @@
     /* Plan section */
     .plan-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem; }
     .plan-badge { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em; padding: 0.25rem 0.8rem; border-radius: 100px; }
-    .badge-free { background: rgba(148,163,184,0.12); color: var(--muted); }
-    .badge-pro  { background: rgba(245,158,11,0.15); color: var(--amber); }
-    .badge-biz  { background: rgba(52,211,153,0.15); color: var(--green); }
+    .badge-free    { background: rgba(148,163,184,0.12); color: var(--muted); }
+    .badge-pro     { background: rgba(245,158,11,0.15); color: var(--amber); }
+    .badge-biz     { background: rgba(52,211,153,0.15); color: var(--green); }
+    .badge-founder { background: rgba(139,92,246,0.18); color: #C4B5FD; }
     .usage-track { background: rgba(255,255,255,0.06); border-radius: 100px; height: 5px; margin: 0.6rem 0 0.35rem; overflow: hidden; }
     .usage-fill { height: 100%; border-radius: 100px; background: var(--amber); transition: width 0.5s; }
     .usage-fill.danger { background: var(--red); }
@@ -77,31 +78,45 @@
       var profile = profileRes.data;
       if (!profile) { window.location.href = '/onboarding.html'; return; }
 
-      // Usage (free plan)
+      // Compute effective plan (founding member override)
+      var isFounder = profile.founding_member && profile.pro_expires_at && new Date(profile.pro_expires_at) > new Date();
+      var effectivePlan = isFounder ? 'pro' : (profile.plan || 'free');
+
+      // Usage (free plan only)
       var usageCount = 0;
-      if (profile.plan === 'free') {
+      if (effectivePlan === 'free') {
         var monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
         var usageRes = await db.from('usage_events').select('id', { count: 'exact', head: true }).eq('user_id', userId).gte('created_at', monthStart);
         usageCount = usageRes.count || 0;
       }
 
-      renderPage(profile, usageCount);
+      renderPage(profile, usageCount, effectivePlan, isFounder);
     }
 
-    function renderPage(p, usageCount) {
-      var planBadgeClass = { free: 'badge-free', pro: 'badge-pro', business: 'badge-biz' }[p.plan] || 'badge-free';
-      var planLabel = { free: 'Free Plan', pro: '⭐ Pro Plan', business: '⭐ Business Plan' }[p.plan] || 'Free Plan';
+    function renderPage(p, usageCount, effectivePlan, isFounder) {
+      var planBadgeClass = { free: 'badge-free', pro: 'badge-pro', business: 'badge-biz' }[effectivePlan] || 'badge-free';
+      var planLabel = { free: 'Free Plan', pro: '⭐ Pro Plan', business: '⭐ Business Plan' }[effectivePlan] || 'Free Plan';
 
       var billingSection = '';
-      if (p.plan === 'free') {
+      if (effectivePlan === 'free') {
         var pct = Math.min(100, (usageCount / 5) * 100);
         var dangerClass = usageCount >= 4 ? ' danger' : '';
         billingSection = '<div class="plan-row"><div><span class="plan-badge badge-free">Free Plan</span></div><a href="/pricing.html" class="btn-upgrade">&#128640; Upgrade to Pro &mdash; $19/mo</a></div>' +
           '<div class="usage-text"><strong>' + usageCount + '</strong> of 5 documents used this month</div>' +
           '<div class="usage-track"><div class="usage-fill' + dangerClass + '" style="width:' + pct + '%"></div></div>';
       } else {
-        billingSection = '<div class="plan-row"><div><span class="plan-badge ' + planBadgeClass + '">' + planLabel + '</span></div><button class="btn-portal" onclick="openPortal()">Manage Billing &rarr;</button></div>' +
-          '<div style="font-size:0.82rem;color:var(--muted);">Unlimited documents &middot; All features included</div>';
+        var founderBadge = isFounder
+          ? ' &nbsp;<span class="plan-badge badge-founder" style="font-size:0.65rem;">&#10022; Founding Member</span>'
+          : '';
+        var expiryNote = isFounder && p.pro_expires_at
+          ? '<div style="font-size:0.78rem;color:var(--muted);margin-top:0.4rem;">Founding member access through ' + new Date(p.pro_expires_at).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) + '</div>'
+          : '';
+        var billingBtn = isFounder
+          ? ''  // no Stripe portal for founding members
+          : '<button class="btn-portal" onclick="openPortal()">Manage Billing &rarr;</button>';
+        billingSection = '<div class="plan-row"><div><span class="plan-badge ' + planBadgeClass + '">' + planLabel + '</span>' + founderBadge + '</div>' + billingBtn + '</div>' +
+          '<div style="font-size:0.82rem;color:var(--muted);">Unlimited documents &middot; All features included</div>' +
+          expiryNote;
       }
 
       document.getElementById('main-content').innerHTML =
