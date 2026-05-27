@@ -132,6 +132,26 @@
       .line-item-row { grid-template-columns: 1fr 1fr; }
       .line-item-row input:first-child { grid-column: 1 / -1; }
     }
+    /* Library picker modal */
+    .lib-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.75); display:flex; align-items:center; justify-content:center; z-index:200; padding:1rem; }
+    .lib-overlay.hidden { display:none; }
+    .lib-box { background:var(--bg2); border:1px solid var(--border); border-radius:16px; padding:1.75rem; max-width:520px; width:100%; max-height:80vh; display:flex; flex-direction:column; }
+    .lib-title { font-size:1rem; font-weight:800; margin-bottom:0.25rem; }
+    .lib-sub { font-size:0.8rem; color:var(--muted); margin-bottom:1.25rem; }
+    .lib-list { flex:1; overflow-y:auto; border:1px solid var(--border); border-radius:10px; }
+    .lib-list-item { display:flex; align-items:center; gap:0.75rem; padding:0.75rem 1rem; border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.15s; }
+    .lib-list-item:last-child { border-bottom:none; }
+    .lib-list-item:hover { background:rgba(255,255,255,0.04); }
+    .lib-list-item input[type=checkbox] { width:16px; height:16px; accent-color:var(--amber); flex-shrink:0; cursor:pointer; }
+    .lib-list-item-desc { flex:1; font-size:0.85rem; font-weight:600; }
+    .lib-list-item-meta { font-size:0.78rem; color:var(--muted); white-space:nowrap; }
+    .lib-empty { padding:2rem; text-align:center; color:var(--muted); font-size:0.85rem; line-height:1.6; }
+    .lib-footer { display:flex; gap:0.75rem; justify-content:flex-end; margin-top:1.25rem; flex-shrink:0; }
+    .btn-lib-cancel { background:none; border:1px solid var(--border); border-radius:8px; padding:0.5rem 1.1rem; font-size:0.82rem; font-weight:600; color:var(--muted); cursor:pointer; font-family:inherit; }
+    .btn-lib-add { background:var(--amber); color:#090E1A; border:none; border-radius:8px; padding:0.5rem 1.25rem; font-size:0.82rem; font-weight:800; cursor:pointer; font-family:inherit; }
+    .btn-lib-add:disabled { opacity:0.5; cursor:not-allowed; }
+    .btn-from-lib { background:none; border:1px dashed rgba(245,158,11,0.35); border-radius:8px; padding:0.6rem 1rem; font-size:0.82rem; color:var(--amber); cursor:pointer; font-family:inherit; margin-top:0.5rem; transition:border-color 0.2s, background 0.2s; white-space:nowrap; }
+    .btn-from-lib:hover { border-color:var(--amber); background:rgba(245,158,11,0.06); }
     .nav-right { display: flex; align-items: center; gap: 1rem; }
     .lang-toggle { display: flex; align-items: center; gap: 0.25rem; }
     .lang-btn { background: none; border: none; color: var(--dim); font-size: 0.75rem; font-weight: 700; cursor: pointer; font-family: inherit; padding: 0.2rem 0.4rem; border-radius: 4px; transition: color 0.15s; }
@@ -266,7 +286,10 @@
         <div></div>
       </div>
       <div id="line-items-container"></div>
-      <button class="btn-add-line" data-i18n="est.btn.add" onclick="addLineItem()">+ Add Line Item</button>
+      <div style="display:flex;gap:0.5rem;margin-top:0.5rem;flex-wrap:wrap;">
+        <button class="btn-add-line" style="flex:1;margin-top:0;" data-i18n="est.btn.add" onclick="addLineItem()">+ Add Line Item</button>
+        <button class="btn-from-lib" onclick="openLibraryPicker()">&#128218; From Library</button>
+      </div>
       <div class="ai-note" data-i18n="est.tip">Leave line items empty and BuildOrder will generate realistic, itemized pricing from your project description.</div>
     </div>
 
@@ -382,6 +405,80 @@
         });
       });
     }
+    // ── Rate Library picker ────────────────────────────────────────────
+    var libraryCache = null;
+
+    function openLibraryPicker() {
+      document.getElementById('lib-modal').classList.remove('hidden');
+      if (libraryCache !== null) { renderLibraryList(libraryCache); return; }
+      document.getElementById('lib-list').innerHTML = '<div class="lib-empty">Loading…</div>';
+      db.auth.getUser().then(function(r) {
+        if (!r.data.user) return Promise.resolve({ data: [] });
+        return db.from('line_item_templates').select('*').eq('user_id', r.data.user.id).order('description');
+      }).then(function(res) {
+        libraryCache = (res && res.data) ? res.data : [];
+        renderLibraryList(libraryCache);
+      }).catch(function() {
+        document.getElementById('lib-list').innerHTML = '<div class="lib-empty">Failed to load. Please try again.</div>';
+      });
+    }
+
+    function renderLibraryList(items) {
+      var list = document.getElementById('lib-list');
+      if (!items || items.length === 0) {
+        list.innerHTML = '<div class="lib-empty">No saved items yet.<br><a href="/settings.html" style="color:var(--amber);font-weight:600;">Add items in Settings → Rate Library</a></div>';
+        document.getElementById('lib-add-btn').disabled = true;
+        return;
+      }
+      list.innerHTML = items.map(function(item, i) {
+        var price = '$' + Number(item.unit_price || 0).toFixed(2);
+        var meta = (item.unit ? item.unit + ' · ' : '') + price;
+        return '<label class="lib-list-item">' +
+          '<input type="checkbox" id="lib-chk-' + i + '" onchange="updateLibBtn()">' +
+          '<span class="lib-list-item-desc">' + escLib(item.description) + '</span>' +
+          '<span class="lib-list-item-meta">' + escLib(meta) + '</span>' +
+          '</label>';
+      }).join('');
+      updateLibBtn();
+    }
+
+    function updateLibBtn() {
+      var any = Array.from(document.querySelectorAll('#lib-list input[type=checkbox]')).some(function(c) { return c.checked; });
+      document.getElementById('lib-add-btn').disabled = !any;
+    }
+
+    function addFromLibrary() {
+      if (!libraryCache) return;
+      var checkboxes = document.querySelectorAll('#lib-list input[type=checkbox]');
+      checkboxes.forEach(function(chk, i) {
+        if (chk.checked && libraryCache[i]) {
+          var it = libraryCache[i];
+          addLineItem(it.description, 1, it.unit || '', it.unit_price || 0);
+        }
+      });
+      closeLibraryPicker();
+    }
+
+    function closeLibraryPicker() {
+      document.getElementById('lib-modal').classList.add('hidden');
+    }
+
+    function escLib(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   </script>
+
+  <!-- Rate Library Modal -->
+  <div class="lib-overlay hidden" id="lib-modal">
+    <div class="lib-box">
+      <div class="lib-title">&#128218; Rate Library</div>
+      <div class="lib-sub">Select items to add to this estimate. Quantities default to 1 — edit after adding.</div>
+      <div class="lib-list" id="lib-list">
+        <div class="lib-empty">Loading…</div>
+      </div>
+      <div class="lib-footer">
+        <button class="btn-lib-cancel" onclick="closeLibraryPicker()">Cancel</button>
+        <button class="btn-lib-add" id="lib-add-btn" onclick="addFromLibrary()" disabled>Add Selected</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

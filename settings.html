@@ -53,6 +53,14 @@
     .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1.25rem; font-size: 0.85rem; font-weight: 600; color: var(--green); opacity: 0; transform: translateY(10px); transition: opacity 0.2s, transform 0.2s; pointer-events: none; z-index: 100; }
     .toast.show { opacity: 1; transform: translateY(0); }
     @media (max-width: 550px) { .form-row { grid-template-columns: 1fr; } }
+    /* Rate Library */
+    .lib-item-row { display:grid; grid-template-columns:1fr 80px 100px 32px; gap:0.5rem; align-items:center; padding:0.65rem 0.75rem; border-bottom:1px solid var(--border); font-size:0.85rem; }
+    .lib-item-row:last-child { border-bottom:none; }
+    .lib-item-desc { font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .lib-item-unit { color:var(--muted); font-size:0.78rem; }
+    .lib-item-price { font-weight:700; color:var(--amber); font-size:0.85rem; }
+    .btn-del { background:none; border:1px solid rgba(239,68,68,0.25); border-radius:6px; color:var(--red); cursor:pointer; font-size:1rem; width:30px; height:30px; display:flex; align-items:center; justify-content:center; transition:background 0.15s; flex-shrink:0; }
+    .btn-del:hover { background:rgba(239,68,68,0.1); }
   </style>
 </head>
 <body>
@@ -96,6 +104,7 @@
       }
 
       renderPage(profile, usageCount, effectivePlan, isFounder);
+      await loadRateLibrary();
     }
 
     function renderPage(p, usageCount, effectivePlan, isFounder) {
@@ -175,6 +184,20 @@
           '</div>' +
           '<div class="form-field"><label class="form-label">Payment Link / Other Instructions</label><input class="form-input" type="text" id="f-payment-other" placeholder="Stripe link, bank wire info, credit card instructions, etc." value="' + esc(p.payment_other) + '"></div>' +
           '<button class="btn-save" id="save-btn-3" onclick="saveProfile()">Save Payment Info</button>' +
+        '</div>' +
+
+        '<div class="section">' +
+          '<div class="section-title">Rate Library</div>' +
+          '<p style="font-size:0.78rem;color:var(--muted);margin-bottom:1.25rem;line-height:1.6;">Save your standard services and prices. On any estimate, click <strong style="color:var(--white);">From Library</strong> to drop them in instantly.</p>' +
+          '<div id="rate-library-items"><div style="color:var(--muted);font-size:0.82rem;padding:0.25rem 0;">Loading…</div></div>' +
+          '<div class="form-row" style="margin-top:1.25rem;">' +
+            '<div class="form-field"><label class="form-label">Description</label><input class="form-input" type="text" id="lib-desc" placeholder="e.g. Install hardwood flooring"></div>' +
+            '<div class="form-field"><label class="form-label">Unit <span style="font-weight:400;text-transform:none;color:var(--dim);">(optional)</span></label><input class="form-input" type="text" id="lib-unit" placeholder="sq ft, hr, each…"></div>' +
+          '</div>' +
+          '<div style="display:flex;gap:0.75rem;align-items:flex-end;">' +
+            '<div class="form-field" style="flex:1;margin-bottom:0;"><label class="form-label">Unit Price ($)</label><input class="form-input" type="number" id="lib-price" placeholder="0.00" min="0" step="0.01"></div>' +
+            '<button class="btn-save" onclick="addTemplate()" style="flex-shrink:0;margin-bottom:1px;">+ Add to Library</button>' +
+          '</div>' +
         '</div>';
     }
 
@@ -211,6 +234,49 @@
       if (btn3) { btn3.disabled = false; btn3.textContent = 'Save Payment Info'; }
       if (res.error) { alert('Error saving: ' + res.error.message); return; }
       showToast('Profile saved!');
+    }
+
+    async function loadRateLibrary() {
+      var container = document.getElementById('rate-library-items');
+      if (!container) return;
+      var res = await db.from('line_item_templates').select('*').eq('user_id', userId).order('description');
+      var items = res.data || [];
+      if (items.length === 0) {
+        container.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:0.25rem 0;">No saved items yet — add your first item below.</div>';
+        return;
+      }
+      container.innerHTML =
+        '<div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:0.25rem;">' +
+        items.map(function(item) {
+          var price = Number(item.unit_price || 0).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 });
+          return '<div class="lib-item-row">' +
+            '<div class="lib-item-desc" title="' + esc(item.description) + '">' + esc(item.description) + '</div>' +
+            '<div class="lib-item-unit">' + esc(item.unit || '—') + '</div>' +
+            '<div class="lib-item-price">$' + price + '</div>' +
+            '<button class="btn-del" onclick="deleteTemplate(\'' + item.id + '\')" title="Delete">&times;</button>' +
+          '</div>';
+        }).join('') +
+        '</div>';
+    }
+
+    async function addTemplate() {
+      var desc  = (document.getElementById('lib-desc').value  || '').trim();
+      var unit  = (document.getElementById('lib-unit').value  || '').trim();
+      var price = parseFloat(document.getElementById('lib-price').value) || 0;
+      if (!desc) { document.getElementById('lib-desc').focus(); return; }
+      var res = await db.from('line_item_templates').insert({ user_id: userId, description: desc, unit: unit || null, unit_price: price });
+      if (res.error) { alert('Error saving item: ' + res.error.message); return; }
+      document.getElementById('lib-desc').value  = '';
+      document.getElementById('lib-unit').value  = '';
+      document.getElementById('lib-price').value = '';
+      showToast('Item added to library!');
+      await loadRateLibrary();
+    }
+
+    async function deleteTemplate(id) {
+      if (!confirm('Remove this item from your rate library?')) return;
+      await db.from('line_item_templates').delete().eq('id', id).eq('user_id', userId);
+      await loadRateLibrary();
     }
 
     async function openPortal() {
