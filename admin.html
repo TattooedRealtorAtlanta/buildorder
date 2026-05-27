@@ -31,9 +31,9 @@
     /* User table */
     .section-title { font-size: 0.72rem; font-weight: 700; color: var(--dim); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.75rem; }
     .user-table { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-    .table-head { display: grid; grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr 1.2fr; gap: 0.5rem; padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--border); }
+    .table-head { display: grid; grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr 1.2fr 1fr; gap: 0.5rem; padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--border); }
     .table-head span { font-size: 0.65rem; font-weight: 700; color: var(--dim); text-transform: uppercase; letter-spacing: 0.07em; }
-    .table-row { display: grid; grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr 1.2fr; gap: 0.5rem; padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--border); align-items: center; font-size: 0.82rem; }
+    .table-row { display: grid; grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr 1.2fr 1fr; gap: 0.5rem; padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--border); align-items: center; font-size: 0.82rem; }
     .table-row:last-child { border-bottom: none; }
     .table-row:hover { background: rgba(255,255,255,0.02); }
     .plan-pill { display: inline-block; padding: 0.15rem 0.55rem; border-radius: 100px; font-size: 0.68rem; font-weight: 800; text-transform: uppercase; }
@@ -41,6 +41,10 @@
     .pill-pro  { background: rgba(245,158,11,0.12); color: var(--amber); }
     .pill-biz  { background: rgba(52,211,153,0.12); color: var(--green); }
     .plan-select { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 0.25rem 0.5rem; font-size: 0.75rem; color: var(--white); font-family: inherit; cursor: pointer; }
+    .btn-founder { border: none; border-radius: 6px; padding: 0.25rem 0.65rem; font-size: 0.7rem; font-weight: 800; cursor: pointer; font-family: inherit; transition: opacity 0.15s; letter-spacing: 0.03em; }
+    .btn-founder.active   { background: rgba(139,92,246,0.25); color: #C4B5FD; }
+    .btn-founder.inactive { background: rgba(255,255,255,0.06); color: var(--muted); }
+    .btn-founder:hover { opacity: 0.75; }
     .loading { text-align: center; padding: 3rem; color: var(--muted); font-size: 0.85rem; }
     .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1.25rem; font-size: 0.85rem; font-weight: 600; color: var(--green); opacity: 0; transform: translateY(10px); transition: opacity 0.2s, transform 0.2s; pointer-events: none; z-index: 100; }
     .toast.show { opacity: 1; transform: translateY(0); }
@@ -82,6 +86,7 @@
           <span>Docs</span>
           <span>Joined</span>
           <span>Set Plan</span>
+          <span>Founder</span>
         </div>
         <div id="user-rows"><div class="loading">Loading&hellip;</div></div>
       </div>
@@ -139,6 +144,9 @@
       rows.innerHTML = users.map(function(u) {
         var planClass = { free: 'pill-free', pro: 'pill-pro', business: 'pill-biz' }[u.plan] || 'pill-free';
         var joined = u.created_at ? new Date(u.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+        var isFounder = u.founding_member && u.pro_expires_at && new Date(u.pro_expires_at) > new Date();
+        var founderBtnClass = isFounder ? 'active' : 'inactive';
+        var founderBtnLabel = isFounder ? '&#10022; Founder' : 'Grant';
         return '<div class="table-row">' +
           '<div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (u.email || '—') + '</div>' +
           '<div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);">' + (u.business_name || u.contractor_name || '—') + '</div>' +
@@ -150,6 +158,7 @@
             '<option value="pro"' + (u.plan==='pro'?' selected':'') + '>Pro</option>' +
             '<option value="business"' + (u.plan==='business'?' selected':'') + '>Business</option>' +
           '</select></div>' +
+          '<div><button class="btn-founder ' + founderBtnClass + '" onclick="toggleFounder(\'' + u.id + '\',' + (isFounder?'true':'false') + ',this)">' + founderBtnLabel + '</button></div>' +
           '</div>';
       }).join('');
     }
@@ -158,6 +167,40 @@
       var result = await callAdmin('set_plan', { user_id: userId, plan: plan });
       if (result.ok) {
         showToast('Plan updated to ' + plan);
+      } else {
+        alert('Failed: ' + (result.data.error || 'Unknown error'));
+      }
+    }
+
+    async function toggleFounder(userId, currentlyActive, btn) {
+      var grant = !currentlyActive;
+      var expires = '2027-01-01T00:00:00+00:00';
+
+      if (grant) {
+        // Ask for expiry date — default to end of 2027
+        var input = prompt('Grant founding member access through (YYYY-MM-DD):', '2027-01-01');
+        if (!input) return; // cancelled
+        expires = input.trim() + 'T00:00:00+00:00';
+      } else {
+        if (!confirm('Revoke founding member access for this user?')) return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = '…';
+
+      var result = await callAdmin('set_founding_member', {
+        user_id: userId,
+        founding_member: grant,
+        pro_expires_at: grant ? expires : null
+      });
+
+      btn.disabled = false;
+      if (result.ok) {
+        btn.className = 'btn-founder ' + (grant ? 'active' : 'inactive');
+        btn.innerHTML = grant ? '&#10022; Founder' : 'Grant';
+        // Update closure so next click toggles correctly
+        btn.setAttribute('onclick', 'toggleFounder(\'' + userId + '\',' + (grant?'true':'false') + ',this)');
+        showToast(grant ? 'Founding member access granted' : 'Founding member access revoked');
       } else {
         alert('Failed: ' + (result.data.error || 'Unknown error'));
       }
