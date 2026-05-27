@@ -177,6 +177,73 @@ module.exports = async function handler(req, res) {
         console.error('Sign notification email failed:', e.message);
       }
 
+      // ── Send confirmation copy to client ──────────────────────────────
+      if (client_email) {
+        try {
+          const { data: profile2 } = await db
+            .from('contractor_profiles')
+            .select('email, contractor_name, business_name, phone')
+            .eq('id', link.user_id)
+            .single();
+
+          if (profile2) {
+            const docLabel2   = TYPE_LABELS[link.document_type] || 'Document';
+            const bizName2    = profile2.business_name || profile2.contractor_name || 'Your contractor';
+            const signedTime2 = new Date(signedAt).toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
+
+            // Re-fetch document content for the copy
+            const { data: linkFull } = await db
+              .from('share_links')
+              .select('document_content')
+              .eq('token', token)
+              .single();
+
+            const docSnippet = linkFull && linkFull.document_content
+              ? `<pre style="font-family:'Courier New',monospace;font-size:11px;line-height:1.65;white-space:pre-wrap;word-break:break-word;background:#f8f8f8;padding:20px;border-radius:8px;border:1px solid #ddd;color:#222;">${linkFull.document_content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre>`
+              : '';
+
+            await resend.emails.send({
+              from:     `${bizName2} via BuildOrder <noreply@buildorder.ai>`,
+              to:       [client_email],
+              reply_to: profile2.email,
+              subject:  `Your signed ${docLabel2} — copy for your records`,
+              html: `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"></head>
+<body style="font-family:Arial,sans-serif;max-width:650px;margin:40px auto;color:#222;padding:0 16px;">
+  <div style="background:#F59E0B;border-radius:10px 10px 0 0;padding:20px 28px;">
+    <h1 style="margin:0;font-size:20px;color:#090E1A;font-weight:900;">${bizName2}</h1>
+  </div>
+  <div style="background:#f9f9f9;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 10px 10px;padding:28px;">
+    <div style="background:#e8f9f0;border:1px solid #6ee7b7;border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:14px;font-weight:700;color:#065f46;">
+      &#10003; You have signed this document
+    </div>
+    <p style="font-size:15px;line-height:1.6;margin:0 0 20px;color:#444;">
+      Hi${client_name ? ' ' + client_name : ''}, this is your copy of the <strong>${docLabel2}</strong> you signed electronically on <strong>${signedTime2}</strong>.
+      Keep this email for your records.
+    </p>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px;">
+      <tr style="background:#f0f0f0;"><td style="padding:8px 10px;font-weight:700;">Document</td><td style="padding:8px 10px;">${docLabel2}</td></tr>
+      ${client_name ? `<tr><td style="padding:8px 10px;font-weight:700;background:#f9f9f9;">Signed by</td><td style="padding:8px 10px;background:#f9f9f9;">${client_name}</td></tr>` : ''}
+      <tr style="background:#f0f0f0;"><td style="padding:8px 10px;font-weight:700;">Date &amp; Time</td><td style="padding:8px 10px;">${signedTime2}</td></tr>
+      <tr><td style="padding:8px 10px;font-weight:700;background:#f9f9f9;">Prepared by</td><td style="padding:8px 10px;background:#f9f9f9;">${bizName2}</td></tr>
+      ${profile2.phone ? `<tr style="background:#f0f0f0;"><td style="padding:8px 10px;font-weight:700;">Contact</td><td style="padding:8px 10px;"><a href="mailto:${profile2.email}" style="color:#d97706;">${profile2.email}</a> &nbsp;·&nbsp; ${profile2.phone}</td></tr>` : `<tr style="background:#f0f0f0;"><td style="padding:8px 10px;font-weight:700;">Contact</td><td style="padding:8px 10px;"><a href="mailto:${profile2.email}" style="color:#d97706;">${profile2.email}</a></td></tr>`}
+    </table>
+    <hr style="border:none;border-top:1px solid #ddd;margin:20px 0;">
+    <p style="font-size:13px;font-weight:700;color:#555;margin-bottom:10px;">Signed Document:</p>
+    ${docSnippet}
+    <p style="margin:20px 0 0;font-size:11px;color:#999;">
+      This electronic signature is legally binding under the U.S. Electronic Signatures in Global and National Commerce Act (E-SIGN).
+      Document delivery powered by <a href="https://buildorder.ai" style="color:#d97706;">BuildOrder.ai</a>.
+    </p>
+  </div>
+</body></html>`
+            });
+          }
+        } catch(e) {
+          console.error('Client confirmation email failed:', e.message);
+        }
+      }
+
       return res.status(200).json({ success: true });
     }
 

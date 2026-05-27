@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -119,7 +119,7 @@
       var sc = { draft: 'status-draft', sent: 'status-sent', accepted: 'status-accepted' }[d.status] || 'status-draft';
       var acceptBtn = d.status !== 'accepted' ? '<button class="btn-accepted" onclick="markAccepted()">' + T('sub.btn.accept') + '</button>' : '';
       var actions = d.content
-        ? '<button class="btn-action" onclick="copyDoc()">' + T('btn.copy') + '</button><button class="btn-action" onclick="dlDoc()">' + T('btn.download') + '</button>' + acceptBtn + '<button class="btn-action" onclick="dlPdf()">' + T('btn.pdf') + '</button><button class="btn-action" onclick="openEmail()">' + T('btn.email') + '</button><button class="btn-action" onclick="openShare()">&#128279; Share</button><button class="btn-action" onclick="duplicateDoc(\'subcontractor\')">Duplicate</button><button class="btn-generate" onclick="generate()">' + T('sub.btn.regen') + '</button>'
+        ? '<button class="btn-action" onclick="copyDoc()">' + T('btn.copy') + '</button><button class="btn-action" onclick="dlDoc()">' + T('btn.download') + '</button>' + acceptBtn + '<button class="btn-action" onclick="dlPdf()">' + T('btn.pdf') + '</button><button class="btn-action" onclick="openEmail()">' + T('btn.email') + '</button><button class="btn-action" onclick="openShare()">&#9997; eSign</button><button class="btn-action" onclick="duplicateDoc(\'subcontractor\')">Duplicate</button><button class="btn-generate" onclick="generate()">' + T('sub.btn.regen') + '</button>'
         : '<button class="btn-generate" onclick="generate()">' + T('sub.btn.gen') + '</button>';
 
       document.getElementById('page-content').innerHTML =
@@ -328,3 +328,4 @@
   </div>
 </body>
 </html>
+
