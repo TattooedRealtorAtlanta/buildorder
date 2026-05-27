@@ -147,6 +147,9 @@
     }
     .back a { color: var(--amber); text-decoration: none; }
     .back a:hover { text-decoration: underline; }
+    .founder-banner { background: linear-gradient(135deg, rgba(120,53,15,0.5), rgba(92,40,10,0.4)); border: 1px solid rgba(245,158,11,0.35); border-radius: 10px; padding: 0.75rem 1rem; margin-bottom: 1.5rem; text-align: center; font-size: 0.8rem; line-height: 1.5; }
+    .founder-banner strong { color: var(--amber); font-size: 0.88rem; display: block; margin-bottom: 0.2rem; }
+    .founder-banner span { color: var(--muted); }
   </style>
 </head>
 <body>
@@ -156,6 +159,10 @@
   </a>
 
   <div class="card">
+    <div id="founder-banner" style="display:none;" class="founder-banner">
+      <strong>⚡ Claiming Founding Member Access</strong>
+      <span>Sign up below — you'll get 60 days of full Pro access free.</span>
+    </div>
     <div class="tabs">
       <button class="tab active" id="tab-signin" onclick="switchTab('signin')">Sign In</button>
       <button class="tab" id="tab-signup" onclick="switchTab('signup')">Create Account</button>
@@ -197,12 +204,25 @@
   <div class="back"><a href="/">← Back to BuildOrder.ai</a></div>
 
   <script>
+    // Detect founding member flow
+    const urlParams = new URLSearchParams(window.location.search);
+    const isFoundingFlow = urlParams.get('founding') === '1';
+
     // Tab switching — pure DOM, no Supabase dependency
     function switchTab(tab) {
       document.getElementById('tab-signin').classList.toggle('active', tab === 'signin');
       document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
       document.getElementById('form-signin').style.display = tab === 'signin' ? 'block' : 'none';
       document.getElementById('form-signup').style.display = tab === 'signup' ? 'block' : 'none';
+    }
+
+    // If founding flow, default to signup tab and show banner
+    if (isFoundingFlow) {
+      switchTab('signup');
+      document.getElementById('founder-banner').style.display = 'block';
+      document.getElementById('signup-btn').textContent = 'Create Account — Get 60 Days Free';
+    } else if (urlParams.get('tab') === 'signup') {
+      switchTab('signup');
     }
 
     function setMsg(id, text, type) {
@@ -219,9 +239,24 @@
     });
 
     // Redirect if already logged in
-    db.auth.getSession().then(({ data: { session } }) => {
-      if (session) window.location.href = '/dashboard.html';
+    db.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session) return;
+      if (isFoundingFlow) {
+        await grantFoundingMember(session.access_token);
+        window.location.href = '/dashboard.html';
+      } else {
+        window.location.href = '/dashboard.html';
+      }
     });
+
+    async function grantFoundingMember(token) {
+      try {
+        await fetch('/api/founding-member', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+      } catch(e) { /* silent — don't block redirect */ }
+    }
 
     async function signIn() {
       const email = document.getElementById('signin-email').value.trim();
@@ -232,12 +267,15 @@
 
       btn.disabled = true; btn.textContent = 'Signing in…';
 
-      const { error } = await db.auth.signInWithPassword({ email, password });
+      const { data, error } = await db.auth.signInWithPassword({ email, password });
 
       if (error) {
         setMsg('signin-msg', error.message, 'error');
         btn.disabled = false; btn.textContent = 'Sign In';
       } else {
+        if (isFoundingFlow && data.session) {
+          await grantFoundingMember(data.session.access_token);
+        }
         const { data: profile } = await db
           .from('contractor_profiles')
           .select('onboarding_complete')
@@ -261,15 +299,22 @@
       if (password !== confirm) { setMsg('signup-msg', 'Passwords do not match.', 'error'); return; }
       if (password.length < 8) { setMsg('signup-msg', 'Password must be at least 8 characters.', 'error'); return; }
 
-      btn.disabled = true; btn.textContent = 'Creating account…';
+      btn.disabled = true;
+      btn.textContent = isFoundingFlow ? 'Claiming your spot…' : 'Creating account…';
 
-      const { error } = await db.auth.signUp({ email, password });
+      const { data, error } = await db.auth.signUp({ email, password });
 
       if (error) {
         setMsg('signup-msg', error.message, 'error');
-        btn.disabled = false; btn.textContent = 'Create Account';
+        btn.disabled = false;
+        btn.textContent = isFoundingFlow ? 'Create Account — Get 60 Days Free' : 'Create Account';
       } else {
-        setMsg('signup-msg', 'Account created! Taking you to setup…', 'success');
+        if (isFoundingFlow && data.session) {
+          await grantFoundingMember(data.session.access_token);
+          setMsg('signup-msg', '✓ Founding member access claimed! Taking you to setup…', 'success');
+        } else {
+          setMsg('signup-msg', 'Account created! Taking you to setup…', 'success');
+        }
         setTimeout(() => window.location.href = '/onboarding.html', 1200);
       }
     }

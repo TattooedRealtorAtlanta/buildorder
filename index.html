@@ -117,6 +117,28 @@
     .footer-link { font-size: 0.75rem; color: var(--dim); text-decoration: none; }
     .footer-link:hover { color: var(--muted); }
 
+    /* FOUNDING MEMBER */
+    .founder-bar { background: linear-gradient(90deg, #92400E, #78350F); padding: 0.55rem 3rem 0.55rem 1.5rem; text-align: center; font-size: 0.78rem; font-weight: 700; color: #FEF3C7; position: relative; line-height: 1.5; }
+    .founder-bar a { color: #FCD34D; text-decoration: underline; margin-left: 0.35rem; }
+    .founder-bar-close { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: rgba(255,240,200,0.5); cursor: pointer; font-size: 1.2rem; line-height: 1; padding: 0.2rem 0.4rem; }
+    .founder-bar-close:hover { color: #FEF3C7; }
+    .founding-section { border-top: 1px solid rgba(245,158,11,0.2); border-bottom: 1px solid rgba(245,158,11,0.2); background: linear-gradient(160deg, rgba(120,53,15,0.22) 0%, rgba(9,14,26,0) 60%); padding: 5rem 2rem; text-align: center; }
+    .founding-inner { max-width: 680px; margin: 0 auto; }
+    .founding-badge { display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); border-radius: 100px; padding: 0.3rem 1rem; font-size: 0.7rem; font-weight: 800; color: var(--amber); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1.5rem; }
+    .founding-title { font-size: clamp(1.9rem, 4vw, 2.8rem); font-weight: 900; letter-spacing: -0.03em; margin-bottom: 0.85rem; }
+    .founding-title em { font-style: normal; color: var(--amber); }
+    .founding-sub { font-size: 0.97rem; color: var(--muted); max-width: 480px; margin: 0 auto 2.25rem; line-height: 1.75; }
+    .founding-details { display: inline-flex; flex-wrap: wrap; gap: 0; border: 1px solid rgba(245,158,11,0.2); border-radius: 14px; overflow: hidden; margin-bottom: 2.25rem; }
+    .founding-detail { padding: 1.1rem 2rem; text-align: center; background: rgba(255,255,255,0.03); }
+    .founding-detail + .founding-detail { border-left: 1px solid rgba(245,158,11,0.15); }
+    .founding-detail-val { font-size: 1.7rem; font-weight: 900; color: var(--amber); letter-spacing: -0.03em; line-height: 1; margin-bottom: 0.3rem; }
+    .founding-detail-lbl { font-size: 0.67rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; }
+    .btn-founding { display: inline-block; background: var(--amber); color: #090E1A; border: none; border-radius: 12px; padding: 1rem 2.5rem; font-size: 1rem; font-weight: 900; cursor: pointer; font-family: inherit; text-decoration: none; transition: background 0.15s; }
+    .btn-founding:hover { background: var(--amber2); }
+    .founding-note { font-size: 0.73rem; color: var(--dim); margin-top: 0.85rem; }
+    .founding-spots { font-size: 0.78rem; color: var(--muted); margin-top: 1.5rem; }
+    .founding-spots strong { color: var(--amber); }
+
     @media (max-width: 768px) {
       .tools-grid { grid-template-columns: repeat(2, 1fr); }
       .steps { grid-template-columns: 1fr; }
@@ -124,10 +146,19 @@
       .stats-inner { gap: 1.5rem; }
       .nav-links { gap: 0.5rem; }
       .footer-inner { flex-direction: column; text-align: center; }
+      .founding-details { flex-direction: column; }
+      .founding-detail + .founding-detail { border-left: none; border-top: 1px solid rgba(245,158,11,0.15); }
     }
   </style>
 </head>
 <body>
+
+  <!-- FOUNDING MEMBER BAR -->
+  <div class="founder-bar" id="founder-bar">
+    ⚡ <strong>Founding Member Access</strong> &mdash; 60 days free, then $19/mo &middot; 50 spots total &middot;
+    <a href="#founding">Claim your spot &rarr;</a>
+    <button class="founder-bar-close" onclick="document.getElementById('founder-bar').style.display='none'" aria-label="Close">&times;</button>
+  </div>
 
   <!-- NAV -->
   <nav style="border-bottom: 1px solid var(--border);">
@@ -261,6 +292,34 @@
     </div>
   </div>
 
+  <!-- FOUNDING MEMBER OFFER -->
+  <div class="founding-section" id="founding">
+    <div class="founding-inner">
+      <div class="founding-badge">⚡ Limited Time Offer</div>
+      <h2 class="founding-title">Get in as a <em>Founding Member</em></h2>
+      <p class="founding-sub">
+        Full Pro access — free for 60 days. No credit card. No catch. After 60 days it's $19/mo, same as everyone else. We're giving early contractors a head start while we're still growing.
+      </p>
+      <div class="founding-details">
+        <div class="founding-detail">
+          <div class="founding-detail-val">60</div>
+          <div class="founding-detail-lbl">Days Free</div>
+        </div>
+        <div class="founding-detail">
+          <div class="founding-detail-val">$0</div>
+          <div class="founding-detail-lbl">No Credit Card</div>
+        </div>
+        <div class="founding-detail">
+          <div class="founding-detail-val" id="spots-left">50</div>
+          <div class="founding-detail-lbl">Spots Left</div>
+        </div>
+      </div>
+      <a href="/login.html?founding=1" class="btn-founding">Claim Your Spot &mdash; Free for 60 Days</a>
+      <div class="founding-note">No credit card &middot; Cancel anytime &middot; Full Pro access from day one</div>
+      <div class="founding-spots">Only <strong id="spots-left-2">50</strong> founding member spots available &mdash; when they&rsquo;re gone, they&rsquo;re gone.</div>
+    </div>
+  </div>
+
   <!-- PRICING -->
   <div class="hiw-bg" id="pricing">
     <section class="section">
@@ -339,6 +398,24 @@
       </div>
     </div>
   </footer>
+
+  <script>
+    // Live founding member spot count
+    fetch('/api/founding-member').then(function(r){ return r.json(); }).then(function(d) {
+      if (typeof d.spots_left === 'number') {
+        var sl = d.spots_left;
+        var el1 = document.getElementById('spots-left');
+        var el2 = document.getElementById('spots-left-2');
+        if (el1) el1.textContent = sl;
+        if (el2) el2.textContent = sl;
+        // If full, swap CTA to "Sold Out"
+        if (d.full) {
+          var btn = document.querySelector('.btn-founding');
+          if (btn) { btn.textContent = 'All Spots Claimed'; btn.style.opacity = '0.5'; btn.style.pointerEvents = 'none'; }
+        }
+      }
+    }).catch(function(){});
+  </script>
 
   <script>
     var LANGS = {
