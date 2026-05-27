@@ -160,6 +160,21 @@
             '<div class="form-field"><label class="form-label">GL Status</label><input class="form-input" type="text" id="f-glstat" value="' + esc(p.gl_status) + '"></div>' +
           '</div>' +
           '<button class="btn-save" id="save-btn-2" onclick="saveProfile()">Save License Info</button>' +
+        '</div>' +
+
+        '<div class="section">' +
+          '<div class="section-title">Payment Info</div>' +
+          '<p style="font-size:0.78rem;color:var(--muted);margin-bottom:1.25rem;line-height:1.6;">These print on every invoice you generate in the <strong style="color:var(--white);">How to Pay</strong> section. Fill in whichever methods you accept.</p>' +
+          '<div class="form-row">' +
+            '<div class="form-field"><label class="form-label">Venmo</label><input class="form-input" type="text" id="f-venmo" placeholder="@yourbusiness" value="' + esc(p.payment_venmo) + '"></div>' +
+            '<div class="form-field"><label class="form-label">Zelle</label><input class="form-input" type="text" id="f-zelle" placeholder="email or phone number" value="' + esc(p.payment_zelle) + '"></div>' +
+          '</div>' +
+          '<div class="form-row">' +
+            '<div class="form-field"><label class="form-label">Cash App</label><input class="form-input" type="text" id="f-cashapp" placeholder="$yourcashtag" value="' + esc(p.payment_cashapp) + '"></div>' +
+            '<div class="form-field"><label class="form-label">Check Payable To</label><input class="form-input" type="text" id="f-check" placeholder="Your Business Name" value="' + esc(p.payment_check_payable) + '"></div>' +
+          '</div>' +
+          '<div class="form-field"><label class="form-label">Payment Link / Other Instructions</label><input class="form-input" type="text" id="f-payment-other" placeholder="Stripe link, bank wire info, credit card instructions, etc." value="' + esc(p.payment_other) + '"></div>' +
+          '<button class="btn-save" id="save-btn-3" onclick="saveProfile()">Save Payment Info</button>' +
         '</div>';
     }
 
@@ -168,6 +183,8 @@
       if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
       var btn2 = document.getElementById('save-btn-2');
       if (btn2) { btn2.disabled = true; btn2.textContent = 'Saving…'; }
+      var btn3 = document.getElementById('save-btn-3');
+      if (btn3) { btn3.disabled = true; btn3.textContent = 'Saving…'; }
 
       var updates = {};
       var f = function(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; };
@@ -182,10 +199,16 @@
       if (document.getElementById('f-lictype')) updates.license_type   = f('f-lictype');
       if (document.getElementById('f-glprov'))  updates.gl_provider    = f('f-glprov');
       if (document.getElementById('f-glstat'))  updates.gl_status      = f('f-glstat');
+      if (document.getElementById('f-venmo'))         updates.payment_venmo         = f('f-venmo');
+      if (document.getElementById('f-zelle'))         updates.payment_zelle         = f('f-zelle');
+      if (document.getElementById('f-cashapp'))       updates.payment_cashapp       = f('f-cashapp');
+      if (document.getElementById('f-check'))         updates.payment_check_payable = f('f-check');
+      if (document.getElementById('f-payment-other')) updates.payment_other         = f('f-payment-other');
 
       var res = await db.from('contractor_profiles').update(updates).eq('id', userId);
       if (btn) { btn.disabled = false; btn.textContent = 'Save Profile'; }
       if (btn2) { btn2.disabled = false; btn2.textContent = 'Save License Info'; }
+      if (btn3) { btn3.disabled = false; btn3.textContent = 'Save Payment Info'; }
       if (res.error) { alert('Error saving: ' + res.error.message); return; }
       showToast('Profile saved!');
     }

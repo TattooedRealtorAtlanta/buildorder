@@ -64,6 +64,20 @@ module.exports = async (req, res) => {
 
   var invoiceNum = 'INV-' + Date.now().toString().slice(-6);
 
+  // Build "How to Pay" section from contractor's saved payment info
+  var paymentLines = [];
+  if (profile.payment_venmo)         paymentLines.push('Venmo: ' + profile.payment_venmo);
+  if (profile.payment_zelle)         paymentLines.push('Zelle: ' + profile.payment_zelle);
+  if (profile.payment_cashapp)       paymentLines.push('Cash App: ' + profile.payment_cashapp);
+  if (profile.payment_check_payable) paymentLines.push('Check payable to: ' + profile.payment_check_payable);
+  if (profile.payment_other)         paymentLines.push(profile.payment_other);
+  // Fallback if nothing is set
+  if (paymentLines.length === 0) {
+    paymentLines.push('Check payable to: ' + (profile.business_name || profile.contractor_name));
+    paymentLines.push('Zelle: ' + profile.email);
+  }
+  var paymentSection = paymentLines.join('\n');
+
   var taxLine = taxRate > 0
     ? 'Tax (' + taxRate + '%): $' + taxAmount.toFixed(2)
     : 'Tax: None';
@@ -117,7 +131,8 @@ FORMAT:
    - SUBTOTAL / TAX / INVOICE TOTAL
    - PAYMENTS RECEIVED (if any)
    - BALANCE DUE — bordered with === lines for emphasis
-   - PAYMENT INSTRUCTIONS: accepted methods (check payable to business name, Zelle, ACH/bank transfer, cash). Include business name and email for payment routing.
+   - PAYMENT INSTRUCTIONS — list EXACTLY these methods and nothing else:
+${paymentSection}
    - LATE FEE NOTICE: balances unpaid after due date subject to 1.5% monthly finance charge
    - Thank you line
 3. Every number must match exactly — never round or recalculate`;
