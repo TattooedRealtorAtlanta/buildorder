@@ -28,7 +28,7 @@ module.exports = async function handler(req, res) {
 
     const { data, error } = await db
       .from('share_links')
-      .select('id, token, document_content, document_type, client_name, client_email, client_sig, signed_at, expires_at, created_at, user_id, viewed_at')
+      .select('id, token, document_content, document_type, client_name, client_email, client_sig, signed_at, expires_at, created_at, user_id, viewed_at, reference_id, payment_amount, paid_at')
       .eq('token', token)
       .single();
 
@@ -36,6 +36,17 @@ module.exports = async function handler(req, res) {
 
     if (data.expires_at && new Date(data.expires_at) < new Date()) {
       return res.status(410).json({ error: 'Link expired' });
+    }
+
+    // ── Determine if card payment is available ────────────────────────────
+    let payment_available = false;
+    if (data.payment_amount && Number(data.payment_amount) > 0) {
+      const { data: prof } = await db
+        .from('contractor_profiles')
+        .select('stripe_account_id')
+        .eq('id', data.user_id)
+        .single();
+      payment_available = !!(prof && prof.stripe_account_id);
     }
 
     // ── Fire "client viewed" notification on first open ──────────────────
@@ -89,7 +100,7 @@ module.exports = async function handler(req, res) {
       }
     }
 
-    return res.status(200).json(data);
+    return res.status(200).json({ ...data, payment_available });
   }
 
   // ── POST ────────────────────────────────────────────────────────────────
@@ -255,16 +266,20 @@ module.exports = async function handler(req, res) {
     const { data: { user }, error: authErr } = await db.auth.getUser(jwt);
     if (authErr || !user) return res.status(401).json({ error: 'Unauthorized' });
 
-    const { document_content, document_type } = body;
+    const { document_content, document_type, reference_id, payment_amount } = body;
     if (!document_content) return res.status(400).json({ error: 'Missing document_content' });
+
+    const insertPayload = {
+      user_id: user.id,
+      document_content,
+      document_type: document_type || 'document'
+    };
+    if (reference_id)  insertPayload.reference_id   = reference_id;
+    if (payment_amount && Number(payment_amount) > 0) insertPayload.payment_amount = Number(payment_amount);
 
     const { data: link, error: insertErr } = await db
       .from('share_links')
-      .insert({
-        user_id: user.id,
-        document_content,
-        document_type: document_type || 'document'
-      })
+      .insert(insertPayload)
       .select('token')
       .single();
 

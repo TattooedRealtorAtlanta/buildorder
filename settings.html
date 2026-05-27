@@ -53,6 +53,15 @@
     .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1.25rem; font-size: 0.85rem; font-weight: 600; color: var(--green); opacity: 0; transform: translateY(10px); transition: opacity 0.2s, transform 0.2s; pointer-events: none; z-index: 100; }
     .toast.show { opacity: 1; transform: translateY(0); }
     @media (max-width: 550px) { .form-row { grid-template-columns: 1fr; } }
+    /* Stripe Connect */
+    .stripe-connected { display:flex; align-items:center; gap:0.85rem; background:rgba(52,211,153,0.08); border:1px solid rgba(52,211,153,0.25); border-radius:10px; padding:0.9rem 1.1rem; }
+    .stripe-connected-icon { font-size:1.3rem; color:var(--green); flex-shrink:0; }
+    .stripe-connected-lbl { font-size:0.85rem; font-weight:700; color:var(--green); }
+    .stripe-connected-sub { font-size:0.75rem; color:var(--muted); margin-top:0.15rem; }
+    .btn-stripe-disconnect { margin-left:auto; background:none; border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:0.35rem 0.85rem; font-size:0.75rem; font-weight:600; color:var(--red); cursor:pointer; font-family:inherit; white-space:nowrap; flex-shrink:0; transition:background 0.15s; }
+    .btn-stripe-disconnect:hover { background:rgba(239,68,68,0.08); }
+    .btn-connect-stripe { display:inline-flex; align-items:center; gap:0.5rem; background:var(--amber); color:#090E1A; border:none; border-radius:10px; padding:0.6rem 1.4rem; font-size:0.85rem; font-weight:900; cursor:pointer; font-family:inherit; text-decoration:none; transition:background 0.2s; }
+    .btn-connect-stripe:hover { background:var(--amber2); }
     /* Rate Library */
     .lib-item-row { display:grid; grid-template-columns:1fr 80px 100px 32px; gap:0.5rem; align-items:center; padding:0.65rem 0.75rem; border-bottom:1px solid var(--border); font-size:0.85rem; }
     .lib-item-row:last-child { border-bottom:none; }
@@ -82,11 +91,63 @@
     var sessionToken = '';
     var userId = '';
 
+    async function connectStripe(e) {
+      e.preventDefault();
+      var btn = document.getElementById('connect-stripe-btn');
+      if (btn) { btn.textContent = 'Redirecting to Stripe…'; btn.disabled = true; }
+      var res = await fetch('/api/stripe-connect', { headers: { 'Authorization': 'Bearer ' + sessionToken } });
+      var d = await res.json();
+      if (d.oauth_url) {
+        window.location.href = d.oauth_url;
+      } else {
+        if (btn) { btn.textContent = '\u{1F4B3}  Connect Stripe Account'; btn.disabled = false; }
+        alert('Could not start Stripe connection. Please try again.');
+      }
+    }
+
+    async function disconnectStripe() {
+      if (!confirm('Disconnect your Stripe account? Clients will no longer see a Pay by Card button on your invoices.')) return;
+      var res = await fetch('/api/stripe-connect', {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + sessionToken }
+      });
+      if (res.ok) {
+        showToast('Stripe account disconnected.');
+        setTimeout(function() { window.location.reload(); }, 900);
+      } else {
+        var d = await res.json();
+        alert('Error disconnecting: ' + (d.error || 'Unknown error'));
+      }
+    }
+
     async function init() {
       var sessionRes = await db.auth.getSession();
       if (!sessionRes.data.session) { window.location.href = '/login.html'; return; }
       sessionToken = sessionRes.data.session.access_token;
       userId = sessionRes.data.session.user.id;
+
+      // ── Handle Stripe Connect OAuth redirect ─────────────────────────────
+      var urlParams = new URLSearchParams(window.location.search);
+      var stripeCode = urlParams.get('code');
+      if (stripeCode) {
+        window.history.replaceState({}, '', '/settings.html');
+        document.getElementById('main-content').innerHTML =
+          '<div style="text-align:center;padding:4rem;color:var(--muted);">Connecting Stripe account…</div>';
+        var connectRes = await fetch('/api/stripe-connect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionToken },
+          body: JSON.stringify({ code: stripeCode })
+        });
+        var connectData = await connectRes.json();
+        if (connectData.success) {
+          // Will show toast after page renders
+          window._stripeJustConnected = true;
+        } else {
+          alert('Failed to connect Stripe: ' + (connectData.error || 'Unknown error'));
+        }
+        // Profile reload below will pick up the new stripe_account_id
+      }
+
       var profileRes = await db.from('contractor_profiles').select('*').eq('id', userId).single();
       var profile = profileRes.data;
       if (!profile) { window.location.href = '/onboarding.html'; return; }
@@ -104,6 +165,7 @@
       }
 
       renderPage(profile, usageCount, effectivePlan, isFounder);
+      if (window._stripeJustConnected) { showToast('Stripe account connected! ✓'); }
       await loadRateLibrary();
     }
 
@@ -184,6 +246,20 @@
           '</div>' +
           '<div class="form-field"><label class="form-label">Payment Link / Other Instructions</label><input class="form-input" type="text" id="f-payment-other" placeholder="Stripe link, bank wire info, credit card instructions, etc." value="' + esc(p.payment_other) + '"></div>' +
           '<button class="btn-save" id="save-btn-3" onclick="saveProfile()">Save Payment Info</button>' +
+        '</div>' +
+
+        '<div class="section">' +
+          '<div class="section-title">Accept Card Payments</div>' +
+          '<p style="font-size:0.78rem;color:var(--muted);margin-bottom:1.25rem;line-height:1.6;">When connected, a <strong style="color:var(--white);">Pay by Card</strong> button appears on every invoice link you share. Money goes directly to your Stripe account &mdash; BuildOrder never touches it.</p>' +
+          (p.stripe_account_id
+            ? '<div class="stripe-connected">' +
+                '<div class="stripe-connected-icon">&#10003;</div>' +
+                '<div><div class="stripe-connected-lbl">Stripe Account Connected</div>' +
+                '<div class="stripe-connected-sub">Card payments go directly to your bank account.</div></div>' +
+                '<button class="btn-stripe-disconnect" onclick="disconnectStripe()">Disconnect</button>' +
+              '</div>'
+            : '<button class="btn-connect-stripe" id="connect-stripe-btn" onclick="connectStripe(event)">&#128179;&nbsp; Connect Stripe Account</button>'
+          ) +
         '</div>' +
 
         '<div class="section">' +

@@ -379,7 +379,12 @@
         fetch('/api/share', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-          body: JSON.stringify({ document_content: currentInvoice.content, document_type: 'invoice' })
+          body: JSON.stringify({
+            document_content: currentInvoice.content,
+            document_type: 'invoice',
+            reference_id: invoiceId,
+            payment_amount: currentInvoice.balance_due || currentInvoice.total || null
+          })
         }).then(function(res) { return res.json(); }).then(function(d) {
           document.getElementById('share-loading').style.display = 'none';
           if (d.url) {

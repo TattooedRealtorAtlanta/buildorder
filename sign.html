@@ -203,6 +203,48 @@
     .powered-by a { color: var(--amber); text-decoration: none; }
     .powered-by a:hover { text-decoration: underline; }
 
+    /* ── Payment ── */
+    .pay-section {
+      background: var(--bg2);
+      border: 1px solid rgba(245,158,11,0.35);
+      border-radius: 12px;
+      padding: 1.75rem;
+      margin-top: 1.25rem;
+      text-align: center;
+    }
+    .pay-icon { font-size: 2rem; margin-bottom: 0.75rem; }
+    .pay-title { font-size: 1rem; font-weight: 800; margin-bottom: 0.35rem; }
+    .pay-sub { font-size: 0.82rem; color: var(--muted); margin-bottom: 1.25rem; line-height: 1.6; }
+    .btn-pay {
+      width: 100%;
+      background: var(--amber);
+      color: #090E1A;
+      border: none;
+      border-radius: 10px;
+      padding: 0.85rem 1.5rem;
+      font-size: 0.95rem;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity 0.2s;
+    }
+    .btn-pay:hover { opacity: 0.9; }
+    .btn-pay:disabled { opacity: 0.5; cursor: not-allowed; }
+    .paid-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      background: rgba(52,211,153,0.1);
+      border: 1px solid rgba(52,211,153,0.3);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-size: 0.88rem;
+      color: var(--green);
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+    }
+
     @media (max-width: 480px) {
       .main { padding: 1.5rem 1rem 3rem; }
       .doc-meta-bar { flex-direction: column; align-items: flex-start; gap: 0.4rem; }
@@ -227,8 +269,45 @@
 
   <script>
     var token = new URLSearchParams(window.location.search).get('token');
+    var paid  = new URLSearchParams(window.location.search).get('paid') === '1';
     var sigPad = null;
     var docData = null;
+
+    function fmtAmount(n) {
+      return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function buildPaySection(amount) {
+      var amtStr = fmtAmount(amount);
+      return '<div class="pay-section">' +
+        '<div class="pay-icon">&#128179;</div>' +
+        '<div class="pay-title">Pay Your Invoice</div>' +
+        '<div class="pay-sub">Pay securely by card. ' + amtStr + ' due. You\'ll be redirected to a secure Stripe checkout page.</div>' +
+        '<button class="btn-pay" id="pay-btn" onclick="payInvoice()">Pay ' + amtStr + ' by Card</button>' +
+      '</div>';
+    }
+
+    async function payInvoice() {
+      var btn = document.getElementById('pay-btn');
+      if (btn) { btn.disabled = true; btn.textContent = 'Redirecting to secure checkout…'; }
+      try {
+        var res = await fetch('/api/payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ share_token: token })
+        });
+        var d = await res.json();
+        if (d.checkout_url) {
+          window.location.href = d.checkout_url;
+        } else {
+          if (btn) { btn.disabled = false; btn.textContent = 'Pay by Card'; }
+          alert(d.error || 'Could not start payment. Please try again.');
+        }
+      } catch(e) {
+        if (btn) { btn.disabled = false; btn.textContent = 'Pay by Card'; }
+        alert('Network error. Please check your connection and try again.');
+      }
+    }
 
     var TYPE_LABELS = {
       'contract':      'Home Improvement Contract',
@@ -320,12 +399,17 @@
           return;
         }
         // Success
+        var paySection = '';
+        if (docData && docData.payment_available && docData.payment_amount && Number(docData.payment_amount) > 0 && !docData.paid_at) {
+          paySection = buildPaySection(docData.payment_amount);
+        }
         document.getElementById('main').innerHTML =
           '<div class="state-box success">' +
             '<div class="state-icon">&#10003;</div>' +
             '<div class="state-title">Document Signed</div>' +
-            '<div class="state-sub">Your signature has been recorded. The contractor will be notified. You can close this window.</div>' +
+            '<div class="state-sub">Your signature has been recorded. The contractor will be notified.' + (paySection ? ' Ready to pay? See below.' : ' You can close this window.') + '</div>' +
           '</div>' +
+          paySection +
           '<div class="powered-by">Secure document portal powered by <a href="https://buildorder.ai" target="_blank">BuildOrder.ai</a></div>';
       } catch(e) {
         submitBtn.disabled = false;
@@ -338,6 +422,8 @@
       docData = data;
       var typeLabel = TYPE_LABELS[data.document_type] || 'Document';
       var alreadySigned = !!data.signed_at;
+      var isPaid = !!(data.paid_at || paid);
+      var paymentAvailable = !!(data.payment_available && data.payment_amount && Number(data.payment_amount) > 0);
 
       var html =
         '<div class="doc-meta-bar">' +
@@ -347,6 +433,13 @@
           '</div>' +
           '<div class="doc-meta-expires">Expires ' + fmtDate(data.expires_at) + '</div>' +
         '</div>';
+
+      // Paid badge
+      if (isPaid) {
+        html += '<div class="paid-badge">&#10003;&nbsp; ' +
+          (paid && !data.paid_at ? 'Payment received — thank you!' : ('Paid on ' + fmtDate(data.paid_at))) +
+        '</div>';
+      }
 
       if (alreadySigned) {
         html += '<div class="already-signed">&#10003;&nbsp; This document was signed on ' + fmtDate(data.signed_at) + (data.client_name ? ' by ' + data.client_name : '') + '</div>';
@@ -377,6 +470,9 @@
             '<button class="btn-submit" id="submit-btn" onclick="submitSig()">Submit Signature</button>' +
             '<p class="consent-note">By submitting your signature you agree that this electronic signature is the legal equivalent of your handwritten signature on this document.</p>' +
           '</div>';
+      } else if (paymentAvailable && !isPaid) {
+        // Already signed — show pay section if payment not yet made
+        html += buildPaySection(data.payment_amount);
       }
 
       html += '<div class="powered-by">Secure document portal powered by <a href="https://buildorder.ai" target="_blank">BuildOrder.ai</a></div>';
