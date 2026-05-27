@@ -82,7 +82,7 @@
 
     /* HOW IT WORKS */
     .hiw-bg { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-top: 2rem; }
+    .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-top: 2rem; }
     .step { text-align: center; }
     .step-num { width: 44px; height: 44px; border-radius: 50%; background: rgba(245,158,11,0.12); border: 2px solid rgba(245,158,11,0.3); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 900; color: var(--amber); margin: 0 auto 1rem; }
     .step-title { font-size: 0.95rem; font-weight: 800; margin-bottom: 0.5rem; }
@@ -111,6 +111,13 @@
     .states-section { text-align: center; padding: 3.5rem 2rem; }
     .states-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; max-width: 800px; margin: 1.5rem auto 0; }
     .state-chip { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 0.25rem 0.65rem; font-size: 0.72rem; font-weight: 600; color: var(--muted); }
+
+    /* FEATURE HIGHLIGHTS */
+    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-top: 2rem; }
+    .feature-item { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem 1.6rem; }
+    .feature-icon { font-size: 1.7rem; margin-bottom: 0.75rem; }
+    .feature-name { font-size: 0.9rem; font-weight: 800; margin-bottom: 0.4rem; }
+    .feature-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
 
     /* FOOTER */
     .footer { border-top: 1px solid var(--border); padding: 2rem; text-align: center; }
@@ -144,9 +151,14 @@
     .founding-spots { font-size: 0.78rem; color: var(--muted); margin-top: 1.5rem; }
     .founding-spots strong { color: var(--amber); }
 
+    @media (max-width: 900px) {
+      .steps { grid-template-columns: repeat(2, 1fr); }
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+    }
     @media (max-width: 768px) {
       .tools-grid { grid-template-columns: repeat(2, 1fr); }
       .steps { grid-template-columns: 1fr; }
+      .features-grid { grid-template-columns: 1fr; }
       .pricing-grid { grid-template-columns: 1fr; }
       .stats-inner { gap: 1.5rem; }
       .nav-links { gap: 0.5rem; }
@@ -171,6 +183,7 @@
       <a href="/" class="logo">Build<em>Order</em></a>
       <div class="nav-links">
         <a href="#tools" class="nav-link" id="nav-tools">Tools</a>
+        <a href="#features" class="nav-link" id="nav-features">Features</a>
         <a href="#pricing" class="nav-link" id="nav-pricing">Pricing</a>
         <div class="lang-toggle">
           <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
@@ -266,22 +279,27 @@
   <div class="hiw-bg">
     <section class="section">
       <div class="section-eyebrow" id="hiw-eyebrow">How It Works</div>
-      <div class="section-title" id="hiw-title">From job details to signed document in 3 steps</div>
+      <div class="section-title" id="hiw-title">From first quote to final payment &mdash; in 4 steps</div>
       <div class="steps">
         <div class="step">
           <div class="step-num">1</div>
           <div class="step-title" id="step-title-1">Set up your profile once</div>
-          <div class="step-desc" id="step-desc-1">Enter your contractor info, license number, and insurance details. BuildOrder stores it and puts it on every document automatically.</div>
+          <div class="step-desc" id="step-desc-1">Enter your license, insurance, and business info. BuildOrder puts it on every document you generate &mdash; automatically.</div>
         </div>
         <div class="step">
           <div class="step-num">2</div>
-          <div class="step-title" id="step-title-2">Describe the job</div>
-          <div class="step-desc" id="step-desc-2">Enter the client info, job address, and a description of the work. For estimates and invoices, add line items or let AI generate them from your description.</div>
+          <div class="step-title" id="step-title-2">Create a job</div>
+          <div class="step-desc" id="step-desc-2">Add client info, job address, and describe the work. Add your own line items or let AI build them from your description.</div>
         </div>
         <div class="step">
           <div class="step-num">3</div>
-          <div class="step-title" id="step-title-3">Copy, download, or send</div>
-          <div class="step-desc" id="step-desc-3">Your AI-generated document is ready in under 30 seconds. Copy it to your clipboard, download as .txt, or paste it into an email to your client.</div>
+          <div class="step-title" id="step-title-3">AI generates the document</div>
+          <div class="step-desc" id="step-desc-3">State-compliant, professional, ready in under 30 seconds. Download as PDF, copy to clipboard, or email directly to your client.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-title" id="step-title-4">Client signs and pays online</div>
+          <div class="step-desc" id="step-desc-4">Share a link &mdash; your client views, signs, and pays from their phone. No account needed. You get notified the moment they sign.</div>
         </div>
       </div>
     </section>
@@ -296,6 +314,45 @@
       <span class="state-chip">AL</span><span class="state-chip">AK</span><span class="state-chip">AZ</span><span class="state-chip">AR</span><span class="state-chip">CA</span><span class="state-chip">CO</span><span class="state-chip">CT</span><span class="state-chip">DE</span><span class="state-chip">FL</span><span class="state-chip">GA</span><span class="state-chip">HI</span><span class="state-chip">ID</span><span class="state-chip">IL</span><span class="state-chip">IN</span><span class="state-chip">IA</span><span class="state-chip">KS</span><span class="state-chip">KY</span><span class="state-chip">LA</span><span class="state-chip">ME</span><span class="state-chip">MD</span><span class="state-chip">MA</span><span class="state-chip">MI</span><span class="state-chip">MN</span><span class="state-chip">MS</span><span class="state-chip">MO</span><span class="state-chip">MT</span><span class="state-chip">NE</span><span class="state-chip">NV</span><span class="state-chip">NH</span><span class="state-chip">NJ</span><span class="state-chip">NM</span><span class="state-chip">NY</span><span class="state-chip">NC</span><span class="state-chip">ND</span><span class="state-chip">OH</span><span class="state-chip">OK</span><span class="state-chip">OR</span><span class="state-chip">PA</span><span class="state-chip">RI</span><span class="state-chip">SC</span><span class="state-chip">SD</span><span class="state-chip">TN</span><span class="state-chip">TX</span><span class="state-chip">UT</span><span class="state-chip">VT</span><span class="state-chip">VA</span><span class="state-chip">WA</span><span class="state-chip">WV</span><span class="state-chip">WI</span><span class="state-chip">WY</span><span class="state-chip">DC</span><span class="state-chip">PR</span>
     </div>
   </div>
+
+  <!-- FEATURE HIGHLIGHTS -->
+  <section class="section" id="features">
+    <div class="section-eyebrow">Built for the Field</div>
+    <div class="section-title">Not just documents &mdash; a complete job workflow</div>
+    <div class="section-sub">Everything you need from first estimate to final payment, without switching apps.</div>
+    <div class="features-grid">
+      <div class="feature-item">
+        <div class="feature-icon">&#128231;</div>
+        <div class="feature-name">Email to Clients</div>
+        <div class="feature-desc">Send any document directly from BuildOrder. Your client gets a branded email with a link to view, sign, and pay &mdash; no copying and pasting.</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">&#128393;</div>
+        <div class="feature-name">eSign &mdash; No Account Needed</div>
+        <div class="feature-desc">Share a link and your client signs from any phone or computer. No app download, no account, no friction. You see it the moment they sign.</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">&#128179;</div>
+        <div class="feature-name">Collect Deposits &amp; Payments</div>
+        <div class="feature-desc">Request a full balance, a 50% deposit, a custom amount, or just a signature. Stripe handles the payment securely &mdash; funds go straight to you.</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">&#128276;</div>
+        <div class="feature-name">View &amp; Sign Notifications</div>
+        <div class="feature-desc">Know the moment your client opens a document and the moment they sign. No more wondering if they got it or chasing them down.</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">&#128196;</div>
+        <div class="feature-name">PDF Export</div>
+        <div class="feature-desc">One click to download a clean, print-ready PDF of any document. Save it, email it from your phone, or pull it up on the job site.</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">&#127760;</div>
+        <div class="feature-name">English &amp; Spanish</div>
+        <div class="feature-desc">Generate any document in English or Spanish with one click. Same professional quality in both languages &mdash; for any client, any crew.</div>
+      </div>
+    </div>
+  </section>
 
   <!-- FOUNDING MEMBER OFFER -->
   <div class="founding-section" id="founding">
@@ -339,9 +396,9 @@
           <div class="price-desc" id="tier-desc-1">For contractors getting started</div>
           <ul class="price-features" id="features-1">
             <li>5 documents per month</li>
-            <li>All 7 document types</li>
+            <li>All 8 document types</li>
             <li>All 52 states</li>
-            <li>Copy &amp; download</li>
+            <li>Copy, download &amp; PDF export</li>
             <li>BuildOrder branding</li>
           </ul>
           <a href="/login.html?tab=signup" class="btn-price btn-price-outline" id="price-btn-1">Get Started Free</a>
@@ -354,11 +411,13 @@
           <div class="price-desc" id="tier-desc-2">For active contractors</div>
           <ul class="price-features" id="features-2">
             <li>Unlimited documents</li>
-            <li>All 7 document types</li>
+            <li>All 8 document types</li>
+            <li>Email delivery to clients</li>
+            <li>eSign links &mdash; collect deposits &amp; payments</li>
+            <li>Client view &amp; sign notifications</li>
+            <li>PDF export</li>
             <li>English &amp; Spanish</li>
-            <li>Custom branding (no BuildOrder logo)</li>
-            <li>Priority AI generation</li>
-            <li>Single user</li>
+            <li>Custom branding</li>
           </ul>
           <a href="/login.html?tab=signup" class="btn-price btn-price-primary" id="price-btn-2">Start Pro &mdash; $19/mo</a>
         </div>
@@ -386,8 +445,8 @@
     <div style="font-size:clamp(1.5rem,3vw,2rem);font-weight:900;letter-spacing:-0.03em;margin-bottom:0.75rem;" id="footer-cta-title">
       Stop losing time to paperwork.
     </div>
-    <p style="font-size:0.95rem;color:var(--muted);max-width:440px;margin:0 auto 2rem;line-height:1.7;" id="footer-cta-sub">
-      Your first 5 documents are free. No credit card. No setup fees. Just sign up and start generating.
+    <p style="font-size:0.95rem;color:var(--muted);max-width:480px;margin:0 auto 2rem;line-height:1.7;" id="footer-cta-sub">
+      Your first 5 documents are free. Generate, email, eSign, and collect payment &mdash; all from one place. No credit card, no setup fees.
     </p>
     <a href="/login.html?tab=signup" class="btn-hero" id="footer-cta-btn">Create Your Free Account</a>
   </section>
@@ -459,13 +518,15 @@
         'tool-desc-8':     'Upload and organize job site photos by job with captions. Build a visual record of every project.',
         'tool-tag-8':      'Live',
         'hiw-eyebrow':     'How It Works',
-        'hiw-title':       'From job details to signed document in 3 steps',
+        'hiw-title':       'From first quote to final payment &mdash; in 4 steps',
         'step-title-1':    'Set up your profile once',
-        'step-desc-1':     'Enter your contractor info, license number, and insurance details. BuildOrder stores it and puts it on every document automatically.',
-        'step-title-2':    'Describe the job',
-        'step-desc-2':     'Enter the client info, job address, and a description of the work. For estimates and invoices, add line items or let AI generate them from your description.',
-        'step-title-3':    'Copy, download, or send',
-        'step-desc-3':     'Your AI-generated document is ready in under 30 seconds. Copy it to your clipboard, download as .txt, or paste it into an email to your client.',
+        'step-desc-1':     'Enter your license, insurance, and business info. BuildOrder puts it on every document you generate &mdash; automatically.',
+        'step-title-2':    'Create a job',
+        'step-desc-2':     'Add client info, job address, and describe the work. Add your own line items or let AI build them from your description.',
+        'step-title-3':    'AI generates the document',
+        'step-desc-3':     'State-compliant, professional, ready in under 30 seconds. Download as PDF, copy to clipboard, or email directly to your client.',
+        'step-title-4':    'Client signs and pays online',
+        'step-desc-4':     'Share a link &mdash; your client views, signs, and pays from their phone. No account needed. You get notified the moment they sign.',
         'states-eyebrow':  'State Compliance',
         'states-title':    'Built for every state &mdash; not just yours',
         'states-desc':     'Every contract includes that state’s mandatory clauses, cancellation rights, lien notices, and penalty disclosures &mdash; automatically.',
@@ -475,18 +536,18 @@
         'price-badge':     'Most Popular',
         'tier-1':          'Starter',
         'tier-desc-1':     'For contractors getting started',
-        'features-1':      '<li>5 documents per month</li><li>All 7 document types</li><li>All 52 states</li><li>Copy &amp; download</li><li>BuildOrder branding</li>',
+        'features-1':      '<li>5 documents per month</li><li>All 8 document types</li><li>All 52 states</li><li>Copy, download &amp; PDF export</li><li>BuildOrder branding</li>',
         'price-btn-1':     'Get Started Free',
         'tier-2':          'Pro',
         'tier-desc-2':     'For active contractors',
-        'features-2':      '<li>Unlimited documents</li><li>All 7 document types</li><li>English &amp; Spanish</li><li>Custom branding (no BuildOrder logo)</li><li>Priority AI generation</li><li>Single user</li>',
+        'features-2':      '<li>Unlimited documents</li><li>All 8 document types</li><li>Email delivery to clients</li><li>eSign links &mdash; collect deposits &amp; payments</li><li>Client view &amp; sign notifications</li><li>PDF export</li><li>English &amp; Spanish</li><li>Custom branding</li>',
         'price-btn-2':     'Start Pro &mdash; $19/mo',
         'tier-3':          'Business',
         'tier-desc-3':     'For growing operations',
         'features-3':      '<li>Everything in Pro</li><li>Up to 5 team members</li><li>Job Photo Log</li><li>Material Takeoff Calculator</li><li>Subcontractor agreements</li><li>Priority support</li>',
         'price-btn-3':     'Start Business',
         'footer-cta-title':'Stop losing time to paperwork.',
-        'footer-cta-sub':  'Your first 5 documents are free. No credit card. No setup fees. Just sign up and start generating.',
+        'footer-cta-sub':  'Your first 5 documents are free. Generate, email, eSign, and collect payment &mdash; all from one place. No credit card, no setup fees.',
         'footer-cta-btn':  'Create Your Free Account',
         'footer-signin':   'Sign In',
         'footer-signup':   'Sign Up'
@@ -526,13 +587,15 @@
         'tool-desc-8':     'Sube y organiza fotos del sitio por trabajo con descripciones. Crea un registro visual de cada proyecto.',
         'tool-tag-8':      'En Vivo',
         'hiw-eyebrow':     'Cómo Funciona',
-        'hiw-title':       'Del detalle del trabajo al documento firmado en 3 pasos',
+        'hiw-title':       'Del primer presupuesto al pago final &mdash; en 4 pasos',
         'step-title-1':    'Configura tu perfil una sola vez',
-        'step-desc-1':     'Ingresa tu información de contratista, número de licencia y detalles de seguro. BuildOrder lo guarda y lo incluye en cada documento automáticamente.',
-        'step-title-2':    'Describe el trabajo',
-        'step-desc-2':     'Ingresa la información del cliente, dirección y una descripción del trabajo. Para estimados y facturas, agrega partidas o deja que la IA las genere desde tu descripción.',
-        'step-title-3':    'Copia, descarga o envía',
-        'step-desc-3':     'Tu documento generado por IA está listo en menos de 30 segundos. Cuépialo, descárgalo como .txt, o pégalo en un correo a tu cliente.',
+        'step-desc-1':     'Ingresa tu licencia, seguro e información del negocio. BuildOrder lo incluye en cada documento automáticamente.',
+        'step-title-2':    'Crea un trabajo',
+        'step-desc-2':     'Agrega la información del cliente, dirección y describe el trabajo. Agrega tus partidas o deja que la IA las genere.',
+        'step-title-3':    'La IA genera el documento',
+        'step-desc-3':     'Conforme a las leyes del estado, profesional, listo en menos de 30 segundos. Descárgalo en PDF, cópialo o envíalo directamente a tu cliente.',
+        'step-title-4':    'El cliente firma y paga en línea',
+        'step-desc-4':     'Comparte un enlace &mdash; tu cliente lo ve, firma y paga desde su celular. Sin cuenta ni app. Recibes una notificación al momento de la firma.',
         'states-eyebrow':  'Cumplimiento Estatal',
         'states-title':    'Construído para cada estado &mdash; no solo el tuyo',
         'states-desc':     'Cada contrato incluye las cláusulas obligatorias del estado, derechos de cancelación, avisos de gravamen y divulgaciones de penalidades &mdash; automáticamente.',
@@ -542,18 +605,18 @@
         'price-badge':     'Más Popular',
         'tier-1':          'Básico',
         'tier-desc-1':     'Para contratistas que están comenzando',
-        'features-1':      '<li>5 documentos por mes</li><li>Los 7 tipos de documentos</li><li>Los 52 estados</li><li>Copiar y descargar</li><li>Marca BuildOrder</li>',
+        'features-1':      '<li>5 documentos por mes</li><li>Los 8 tipos de documentos</li><li>Los 52 estados</li><li>Copiar, descargar y exportar PDF</li><li>Marca BuildOrder</li>',
         'price-btn-1':     'Comienza Gratis',
         'tier-2':          'Pro',
         'tier-desc-2':     'Para contratistas activos',
-        'features-2':      '<li>Documentos ilimitados</li><li>Los 7 tipos de documentos</li><li>Inglés y Español</li><li>Marca personalizada (sin logo BuildOrder)</li><li>Generación IA prioritaria</li><li>Un solo usuario</li>',
+        'features-2':      '<li>Documentos ilimitados</li><li>Los 8 tipos de documentos</li><li>Envío de correo a clientes</li><li>Firma electrónica &mdash; cobra depósitos y pagos</li><li>Notificaciones de vista y firma</li><li>Exportar PDF</li><li>Inglés y Español</li><li>Marca personalizada</li>',
         'price-btn-2':     'Comienza Pro &mdash; $19/mes',
         'tier-3':          'Empresarial',
         'tier-desc-3':     'Para operaciones en crecimiento',
         'features-3':      '<li>Todo lo de Pro</li><li>Hasta 5 miembros del equipo</li><li>Registro de Fotos del Trabajo</li><li>Calculadora de Materiales</li><li>Acuerdos con subcontratistas</li><li>Soporte prioritario</li>',
         'price-btn-3':     'Comienza Empresarial',
         'footer-cta-title':'Deja de perder tiempo en papeleo.',
-        'footer-cta-sub':  'Tus primeros 5 documentos son gratis. Sin tarjeta de crédito. Sin cargos de configuración. Solo regístrate y comienza a generar.',
+        'footer-cta-sub':  'Tus primeros 5 documentos son gratis. Genera, envía, firma y cobra pagos &mdash; todo desde un solo lugar. Sin tarjeta de crédito, sin cargos de configuración.',
         'footer-cta-btn':  'Crea Tu Cuenta Gratis',
         'footer-signin':   'Iniciar Sesión',
         'footer-signup':   'Registrarse'
