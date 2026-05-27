@@ -6,6 +6,11 @@
   <title>BuildOrder.ai &mdash; Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#F59E0B">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="BuildOrder">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/lang.js"></script>
   <style>
@@ -110,6 +115,8 @@
     .empty-state { text-align: center; padding: 3rem 2rem; color: var(--muted); }
     .empty-state h3 { font-size: 0.95rem; font-weight: 700; color: var(--white); margin-bottom: 0.35rem; }
     .empty-state p { font-size: 0.82rem; }
+    .expiry-alert { display: none; background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3); border-radius: 10px; padding: 0.75rem 1.25rem; margin-bottom: 1rem; font-size: 0.82rem; color: var(--amber); line-height: 1.55; }
+    .expiry-alert a { color: var(--amber); font-weight: 700; }
     .plan-bar { display: flex; align-items: center; justify-content: space-between; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1.25rem; margin-bottom: 1.5rem; gap: 1rem; flex-wrap: wrap; }
     .plan-badge { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em; padding: 0.2rem 0.7rem; border-radius: 100px; }
     .badge-free    { background: rgba(148,163,184,0.12); color: var(--muted); }
@@ -180,6 +187,9 @@
       <div class="stat"><div class="stat-label" data-i18n="dash.stat.invoices">Invoices</div><div class="stat-value" id="stat-inv">&mdash;</div></div>
       <div class="stat"><div class="stat-label" data-i18n="dash.stat.outstanding">Outstanding</div><div class="stat-value" id="stat-outstanding">&mdash;</div></div>
     </div>
+
+    <!-- Expiry Alert -->
+    <div class="expiry-alert" id="expiry-alert"></div>
 
     <!-- Plan / Usage Bar -->
     <div id="plan-bar" class="plan-bar" style="display:none;">
@@ -416,6 +426,28 @@
         .order('created_at', { ascending: false })
         .limit(25);
       renderShareLinks(slR.data || []);
+
+      // Expiry alert — estimates expiring within 3 days
+      try {
+        var estR = await db.from('estimates')
+          .select('id, homeowner_name, valid_days, created_at')
+          .eq('user_id', sessionRes.data.session.user.id)
+          .eq('status', 'sent');
+        if (estR.data && estR.data.length) {
+          var now = Date.now();
+          var threeDays = 3 * 24 * 60 * 60 * 1000;
+          var expiring = estR.data.filter(function(e) {
+            var exp = new Date(e.created_at).getTime() + (e.valid_days || 30) * 86400000;
+            return exp > now && exp <= now + threeDays;
+          });
+          if (expiring.length) {
+            var names = expiring.map(function(e) { return e.homeowner_name || 'client'; }).join(', ');
+            var alert = document.getElementById('expiry-alert');
+            alert.innerHTML = '&#9888; <strong>' + expiring.length + ' estimate' + (expiring.length > 1 ? 's' : '') + ' expiring in the next 3 days:</strong> ' + names + ' &mdash; follow up now before they go cold.';
+            alert.style.display = 'block';
+          }
+        }
+      } catch(e) { /* silent */ }
     }
 
     var SHARE_TYPE_LABELS = {
@@ -473,6 +505,11 @@
     }
 
     init();
+
+    // Register service worker for PWA installability
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(function() {});
+    }
   </script>
 </body>
 </html>

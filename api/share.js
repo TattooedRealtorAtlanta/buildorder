@@ -28,7 +28,7 @@ module.exports = async function handler(req, res) {
 
     const { data, error } = await db
       .from('share_links')
-      .select('id, token, document_content, document_type, client_name, client_email, client_sig, signed_at, expires_at, created_at')
+      .select('id, token, document_content, document_type, client_name, client_email, client_sig, signed_at, expires_at, created_at, user_id, viewed_at')
       .eq('token', token)
       .single();
 
@@ -36,6 +36,57 @@ module.exports = async function handler(req, res) {
 
     if (data.expires_at && new Date(data.expires_at) < new Date()) {
       return res.status(410).json({ error: 'Link expired' });
+    }
+
+    // ── Fire "client viewed" notification on first open ──────────────────
+    if (!data.viewed_at) {
+      // Mark viewed (fire-and-forget — don't await before returning doc)
+      db.from('share_links').update({ viewed_at: new Date().toISOString() }).eq('token', token).then(() => {});
+
+      // Send notification email to contractor (async, non-blocking)
+      try {
+        const { data: profile } = await db
+          .from('contractor_profiles')
+          .select('email, contractor_name, business_name')
+          .eq('id', data.user_id)
+          .single();
+
+        if (profile && profile.email) {
+          const docLabel   = TYPE_LABELS[data.document_type] || 'Document';
+          const bizName    = profile.business_name || profile.contractor_name || 'there';
+          const viewedTime = new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
+
+          await resend.emails.send({
+            from:    'noreply@buildorder.ai',
+            to:      profile.email,
+            subject: `👁 Your ${docLabel} was just opened`,
+            html: `
+              <div style="font-family:Inter,sans-serif;max-width:560px;margin:0 auto;padding:2rem;background:#090E1A;color:#F8FAFC;border-radius:12px;">
+                <div style="font-size:1.4rem;font-weight:900;margin-bottom:1.5rem;">
+                  <span style="color:#F59E0B;">Build</span>Order
+                </div>
+                <h2 style="font-size:1.1rem;font-weight:800;margin-bottom:0.5rem;color:#F8FAFC;">Document Opened</h2>
+                <p style="color:#94A3B8;margin-bottom:1.5rem;line-height:1.6;">
+                  Hey ${bizName} &mdash; someone just opened your <strong style="color:#F8FAFC;">${docLabel}</strong>. Now's a good time to follow up.
+                </p>
+                <table style="width:100%;border-collapse:collapse;margin-bottom:1.5rem;">
+                  <tr><td style="padding:0.4rem 0;color:#94A3B8;font-size:0.85rem;">Document</td><td style="padding:0.4rem 0;font-size:0.85rem;">${docLabel}</td></tr>
+                  <tr><td style="padding:0.4rem 0;color:#94A3B8;font-size:0.85rem;">Opened at</td><td style="padding:0.4rem 0;font-size:0.85rem;">${viewedTime}</td></tr>
+                </table>
+                <a href="https://buildorder.ai/dashboard.html"
+                   style="display:inline-block;background:#F59E0B;color:#090E1A;padding:0.65rem 1.5rem;border-radius:8px;font-weight:800;text-decoration:none;font-size:0.9rem;">
+                  View Dashboard
+                </a>
+                <p style="margin-top:2rem;font-size:0.75rem;color:#475569;">
+                  If this was you testing your own link, ignore this. You'll only get this once per share link.
+                </p>
+              </div>
+            `
+          });
+        }
+      } catch(e) {
+        console.error('View notification email failed:', e.message);
+      }
     }
 
     return res.status(200).json(data);

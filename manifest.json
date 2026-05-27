@@ -1,0 +1,43 @@
+{
+  "name": "BuildOrder.ai",
+  "short_name": "BuildOrder",
+  "description": "Contractor documents in seconds — estimates, contracts, invoices, and more.",
+  "start_url": "/dashboard.html",
+  "display": "standalone",
+  "background_color": "#090E1A",
+  "theme_color": "#F59E0B",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='32' fill='%23111827'/><text x='50%25' y='58%25' dominant-baseline='middle' text-anchor='middle' font-family='Inter,sans-serif' font-weight='900' font-size='108' fill='%23F59E0B'>B</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='80' fill='%23111827'/><text x='50%25' y='58%25' dominant-baseline='middle' text-anchor='middle' font-family='Inter,sans-serif' font-weight='900' font-size='300' fill='%23F59E0B'>B</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "url": "/dashboard.html",
+      "description": "Go to your BuildOrder dashboard"
+    },
+    {
+      "name": "New Estimate",
+      "url": "/new-estimate.html",
+      "description": "Create a new estimate"
+    },
+    {
+      "name": "New Invoice",
+      "url": "/new-invoice.html",
+      "description": "Create a new invoice"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "lang": "en-US"
+}

@@ -125,7 +125,7 @@
       var sc = d.status === 'complete' ? 'status-complete' : 'status-draft';
       var dims = d.dimensions || {};
       var actions = d.content
-        ? '<button class="btn-action" onclick="copyDoc()">' + T('btn.copy') + '</button><button class="btn-action" onclick="dlDoc()">' + T('btn.download') + '</button><button class="btn-action" onclick="dlPdf()">' + T('btn.pdf') + '</button><button class="btn-action" onclick="openEmail()">' + T('btn.email') + '</button><button class="btn-action" onclick="openShare()">&#128279; Share</button><button class="btn-generate" onclick="generate()">' + T('to.btn.recalc') + '</button>'
+        ? '<button class="btn-action" onclick="copyDoc()">' + T('btn.copy') + '</button><button class="btn-action" onclick="dlDoc()">' + T('btn.download') + '</button><button class="btn-action" onclick="dlPdf()">' + T('btn.pdf') + '</button><button class="btn-action" onclick="openEmail()">' + T('btn.email') + '</button><button class="btn-action" onclick="openShare()">&#128279; Share</button><button class="btn-action" onclick="duplicateDoc(\'takeoff\')">Duplicate</button><button class="btn-generate" onclick="generate()">' + T('to.btn.recalc') + '</button>'
         : '<button class="btn-generate" onclick="generate()">' + T('to.btn.gen') + '</button>';
 
       document.getElementById('page-content').innerHTML =
@@ -259,6 +259,25 @@
     }
 
     function closeShare() { document.getElementById('share-modal').classList.add('hidden'); }
+
+    function duplicateDoc(type) {
+      var id = new URLSearchParams(window.location.search).get('id');
+      if (!id) return;
+      db.auth.getSession().then(function(r) {
+        var token = r.data && r.data.session ? r.data.session.access_token : '';
+        return fetch('/api/duplicate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ type: type, id: id })
+        });
+      }).then(function(res) { return res.json(); })
+      .then(function(d) {
+        if (d.new_id) {
+          var t = document.getElementById('toast'); t.textContent = 'Duplicated! Opening copy…'; t.classList.add('show');
+          setTimeout(function() { window.location.href = window.location.pathname + '?id=' + d.new_id; }, 900);
+        } else { alert('Could not duplicate: ' + (d.error || 'Unknown error')); }
+      }).catch(function() { alert('Duplicate failed.'); });
+    }
 
     function copyShareLink() {
       var v = document.getElementById('share-url-input').value;

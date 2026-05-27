@@ -6,6 +6,11 @@
   <title>BuildOrder.ai &mdash; Estimate</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#F59E0B">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="BuildOrder">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/lang.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -203,6 +208,7 @@
                   '<button class="btn-action" onclick="dlPdf()">' + T('btn.pdf') + '</button>' +
                   '<button class="btn-action" onclick="openEmail()">' + T('btn.email') + '</button>' +
                   '<button class="btn-action" onclick="openShare()">&#128279; Share</button>' +
+                  '<button class="btn-action" onclick="duplicateDoc(\'estimate\')">Duplicate</button>' +
                   '<button class="btn-generate" onclick="generateEstimate()">' + T('est.btn.regen') + '</button>'
                 : '<button class="btn-generate" onclick="generateEstimate()">' + T('est.btn.gen') + '</button>') +
             '</div>' +
@@ -372,6 +378,25 @@
     }
 
     function closeShare() { document.getElementById('share-modal').classList.add('hidden'); }
+
+    function duplicateDoc(type) {
+      var id = new URLSearchParams(window.location.search).get('id');
+      if (!id) return;
+      db.auth.getSession().then(function(r) {
+        var token = r.data && r.data.session ? r.data.session.access_token : '';
+        return fetch('/api/duplicate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ type: type, id: id })
+        });
+      }).then(function(res) { return res.json(); })
+      .then(function(d) {
+        if (d.new_id) {
+          var t = document.getElementById('toast'); t.textContent = 'Duplicated! Opening copy…'; t.classList.add('show');
+          setTimeout(function() { window.location.href = window.location.pathname + '?id=' + d.new_id; }, 900);
+        } else { alert('Could not duplicate: ' + (d.error || 'Unknown error')); }
+      }).catch(function() { alert('Duplicate failed.'); });
+    }
 
     function copyShareLink() {
       var v = document.getElementById('share-url-input').value;
