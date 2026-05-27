@@ -355,7 +355,7 @@
         fetch('/api/send-document', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-          body: JSON.stringify({ to_email: toEmail, to_name: toName, subject: subject, content: currentCO.content })
+          body: JSON.stringify({ to_email: toEmail, to_name: toName, subject: subject, content: currentCO.content, document_type: 'change-order', reference_id: coId })
         }).then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
         .then(function(result) {
           sendBtn.disabled = false; sendBtn.textContent = 'Send Email';
