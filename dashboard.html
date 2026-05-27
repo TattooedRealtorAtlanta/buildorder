@@ -156,6 +156,18 @@
     .status-pending  { background: rgba(148,163,184,0.12); color: var(--muted); }
     .status-expired  { background: rgba(239,68,68,0.1); color: var(--red); }
 
+    /* Money Panel */
+    .money-panel { display:none; margin-bottom:2rem; }
+    .money-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; }
+    .money-card { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:1.25rem 1.4rem; }
+    .money-card.highlight { border-color:rgba(52,211,153,0.3); }
+    .money-lbl { font-size:0.67rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; font-weight:700; margin-bottom:0.4rem; }
+    .money-val { font-size:1.7rem; font-weight:900; letter-spacing:-0.03em; color:var(--white); line-height:1; }
+    .money-val.green { color:var(--green); }
+    .money-val.amber { color:var(--amber); }
+    .money-sub { font-size:0.72rem; color:var(--dim); margin-top:0.3rem; }
+    @media (max-width:600px) { .money-grid { grid-template-columns:1fr 1fr; } .money-grid .money-card:last-child { grid-column:span 2; } }
+
     /* Win Rate Panel */
     .wr-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; }
     .wr-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.25rem; }
@@ -274,6 +286,12 @@
         <div class="tool-desc" data-i18n="tool.photos.desc">Upload &amp; organize job site photos</div>
         <div class="tool-count" id="tc-photos">Photo log</div>
       </a>
+    </div>
+
+    <!-- Money Panel -->
+    <div class="money-panel" id="money-panel">
+      <div class="section-label">&#128179; Payments</div>
+      <div class="money-grid" id="money-grid"></div>
     </div>
 
     <!-- Win Rate Panel -->
@@ -410,11 +428,15 @@
 
       // Stats
       var totalDocs = jobs.length + ests.length + invs.length + cos.length + subs.length + liens.length + tkofs.length;
-      var outstanding = invs.filter(function(i) { return i.status !== 'paid'; }).length;
+      var outstandingAmt = invs
+        .filter(function(i) { return i.status !== 'paid' && i.balance_due; })
+        .reduce(function(s, i) { return s + Number(i.balance_due || 0); }, 0);
       document.getElementById('stat-total').textContent  = totalDocs;
       document.getElementById('stat-jobs').textContent   = jobs.length;
       document.getElementById('stat-inv').textContent    = invs.length;
-      document.getElementById('stat-outstanding').textContent = outstanding;
+      document.getElementById('stat-outstanding').textContent = outstandingAmt > 0
+        ? '$' + Math.round(outstandingAmt).toLocaleString()
+        : invs.filter(function(i) { return i.status !== 'paid'; }).length;
 
       // Tool counts
       document.getElementById('tc-jobs').textContent = jobs.length + ' contract' + (jobs.length !== 1 ? 's' : '');
@@ -447,12 +469,18 @@
         document.getElementById('tc-photos').textContent = phCount + ' photo' + (phCount !== 1 ? 's' : '');
       } catch(e) { document.getElementById('tc-photos').textContent = '0 photos'; }
 
-      // Share links
+      // Share links (display list)
       var slR = await db.from('share_links')
-        .select('id, token, document_type, client_name, client_email, signed_at, created_at, expires_at')
+        .select('id, token, document_type, client_name, client_email, signed_at, created_at, expires_at, payment_amount, paid_at')
         .order('created_at', { ascending: false })
         .limit(25);
       renderShareLinks(slR.data || []);
+
+      // Money stats — all payment links (not capped at 25)
+      var moneyR = await db.from('share_links')
+        .select('payment_amount, paid_at')
+        .gt('payment_amount', 0);
+      renderMoney(moneyR.data || []);
 
       // Expiry alert — estimates expiring within 3 days
       try {
@@ -504,15 +532,17 @@
       var now = new Date();
       el.innerHTML = links.map(function(l, i) {
         var isSigned  = !!l.signed_at;
+        var isPaid    = !!l.paid_at;
         var isExpired = !isSigned && l.expires_at && new Date(l.expires_at) < now;
-        var statusClass = isSigned ? 'status-signed' : (isExpired ? 'status-expired' : 'status-pending');
-        var statusLabel = isSigned ? '&#10003; Signed'  : (isExpired ? 'Expired' : 'Pending');
+        var statusClass = isPaid ? 'status-paid' : (isSigned ? 'status-signed' : (isExpired ? 'status-expired' : 'status-pending'));
+        var statusLabel = isPaid ? '&#128179; Paid' : (isSigned ? '&#10003; Signed' : (isExpired ? 'Expired' : 'Pending'));
         var typeLabel   = SHARE_TYPE_LABELS[l.document_type] || 'Document';
         var pillClass   = SHARE_TYPE_PILL[l.document_type]   || 'est';
         var clientInfo  = isSigned
           ? (l.client_name || l.client_email || 'Client signed')
           : 'Awaiting signature';
-        var dateInfo = 'Shared ' + fmtDate(l.created_at) + (isExpired ? ' &middot; Expired' : ' &middot; Expires ' + fmtDate(l.expires_at));
+        var amtLabel = l.payment_amount ? ' &middot; ' + fmt(l.payment_amount) : '';
+        var dateInfo = 'Shared ' + fmtDate(l.created_at) + (isExpired ? ' &middot; Expired' : ' &middot; Expires ' + fmtDate(l.expires_at)) + amtLabel;
         var btnId = 'cpbtn-' + i;
         return '<div class="share-row">' +
           '<span class="type-pill pill-' + pillClass + '">' + typeLabel + '</span>' +
@@ -578,6 +608,43 @@
             '<span style="color:var(--amber);">&#9632;</span> ' + sent.length + ' pending' +
           '</div>' +
           winsHtml +
+        '</div>';
+    }
+
+    function renderMoney(links) {
+      if (!links || links.length === 0) return;
+      var panel = document.getElementById('money-panel');
+      var now = new Date();
+      var mStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+      var collectedMo  = links.filter(function(l) { return l.paid_at && new Date(l.paid_at) >= mStart; })
+                              .reduce(function(s, l) { return s + Number(l.payment_amount || 0); }, 0);
+      var collectedAll = links.filter(function(l) { return l.paid_at; })
+                              .reduce(function(s, l) { return s + Number(l.payment_amount || 0); }, 0);
+      var outstanding  = links.filter(function(l) { return !l.paid_at; })
+                              .reduce(function(s, l) { return s + Number(l.payment_amount || 0); }, 0);
+
+      function fmtMoney(n) {
+        if (n >= 1000) return '$' + (n / 1000).toFixed(n % 1000 === 0 ? 0 : 1) + 'k';
+        return '$' + Math.round(n).toLocaleString();
+      }
+
+      panel.style.display = 'block';
+      document.getElementById('money-grid').innerHTML =
+        '<div class="money-card highlight">' +
+          '<div class="money-lbl">Collected This Month</div>' +
+          '<div class="money-val green">' + (collectedMo > 0 ? fmtMoney(collectedMo) : '—') + '</div>' +
+          '<div class="money-sub">via card payments</div>' +
+        '</div>' +
+        '<div class="money-card">' +
+          '<div class="money-lbl">All-Time Collected</div>' +
+          '<div class="money-val">' + (collectedAll > 0 ? fmtMoney(collectedAll) : '—') + '</div>' +
+          '<div class="money-sub">' + links.filter(function(l) { return l.paid_at; }).length + ' invoice' + (links.filter(function(l) { return l.paid_at; }).length !== 1 ? 's' : '') + ' paid</div>' +
+        '</div>' +
+        '<div class="money-card">' +
+          '<div class="money-lbl">Awaiting Payment</div>' +
+          '<div class="money-val amber">' + (outstanding > 0 ? fmtMoney(outstanding) : '—') + '</div>' +
+          '<div class="money-sub">' + links.filter(function(l) { return !l.paid_at; }).length + ' invoice' + (links.filter(function(l) { return !l.paid_at; }).length !== 1 ? 's' : '') + ' outstanding</div>' +
         '</div>';
     }
 

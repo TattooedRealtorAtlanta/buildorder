@@ -80,6 +80,11 @@
 
     .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1.25rem; font-size: 0.85rem; font-weight: 600; color: var(--green); opacity: 0; transform: translateY(10px); transition: opacity 0.2s, transform 0.2s; pointer-events: none; z-index: 100; }
     .toast.show { opacity: 1; transform: translateY(0); }
+    .notes-section { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; }
+    .notes-header { font-size: 0.7rem; color: var(--dim); font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.75rem; }
+    .notes-textarea { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 0.7rem 0.9rem; font-size: 0.85rem; color: var(--white); font-family: inherit; outline: none; resize: vertical; min-height: 80px; line-height: 1.6; transition: border-color 0.15s; }
+    .notes-textarea:focus { border-color: var(--amber); }
+    .notes-hint { font-size: 0.7rem; color: var(--dim); margin-top: 0.4rem; }
 
     @media (max-width: 640px) {
       .info-grid { grid-template-columns: 1fr; }
@@ -158,6 +163,7 @@
         }
         currentEstimate = res.data;
         renderPage();
+        attachNotesListener();
         if (autoGenerate && !currentEstimate.content) {
           generateEstimate();
         }
@@ -224,6 +230,11 @@
               ? '<div class="estimate-body"><pre class="estimate-text">' + escapeHtml(est.content) + '</pre></div>'
               : '<div class="no-estimate"><h3>' + T('est.no.h') + '</h3><p>' + T('est.no.p') + '</p></div>') +
           '</div>' +
+        '</div>' +
+        '<div class="notes-section">' +
+          '<div class="notes-header">&#128274; Internal Notes <span style="font-weight:400;text-transform:none;color:var(--dim);letter-spacing:0;">&mdash; not visible to clients</span></div>' +
+          '<textarea class="notes-textarea" id="notes-input" placeholder="Private notes, cost breakdowns, reminders…">' + escapeHtml(est.notes || '') + '</textarea>' +
+          '<div class="notes-hint">Auto-saves when you click away</div>' +
         '</div>';
     }
 
@@ -254,6 +265,7 @@
         currentEstimate.status = 'sent';
         window.history.replaceState({}, '', '/estimate.html?id=' + estimateId);
         renderPage();
+        attachNotesListener();
       }).catch(function(err) {
         showError('Network error &mdash; please check your connection and try again.');
       });
@@ -291,6 +303,23 @@
 
     function escapeHtml(str) {
       return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function showToast(msg) {
+      var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+      setTimeout(function() { t.classList.remove('show'); }, 2500);
+    }
+
+    function attachNotesListener() {
+      var el = document.getElementById('notes-input');
+      if (!el) return;
+      el.addEventListener('blur', async function() {
+        var notes = this.value;
+        if (notes === (currentEstimate.notes || '')) return;
+        await db.from('estimates').update({ notes: notes }).eq('id', estimateId);
+        currentEstimate.notes = notes;
+        showToast('Notes saved');
+      });
     }
 
     function dlPdf() {
@@ -410,6 +439,7 @@
         if (res.error) { alert('Error: ' + res.error.message); return; }
         currentEstimate.status = 'accepted';
         renderPage();
+        attachNotesListener();
         var t = document.getElementById('toast'); t.textContent = '&#10003; Marked as won!'; t.classList.add('show');
         setTimeout(function() { t.classList.remove('show'); }, 2500);
       });

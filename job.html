@@ -193,6 +193,23 @@
       margin: 1rem 1.5rem;
     }
 
+    /* Job status chips */
+    .job-status-row { display:flex; gap:0.5rem; margin-bottom:1.5rem; flex-wrap:wrap; align-items:center; }
+    .job-status-lbl { font-size:0.7rem; color:var(--dim); font-weight:700; text-transform:uppercase; letter-spacing:0.07em; margin-right:0.25rem; }
+    .status-chip { background:none; border:1px solid var(--border); border-radius:100px; padding:0.3rem 0.85rem; font-size:0.75rem; font-weight:700; color:var(--muted); cursor:pointer; font-family:inherit; transition:all 0.15s; }
+    .status-chip:hover { color:var(--white); border-color:rgba(255,255,255,0.2); }
+    .status-chip.active-planning    { background:rgba(148,163,184,0.15); color:var(--muted); border-color:var(--muted); }
+    .status-chip.active-scheduled   { background:rgba(245,158,11,0.12); color:var(--amber); border-color:var(--amber); }
+    .status-chip.active-in_progress { background:rgba(99,102,241,0.12); color:#818CF8; border-color:#818CF8; }
+    .status-chip.active-complete    { background:rgba(52,211,153,0.12); color:var(--green); border-color:var(--green); }
+
+    /* Internal notes */
+    .notes-section { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:1.25rem 1.5rem; margin-bottom:1.5rem; }
+    .notes-header { font-size:0.7rem; color:var(--dim); font-weight:700; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:0.75rem; }
+    .notes-textarea { width:100%; background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:0.7rem 0.9rem; font-size:0.85rem; color:var(--white); font-family:inherit; outline:none; resize:vertical; min-height:80px; line-height:1.6; transition:border-color 0.15s; }
+    .notes-textarea:focus { border-color:var(--amber); }
+    .notes-hint { font-size:0.7rem; color:var(--dim); margin-top:0.4rem; }
+
     .toast {
       position: fixed;
       bottom: 2rem;
@@ -311,6 +328,7 @@
       currentContract = docs?.[0] || null;
 
       renderPage();
+      attachNotesListener();
 
       if (autoGenerate && !currentContract) {
         generateContract();
@@ -356,6 +374,20 @@
             <div class="info-row"><span class="info-label">${T('job.lbl.completion')}</span><span class="info-value">${formatDate(job.estimated_completion_date)}</span></div>
             <div class="info-row"><span class="info-label">${T('job.lbl.primary2')}</span><span class="info-value">${job.is_primary_residence ? T('job.primary.yes') : T('job.primary.no')}</span></div>
           </div>
+        </div>
+
+        <div class="job-status-row">
+          <span class="job-status-lbl">Status</span>
+          ${[['planning','Planning'],['scheduled','Scheduled'],['in_progress','In Progress'],['complete','Complete']].map(function(s) {
+            var isActive = (job.job_status || 'in_progress') === s[0];
+            return '<button class="status-chip' + (isActive ? ' active-' + s[0] : '') + '" onclick="setJobStatus(\'' + s[0] + '\')">' + s[1] + '</button>';
+          }).join('')}
+        </div>
+
+        <div class="notes-section">
+          <div class="notes-header">&#128274; Internal Notes <span style="font-weight:400;text-transform:none;color:var(--dim);letter-spacing:0;">&mdash; not visible to clients</span></div>
+          <textarea class="notes-textarea" id="notes-input" placeholder="Private notes, reminders, material lists…">${escapeHtml(job.notes || '')}</textarea>
+          <div class="notes-hint">Auto-saves when you click away</div>
         </div>
 
         <div class="contract-section">
@@ -416,6 +448,7 @@
         currentContract = { content: data.content, id: data.document_id };
         window.history.replaceState({}, '', `/job.html?id=${jobId}`);
         renderPage();
+        attachNotesListener();
 
       } catch (err) {
         showError(T('gen.network_err'));
@@ -456,6 +489,32 @@
 
     function escapeHtml(str) {
       return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    async function setJobStatus(newStatus) {
+      await db.from('jobs').update({ job_status: newStatus }).eq('id', jobId);
+      currentJob.job_status = newStatus;
+      renderPage();
+      attachNotesListener();
+      showToast('Status updated to ' + ({ planning:'Planning', scheduled:'Scheduled', in_progress:'In Progress', complete:'Complete' }[newStatus] || newStatus));
+    }
+
+    function attachNotesListener() {
+      var el = document.getElementById('notes-input');
+      if (!el) return;
+      el.addEventListener('blur', async function() {
+        var notes = this.value;
+        if (notes === (currentJob.notes || '')) return; // no change
+        await db.from('jobs').update({ notes: notes }).eq('id', jobId);
+        currentJob.notes = notes;
+        showToast('Notes saved');
+      });
+    }
+
+    function showToast(msg) {
+      var t = document.getElementById('toast');
+      t.textContent = msg; t.classList.add('show');
+      setTimeout(function() { t.classList.remove('show'); }, 2500);
     }
 
     function dlPdf() {

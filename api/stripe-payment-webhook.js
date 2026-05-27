@@ -35,13 +35,35 @@ module.exports = async function handler(req, res) {
     const shareToken = session.metadata && session.metadata.share_token;
 
     if (shareToken) {
+      const paidAt = new Date().toISOString();
+
+      // Fetch link to get the invoice reference_id before updating
+      const { data: link } = await db
+        .from('share_links')
+        .select('reference_id')
+        .eq('token', shareToken)
+        .single();
+
+      // Mark share link as paid
       const { error } = await db
         .from('share_links')
-        .update({ paid_at: new Date().toISOString() })
+        .update({ paid_at: paidAt })
         .eq('token', shareToken);
 
       if (error) {
         console.error('Failed to mark share link as paid:', error.message);
+      }
+
+      // Also mark the invoice record as paid so the invoice page reflects it
+      if (link && link.reference_id) {
+        const { error: invErr } = await db
+          .from('invoices')
+          .update({ status: 'paid' })
+          .eq('id', link.reference_id);
+
+        if (invErr) {
+          console.error('Failed to mark invoice as paid:', invErr.message);
+        }
       }
     }
   }

@@ -155,6 +155,94 @@ module.exports = async (req, res) => {
     }
   }
 
+  // ── Payment reminders ────────────────────────────────────────────────────
+  var sevenDaysMs   = 7  * 24 * 60 * 60 * 1000;
+  var fourteenDaysMs = 14 * 24 * 60 * 60 * 1000;
+
+  // Find signed, unpaid invoice links that still need reminders
+  var { data: pendingLinks } = await supabase
+    .from('share_links')
+    .select('id, token, user_id, client_name, client_email, payment_amount, payment_reminders_sent, created_at')
+    .gt('payment_amount', 0)
+    .is('paid_at', null)
+    .not('signed_at', 'is', null)
+    .lt('payment_reminders_sent', 3);
+
+  if (pendingLinks && pendingLinks.length > 0) {
+    var payUserIds = [...new Set(pendingLinks.map(function(l) { return l.user_id; }))];
+    var { data: payProfiles } = await supabase
+      .from('contractor_profiles')
+      .select('id, email, contractor_name, business_name')
+      .in('id', payUserIds);
+
+    var payProfileMap = {};
+    (payProfiles || []).forEach(function(p) { payProfileMap[p.id] = p; });
+
+    for (var link of pendingLinks) {
+      var ageMs   = now - new Date(link.created_at).getTime();
+      var remCount = link.payment_reminders_sent || 0;
+
+      var shouldSend = false;
+      if      (remCount === 0 && ageMs >= threeDaysMs)    shouldSend = true;
+      else if (remCount === 1 && ageMs >= sevenDaysMs)    shouldSend = true;
+      else if (remCount === 2 && ageMs >= fourteenDaysMs) shouldSend = true;
+      if (!shouldSend) continue;
+
+      var payProfile = payProfileMap[link.user_id];
+      if (!payProfile || !link.client_email) continue;
+
+      var bizName    = payProfile.business_name || payProfile.contractor_name || 'Your contractor';
+      var clientName = link.client_name || 'there';
+      var amtStr     = '$' + Number(link.payment_amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      var payUrl     = 'https://buildorder.ai/sign.html?token=' + link.token;
+      var dayLabels  = ['3 days', '1 week', '2 weeks'];
+      var dayLabel   = dayLabels[remCount] || '';
+
+      try {
+        await resend.emails.send({
+          from:     bizName + ' via BuildOrder <noreply@buildorder.ai>',
+          to:       [link.client_email],
+          reply_to: payProfile.email,
+          subject:  'Friendly reminder: invoice payment of ' + amtStr + ' is outstanding',
+          html: `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"></head>
+<body style="font-family:Arial,sans-serif;max-width:600px;margin:40px auto;color:#222;padding:0 16px;">
+  <div style="background:#F59E0B;border-radius:10px 10px 0 0;padding:24px 32px;">
+    <h1 style="margin:0;font-size:22px;color:#090E1A;font-weight:900;">${bizName}</h1>
+  </div>
+  <div style="background:#f9f9f9;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 10px 10px;padding:32px;">
+    <h2 style="margin:0 0 8px;font-size:18px;">Invoice payment reminder</h2>
+    <p style="color:#555;font-size:15px;line-height:1.6;margin:0 0 24px;">
+      Hi ${clientName}, this is a friendly reminder that your invoice of <strong>${amtStr}</strong>
+      from <strong>${bizName}</strong> is still outstanding (${dayLabel} ago).
+      You can pay securely by card at the link below.
+    </p>
+    <a href="${payUrl}"
+       style="display:inline-block;background:#F59E0B;color:#090E1A;text-decoration:none;font-weight:900;padding:14px 32px;border-radius:8px;font-size:16px;margin-bottom:24px;">
+      Pay ${amtStr} Now &rarr;
+    </a>
+    <p style="font-size:13px;color:#999;margin:0;">
+      If you have any questions, reply to this email or contact ${bizName} directly at
+      <a href="mailto:${payProfile.email}" style="color:#F59E0B;">${payProfile.email}</a>.
+    </p>
+    <p style="margin:24px 0 0;font-size:11px;color:#ccc;">Sent via BuildOrder.ai on behalf of ${bizName}</p>
+  </div>
+</body></html>`
+        });
+
+        await supabase
+          .from('share_links')
+          .update({ payment_reminders_sent: remCount + 1 })
+          .eq('id', link.id);
+
+        sent++;
+      } catch (payErr) {
+        console.error('Payment reminder failed for link', link.id, payErr.message);
+        errs.push({ link_id: link.id, error: payErr.message });
+      }
+    }
+  }
+
   return res.status(200).json({
     sent,
     checked: expiring.length,
