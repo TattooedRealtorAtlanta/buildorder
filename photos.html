@@ -7,7 +7,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/lang.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -24,367 +23,382 @@
       --red:   #EF4444;
     }
     body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; }
-    .nav { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+
+    .nav { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
     .logo { font-size: 1.2rem; font-weight: 900; letter-spacing: -0.03em; text-decoration: none; color: var(--white); }
     .logo em { font-style: normal; color: var(--amber); }
+    .nav-right { display: flex; align-items: center; gap: 0.75rem; }
     .btn-back { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.9rem; font-size: 0.78rem; color: var(--dim); cursor: pointer; font-family: inherit; text-decoration: none; transition: color 0.2s, border-color 0.2s; }
     .btn-back:hover { color: var(--white); border-color: var(--amber); }
 
-    .main { max-width: 1100px; margin: 0 auto; padding: 2rem 2rem 4rem; }
+    .main { max-width: 1060px; margin: 0 auto; padding: 2.5rem 2rem 4rem; }
 
-    /* Header bar */
-    .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
-    .page-title { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; }
-    .header-right { display: flex; align-items: center; gap: 0.75rem; }
-
-    /* Job filter */
-    select.job-filter { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 0.9rem; font-size: 0.82rem; color: var(--white); font-family: inherit; outline: none; cursor: pointer; }
-    select.job-filter option { background: var(--bg2); }
-    select.job-filter:focus { border-color: var(--amber); }
-
-    /* Upload area */
-    .upload-zone {
-      border: 2px dashed var(--border);
-      border-radius: 14px;
-      padding: 2.5rem;
-      text-align: center;
-      cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
-      margin-bottom: 2rem;
-      background: var(--bg2);
-    }
-    .upload-zone:hover, .upload-zone.drag-over { border-color: var(--amber); background: rgba(245,158,11,0.04); }
-    .upload-zone input[type=file] { display: none; }
-    .upload-icon { font-size: 2rem; margin-bottom: 0.75rem; }
-    .upload-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.35rem; }
-    .upload-sub { font-size: 0.78rem; color: var(--muted); }
-    .btn-upload { display: inline-block; margin-top: 1rem; background: var(--amber); color: #090E1A; border: none; border-radius: 8px; padding: 0.55rem 1.25rem; font-size: 0.82rem; font-weight: 800; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+    .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 2rem; gap: 1rem; flex-wrap: wrap; }
+    .page-title { font-size: 1.4rem; font-weight: 900; letter-spacing: -0.02em; }
+    .page-sub { font-size: 0.82rem; color: var(--muted); margin-top: 0.2rem; }
+    .btn-upload { background: var(--amber); color: #090E1A; border: none; border-radius: 10px; padding: 0.6rem 1.4rem; font-size: 0.85rem; font-weight: 900; cursor: pointer; font-family: inherit; transition: background 0.15s; white-space: nowrap; }
     .btn-upload:hover { background: var(--amber2); }
 
-    /* Upload progress */
-    .upload-progress { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1rem; display: none; }
-    .progress-label { font-size: 0.8rem; font-weight: 600; margin-bottom: 0.5rem; }
-    .progress-bar-track { background: var(--bg3); border-radius: 100px; height: 6px; overflow: hidden; }
-    .progress-bar-fill { height: 100%; background: var(--amber); border-radius: 100px; transition: width 0.2s; width: 0%; }
+    .filter-bar { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 2rem; }
+    .filter-chip { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.85rem; font-size: 0.75rem; font-weight: 700; color: var(--muted); cursor: pointer; font-family: inherit; transition: all 0.15s; white-space: nowrap; max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
+    .filter-chip:hover { color: var(--white); border-color: rgba(255,255,255,0.2); }
+    .filter-chip.active { background: var(--bg3); color: var(--white); border-color: rgba(255,255,255,0.15); }
 
-    /* Caption modal */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; display: none; align-items: center; justify-content: center; padding: 1rem; }
-    .modal-overlay.open { display: flex; }
-    .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 1.75rem; width: 100%; max-width: 440px; }
-    .modal-title { font-size: 1rem; font-weight: 800; margin-bottom: 0.35rem; }
-    .modal-sub { font-size: 0.78rem; color: var(--muted); margin-bottom: 1.25rem; }
-    .modal input, .modal select { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem 0.9rem; font-size: 0.88rem; color: var(--white); font-family: inherit; outline: none; width: 100%; margin-bottom: 0.75rem; }
-    .modal input:focus, .modal select:focus { border-color: var(--amber); }
-    .modal select option { background: var(--bg2); }
-    .modal-preview { width: 100%; height: 160px; object-fit: cover; border-radius: 8px; margin-bottom: 1rem; }
-    .modal-actions { display: flex; gap: 0.75rem; }
-    .btn-cancel { flex: 1; background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem; font-size: 0.82rem; font-weight: 700; color: var(--muted); cursor: pointer; font-family: inherit; }
-    .btn-save { flex: 1; background: var(--amber); color: #090E1A; border: none; border-radius: 8px; padding: 0.6rem; font-size: 0.82rem; font-weight: 800; cursor: pointer; font-family: inherit; }
-    .btn-save:hover { background: var(--amber2); }
+    .photo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+    .photo-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color 0.2s; }
+    .photo-card:hover { border-color: rgba(245,158,11,0.35); }
+    .photo-thumb { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; cursor: pointer; transition: opacity 0.15s; }
+    .photo-thumb:hover { opacity: 0.85; }
+    .photo-info { padding: 0.75rem; }
+    .photo-job { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--amber); margin-bottom: 0.3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .photo-caption { font-size: 0.78rem; color: var(--white); margin-bottom: 0.4rem; cursor: pointer; min-height: 1.2em; line-height: 1.4; }
+    .photo-caption:hover { color: var(--amber2); }
+    .photo-caption.empty { color: var(--dim); font-style: italic; }
+    .caption-input { width: 100%; background: var(--bg3); border: 1px solid var(--amber); border-radius: 6px; padding: 0.3rem 0.5rem; font-size: 0.78rem; color: var(--white); font-family: inherit; outline: none; margin-bottom: 0.4rem; }
+    .photo-meta { display: flex; align-items: center; justify-content: space-between; }
+    .photo-date { font-size: 0.68rem; color: var(--dim); }
+    .btn-del { background: none; border: none; color: var(--dim); cursor: pointer; font-size: 0.82rem; padding: 0.1rem 0.3rem; border-radius: 4px; transition: color 0.15s; }
+    .btn-del:hover { color: var(--red); }
+
+    .empty-state { text-align: center; padding: 4rem 2rem; }
+    .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.35; }
+    .empty-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.35rem; }
+    .empty-sub { font-size: 0.82rem; color: var(--muted); }
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 1rem; }
+    .modal-overlay.hidden { display: none; }
+    .modal-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; max-width: 520px; width: 100%; max-height: 90vh; overflow-y: auto; }
+    .modal-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 0.35rem; }
+    .modal-sub { font-size: 0.82rem; color: var(--muted); margin-bottom: 1.5rem; }
+    .form-field { margin-bottom: 1rem; }
+    .form-label { font-size: 0.75rem; font-weight: 600; color: var(--muted); display: block; margin-bottom: 0.35rem; }
+    .form-input { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem 0.9rem; font-size: 0.85rem; color: var(--white); font-family: inherit; outline: none; }
+    .form-input:focus { border-color: var(--amber); }
+    select.form-input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394A3B8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.9rem center; padding-right: 2.5rem; cursor: pointer; }
+    select.form-input option { background: var(--bg3); }
+
+    .dropzone { border: 2px dashed var(--border); border-radius: 12px; padding: 2.5rem 1.5rem; text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s; margin-bottom: 1rem; position: relative; }
+    .dropzone.drag-over { border-color: var(--amber); background: rgba(245,158,11,0.04); }
+    .dropzone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .dz-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+    .dz-text { font-size: 0.85rem; color: var(--muted); margin-bottom: 0.25rem; }
+    .dz-hint { font-size: 0.72rem; color: var(--dim); }
+
+    .file-list { margin-bottom: 1rem; }
+    .file-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.8rem; }
+    .file-item:last-child { border-bottom: none; }
+    .file-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .file-size { color: var(--dim); flex-shrink: 0; }
+    .file-st { flex-shrink: 0; font-size: 0.72rem; font-weight: 700; }
+    .file-st.pending { color: var(--muted); }
+    .file-st.uploading { color: var(--amber); }
+    .file-st.done { color: var(--green); }
+    .file-st.error { color: var(--red); }
+
+    .modal-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; }
+    .btn-cancel { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.55rem 1.2rem; font-size: 0.82rem; font-weight: 600; color: var(--muted); cursor: pointer; font-family: inherit; }
+    .btn-save { background: var(--amber); color: #090E1A; border: none; border-radius: 8px; padding: 0.55rem 1.4rem; font-size: 0.82rem; font-weight: 800; cursor: pointer; font-family: inherit; }
     .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    /* Photo grid */
-    .photo-grid { columns: 4; column-gap: 1rem; }
-    .photo-item { break-inside: avoid; margin-bottom: 1rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; cursor: pointer; transition: border-color 0.2s; }
-    .photo-item:hover { border-color: rgba(245,158,11,0.4); }
-    .photo-item img { width: 100%; display: block; aspect-ratio: 4/3; object-fit: cover; }
-    .photo-meta { padding: 0.6rem 0.75rem; }
-    .photo-caption { font-size: 0.75rem; font-weight: 600; margin-bottom: 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .photo-info { display: flex; justify-content: space-between; align-items: center; }
-    .photo-date { font-size: 0.68rem; color: var(--muted); }
-    .photo-job { font-size: 0.65rem; color: var(--amber); font-weight: 700; }
-    .btn-delete-photo { background: none; border: none; color: var(--dim); cursor: pointer; font-size: 0.75rem; padding: 0; line-height: 1; transition: color 0.15s; }
-    .btn-delete-photo:hover { color: var(--red); }
+    .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.93); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 300; padding: 1.5rem; cursor: pointer; }
+    .lightbox.hidden { display: none; }
+    .lightbox-img { max-width: 100%; max-height: 78vh; object-fit: contain; border-radius: 8px; display: block; cursor: default; }
+    .lightbox-cap { margin-top: 1rem; font-size: 0.9rem; color: var(--muted); text-align: center; max-width: 600px; }
+    .lightbox-close { position: absolute; top: 1.5rem; right: 1.5rem; background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.4rem 0.9rem; font-size: 0.8rem; color: var(--muted); cursor: pointer; font-family: inherit; }
+    .lightbox-close:hover { color: var(--white); }
 
-    /* Lightbox */
-    .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 300; display: none; align-items: center; justify-content: center; padding: 2rem; }
-    .lightbox.open { display: flex; }
-    .lightbox-inner { position: relative; max-width: 900px; width: 100%; }
-    .lightbox img { width: 100%; max-height: 80vh; object-fit: contain; border-radius: 8px; }
-    .lightbox-caption { text-align: center; margin-top: 0.75rem; font-size: 0.85rem; color: var(--muted); }
-    .lightbox-close { position: absolute; top: -2rem; right: 0; background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
-
-    /* Empty state */
-    .empty { text-align: center; padding: 4rem 2rem; color: var(--muted); }
-    .empty h3 { font-size: 1rem; font-weight: 700; color: var(--white); margin-bottom: 0.5rem; }
-    .empty p { font-size: 0.82rem; }
-
-    /* Error / toast */
     .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1.25rem; font-size: 0.85rem; font-weight: 600; color: var(--green); opacity: 0; transform: translateY(10px); transition: opacity 0.2s, transform 0.2s; pointer-events: none; z-index: 400; }
     .toast.show { opacity: 1; transform: translateY(0); }
-    .toast.error { color: var(--red); }
 
-    @media (max-width: 900px) { .photo-grid { columns: 3; } }
-    @media (max-width: 640px) { .photo-grid { columns: 2; } }
-    .nav-right { display: flex; align-items: center; gap: 1rem; }
-    .lang-toggle { display: flex; align-items: center; gap: 0.25rem; }
-    .lang-btn { background: none; border: none; color: var(--dim); font-size: 0.75rem; font-weight: 700; cursor: pointer; font-family: inherit; padding: 0.2rem 0.4rem; border-radius: 4px; transition: color 0.15s; }
-    .lang-btn.active { color: var(--amber); }
-    .lang-btn:hover { color: var(--white); }
-    .lang-sep { color: var(--dim); font-size: 0.75rem; }
+    @media (max-width: 900px) { .photo-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 600px) { .photo-grid { grid-template-columns: repeat(2, 1fr); } .main { padding: 1.5rem 1rem 3rem; } }
   </style>
 </head>
 <body>
 
   <nav class="nav">
-    <a href="/dashboard.html" class="logo">Build<em>Order</em></a>
-    <div class="nav-right"><div class="lang-toggle"><button class="lang-btn" id="lang-btn-en" onclick="setLang('en')">EN</button><span class="lang-sep">|</span><button class="lang-btn" id="lang-btn-es" onclick="setLang('es')">ES</button></div><a href="/dashboard.html" class="btn-back" data-i18n="nav.back">&larr; Dashboard</a></div>
+    <a class="logo" href="/dashboard.html">Build<em>Order</em></a>
+    <div class="nav-right">
+      <a href="/dashboard.html" class="btn-back">&#8592; Dashboard</a>
+    </div>
   </nav>
 
   <main class="main">
-
     <div class="page-header">
-      <div class="page-title">&#128247; <span data-i18n="ph.title">Job Photo Log</span></div>
-      <div class="header-right">
-        <select class="job-filter" id="job-filter" onchange="filterPhotos()">
-          <option value="" data-i18n="ph.all_jobs">All Jobs</option>
-        </select>
-        <span id="photo-count" style="font-size:0.78rem;color:var(--muted);"></span>
+      <div>
+        <div class="page-title">&#128247; Job Photo Log</div>
+        <div class="page-sub">Upload and organize job site photos by project.</div>
       </div>
+      <button class="btn-upload" onclick="openUpload()">&#43; Upload Photos</button>
     </div>
 
-    <!-- Upload Zone -->
-    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
-      <input type="file" id="file-input" accept="image/*" multiple onchange="onFileSelect(event)">
-      <div class="upload-icon">&#128247;</div>
-      <div class="upload-title" data-i18n="ph.drag">Drag &amp; drop photos here or click to browse</div>
-      <div class="upload-sub">JPG, PNG, HEIC &mdash; up to 10 photos at once &mdash; 20 MB per photo</div>
-      <button class="btn-upload" data-i18n="ph.upload" onclick="event.stopPropagation(); document.getElementById('file-input').click()">Upload Photos</button>
+    <div class="filter-bar" id="filter-bar">
+      <button class="filter-chip active" onclick="filterPhotos(null, this)">All Photos</button>
     </div>
 
-    <!-- Progress -->
-    <div class="upload-progress" id="upload-progress">
-      <div class="progress-label" id="progress-label">Uploading...</div>
-      <div class="progress-bar-track"><div class="progress-bar-fill" id="progress-bar"></div></div>
+    <div id="photo-area">
+      <div class="empty-state"><div class="empty-icon">&#128247;</div><div class="empty-title">Loading&hellip;</div></div>
     </div>
-
-    <!-- Photo Grid -->
-    <div class="photo-grid" id="photo-grid"></div>
-    <div class="empty" id="empty-state" style="display:none;">
-      <h3 data-i18n="ph.no.h">No photos yet</h3>
-      <p data-i18n="ph.no.p">Upload your first job site photo to get started.</p>
-    </div>
-
   </main>
 
-  <!-- Caption Modal -->
-  <div class="modal-overlay" id="caption-modal">
-    <div class="modal">
-      <div class="modal-title" data-i18n="ph.modal.title">Add Photo Details</div>
-      <div class="modal-sub">Describe what this photo shows so you can find it later.</div>
-      <img id="modal-preview" src="" alt="Preview" class="modal-preview">
-      <input type="text" id="modal-caption" data-i18n-ph="ph.lbl.caption" placeholder="Caption (optional)">
-      <select id="modal-job">
-        <option value="" data-i18n="ph.lbl.no_job">No job assigned</option>
-      </select>
+  <!-- Upload modal -->
+  <div class="modal-overlay hidden" id="upload-modal">
+    <div class="modal-box">
+      <div class="modal-title">&#128247; Upload Photos</div>
+      <div class="modal-sub">Drag and drop photos or click to browse. Multiple files supported.</div>
+      <div class="dropzone" id="dropzone">
+        <input type="file" id="file-input" multiple accept="image/*" onchange="filesSelected(this.files)">
+        <div class="dz-icon">&#128444;</div>
+        <div class="dz-text">Drop photos here or click to browse</div>
+        <div class="dz-hint">JPG, PNG, HEIC &mdash; up to 20MB each</div>
+      </div>
+      <div class="file-list" id="file-list"></div>
+      <div class="form-field">
+        <label class="form-label">Link to Job (optional)</label>
+        <select class="form-input" id="upload-job">
+          <option value="">— General / No specific job —</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Caption (optional &mdash; applies to all selected photos)</label>
+        <input class="form-input" type="text" id="upload-caption" placeholder="e.g. Framing complete, Day 3 progress…" maxlength="200">
+      </div>
       <div class="modal-actions">
-        <button class="btn-cancel" data-i18n="ph.btn.cancel" onclick="cancelUpload()">Cancel</button>
-        <button class="btn-save" id="modal-save" data-i18n="ph.btn.upload" onclick="confirmUpload()">Upload</button>
+        <button class="btn-cancel" onclick="closeUpload()">Cancel</button>
+        <button class="btn-save" id="upload-btn" onclick="doUpload()" disabled>Upload</button>
       </div>
     </div>
   </div>
 
   <!-- Lightbox -->
-  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
-    <div class="lightbox-inner" onclick="event.stopPropagation()">
-      <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
-      <img id="lightbox-img" src="" alt="">
-      <div class="lightbox-caption" id="lightbox-caption"></div>
-    </div>
+  <div class="lightbox hidden" id="lightbox" onclick="closeLightbox()">
+    <button class="lightbox-close" onclick="closeLightbox()">&#10005; Close</button>
+    <img class="lightbox-img" id="lightbox-img" src="" alt="" onclick="event.stopPropagation()">
+    <div class="lightbox-cap" id="lightbox-cap"></div>
   </div>
 
   <div class="toast" id="toast"></div>
 
   <script>
-    var SUPABASE_URL = 'https://pxqwtesczfhfjwdhxiyl.supabase.co';
-    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDI3MDcsImV4cCI6MjA5NTIxODcwN30.rNmcfsteMK_IdyWkGLrNA5ZOlRVHQYahDrnIWmPGCLM';
+    var SUPABASE_URL     = 'https://pxqwtesczfhfjwdhxiyl.supabase.co';
+    var SUPABASE_ANON_KEY= 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDI3MDcsImV4cCI6MjA5NTIxODcwN30.rNmcfsteMK_IdyWkGLrNA5ZOlRVHQYahDrnIWmPGCLM';
     var db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, storageKey: 'bo-auth' } });
 
-    var currentUser = null;
+    var userId = null;
     var allPhotos = [];
-    var pendingFiles = [];
-    var pendingIndex = 0;
+    var allJobs = [];
+    var selectedFiles = [];
+    var currentFilter = null; // null = all, string = job_id, '__gen' = no job
 
-    // Init
-    db.auth.getSession().then(function(res) {
-      if (!res.data.session) { window.location.href = '/login.html'; return; }
-      currentUser = res.data.session.user;
-      loadJobs();
-      loadPhotos();
-    });
+    function fmtDate(s) { if (!s) return ''; return new Date(s).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
+    function fmtSize(n) { return n < 1048576 ? Math.round(n/1024) + ' KB' : (n/1048576).toFixed(1) + ' MB'; }
+    function randHex() { return Math.random().toString(36).substr(2, 8); }
+    function esc(s) { return (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+    function showToast(msg) { var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(function(){t.classList.remove('show');},2500); }
 
-    function loadJobs() {
-      db.from('jobs').select('id, job_address, homeowner_name').order('created_at', { ascending: false }).then(function(res) {
-        var jobs = res.data || [];
-        var sel1 = document.getElementById('job-filter');
-        var sel2 = document.getElementById('modal-job');
-        jobs.forEach(function(j) {
-          var label = (j.homeowner_name || 'Job') + (j.job_address ? ' — ' + j.job_address : '');
-          var opt1 = new Option(label, j.id);
-          var opt2 = new Option(label, j.id);
-          sel1.appendChild(opt1);
-          sel2.appendChild(opt2);
-        });
+    function jobLabel(jobId) {
+      if (!jobId) return 'General';
+      var j = allJobs.find(function(x){return x.id===jobId;});
+      return j ? (j.job_address||'Job')+(j.job_city?', '+j.job_city:'') : 'Job';
+    }
+
+    // ── Filter ────────────────────────────────────────────────────────────
+    function filterPhotos(f, btn) {
+      currentFilter = f;
+      document.querySelectorAll('.filter-chip').forEach(function(c){c.classList.remove('active');});
+      if (btn) btn.classList.add('active');
+      renderPhotos();
+    }
+
+    // ── Render ────────────────────────────────────────────────────────────
+    function renderPhotos() {
+      var photos = allPhotos.filter(function(p) {
+        if (currentFilter === null) return true;
+        if (currentFilter === '__gen') return !p.job_id;
+        return p.job_id === currentFilter;
       });
-    }
-
-    function loadPhotos() {
-      db.from('job_photos').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false }).then(function(res) {
-        allPhotos = res.data || [];
-        renderPhotos(allPhotos);
-      });
-    }
-
-    function filterPhotos() {
-      var jobId = document.getElementById('job-filter').value;
-      var filtered = jobId ? allPhotos.filter(function(p) { return p.job_id === jobId; }) : allPhotos;
-      renderPhotos(filtered);
-    }
-
-    function renderPhotos(photos) {
-      var grid = document.getElementById('photo-grid');
-      var empty = document.getElementById('empty-state');
-      document.getElementById('photo-count').textContent = photos.length + ' photo' + (photos.length !== 1 ? 's' : '');
-      if (photos.length === 0) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
-      empty.style.display = 'none';
-      grid.innerHTML = photos.map(function(p) {
-        var date = p.created_at ? new Date(p.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
-        return '<div class="photo-item" onclick="openLightbox(\'' + p.public_url + '\', \'' + escHtml(p.caption || '') + '\')">' +
-          '<img src="' + p.public_url + '" alt="' + escHtml(p.caption || '') + '" loading="lazy">' +
-          '<div class="photo-meta">' +
-            '<div class="photo-caption">' + escHtml(p.caption || 'No caption') + '</div>' +
-            '<div class="photo-info">' +
-              '<span class="photo-date">' + date + '</span>' +
-              '<button class="btn-delete-photo" onclick="event.stopPropagation(); deletePhoto(\'' + p.id + '\', \'' + p.storage_path + '\')" title="Delete">&#128465;</button>' +
+      var area = document.getElementById('photo-area');
+      if (!photos.length) {
+        area.innerHTML = '<div class="empty-state"><div class="empty-icon">&#128247;</div><div class="empty-title">No photos here yet</div><div class="empty-sub">Click &ldquo;&#43; Upload Photos&rdquo; to add your first job site photos.</div></div>';
+        return;
+      }
+      area.innerHTML = '<div class="photo-grid">' + photos.map(function(p) {
+        var cap = p.caption || '';
+        return '<div class="photo-card" id="card-'+p.id+'">' +
+          '<img class="photo-thumb" src="'+p.public_url+'" loading="lazy" onclick="openLightbox(\''+esc(p.public_url)+'\',\''+esc(cap)+'\')">' +
+          '<div class="photo-info">' +
+            '<div class="photo-job">'+jobLabel(p.job_id)+'</div>' +
+            '<div class="photo-caption'+(cap?'':' empty')+'" id="cap-'+p.id+'" onclick="editCaption(\''+p.id+'\')">'+(cap||'Add caption&hellip;')+'</div>' +
+            '<div class="photo-meta">' +
+              '<div class="photo-date">'+fmtDate(p.created_at)+'</div>' +
+              '<button class="btn-del" onclick="deletePhoto(\''+p.id+'\',\''+esc(p.storage_path)+'\')" title="Delete">&#128465;</button>' +
             '</div>' +
           '</div>' +
-          '</div>';
+        '</div>';
+      }).join('') + '</div>';
+    }
+
+    // ── Lightbox ──────────────────────────────────────────────────────────
+    function openLightbox(url, cap) {
+      document.getElementById('lightbox-img').src = url;
+      document.getElementById('lightbox-cap').textContent = cap || '';
+      document.getElementById('lightbox').classList.remove('hidden');
+    }
+    function closeLightbox() { document.getElementById('lightbox').classList.add('hidden'); }
+
+    // ── Caption edit ──────────────────────────────────────────────────────
+    function editCaption(id) {
+      var el = document.getElementById('cap-'+id);
+      if (!el || el.querySelector('input')) return;
+      var cur = el.classList.contains('empty') ? '' : el.textContent;
+      el.innerHTML = '<input class="caption-input" id="ci-'+id+'" type="text" value="'+esc(cur)+'" placeholder="Add caption…" maxlength="200">';
+      var inp = document.getElementById('ci-'+id);
+      inp.focus(); inp.select();
+      function save() {
+        var val = inp.value.trim();
+        db.from('job_photos').update({caption: val||null}).eq('id',id);
+        var p = allPhotos.find(function(x){return x.id===id;});
+        if (p) p.caption = val;
+        el.classList.toggle('empty', !val);
+        el.innerHTML = val || 'Add caption&hellip;';
+        el.onclick = function(){editCaption(id);};
+      }
+      inp.addEventListener('blur', save);
+      inp.addEventListener('keydown', function(e){
+        if (e.key==='Enter'){e.preventDefault();inp.blur();}
+        if (e.key==='Escape'){inp.value=cur;inp.blur();}
+      });
+    }
+
+    // ── Delete ────────────────────────────────────────────────────────────
+    async function deletePhoto(id, path) {
+      if (!confirm('Delete this photo? This cannot be undone.')) return;
+      await db.storage.from('job-photos').remove([path]);
+      await db.from('job_photos').delete().eq('id',id);
+      allPhotos = allPhotos.filter(function(p){return p.id!==id;});
+      renderPhotos();
+      showToast('Photo deleted.');
+    }
+
+    // ── Upload modal ──────────────────────────────────────────────────────
+    function openUpload() {
+      selectedFiles = [];
+      document.getElementById('file-list').innerHTML = '';
+      document.getElementById('file-input').value = '';
+      document.getElementById('upload-caption').value = '';
+      document.getElementById('upload-btn').disabled = true;
+      document.getElementById('upload-btn').textContent = 'Upload';
+      document.getElementById('upload-modal').classList.remove('hidden');
+    }
+    function closeUpload() { document.getElementById('upload-modal').classList.add('hidden'); }
+
+    function filesSelected(files) {
+      selectedFiles = Array.from(files);
+      document.getElementById('upload-btn').disabled = selectedFiles.length === 0;
+      renderFileList(selectedFiles.map(function(){return 'pending';}));
+    }
+
+    function renderFileList(statuses) {
+      var labels = {pending:'Ready',uploading:'Uploading…',done:'✓ Done',error:'✗ Failed'};
+      document.getElementById('file-list').innerHTML = selectedFiles.map(function(f,i){
+        var st = statuses[i]||'pending';
+        return '<div class="file-item"><div class="file-name">'+f.name+'</div><div class="file-size">'+fmtSize(f.size)+'</div><div class="file-st '+st+'">'+labels[st]+'</div></div>';
       }).join('');
     }
 
-    // Drag and drop
-    function onDragOver(e) { e.preventDefault(); document.getElementById('upload-zone').classList.add('drag-over'); }
-    function onDragLeave(e) { document.getElementById('upload-zone').classList.remove('drag-over'); }
-    function onDrop(e) {
-      e.preventDefault();
-      document.getElementById('upload-zone').classList.remove('drag-over');
-      var files = Array.from(e.dataTransfer.files).filter(function(f) { return f.type.startsWith('image/'); });
-      if (files.length) startUploadFlow(files);
-    }
+    // Drag & drop
+    (function(){
+      var dz = document.getElementById('dropzone');
+      dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('drag-over');});
+      dz.addEventListener('dragleave',function(){dz.classList.remove('drag-over');});
+      dz.addEventListener('drop',function(e){e.preventDefault();dz.classList.remove('drag-over');filesSelected(e.dataTransfer.files);});
+    })();
 
-    function onFileSelect(e) {
-      var files = Array.from(e.target.files);
-      if (files.length) startUploadFlow(files);
-      e.target.value = '';
-    }
+    async function doUpload() {
+      if (!selectedFiles.length) return;
+      var caption = document.getElementById('upload-caption').value.trim() || null;
+      var jobId   = document.getElementById('upload-job').value || null;
+      var btn     = document.getElementById('upload-btn');
+      btn.disabled = true; btn.textContent = 'Uploading…';
 
-    // Upload flow — show caption modal for each photo
-    function startUploadFlow(files) {
-      pendingFiles = files;
-      pendingIndex = 0;
-      showCaptionModal();
-    }
+      var statuses = selectedFiles.map(function(){return 'pending';});
 
-    function showCaptionModal() {
-      if (pendingIndex >= pendingFiles.length) return;
-      var file = pendingFiles[pendingIndex];
-      var reader = new FileReader();
-      reader.onload = function(e) { document.getElementById('modal-preview').src = e.target.result; };
-      reader.readAsDataURL(file);
-      document.getElementById('modal-caption').value = '';
-      document.getElementById('caption-modal').classList.add('open');
-    }
-
-    function cancelUpload() {
-      document.getElementById('caption-modal').classList.remove('open');
-      pendingIndex++;
-      if (pendingIndex < pendingFiles.length) showCaptionModal();
-    }
-
-    function confirmUpload() {
-      var caption = document.getElementById('modal-caption').value.trim();
-      var jobId   = document.getElementById('modal-job').value || null;
-      document.getElementById('caption-modal').classList.remove('open');
-      uploadFile(pendingFiles[pendingIndex], caption, jobId, function() {
-        pendingIndex++;
-        if (pendingIndex < pendingFiles.length) {
-          showCaptionModal();
+      var uploaded = [];
+      for (var i = 0; i < selectedFiles.length; i++) {
+        var file = selectedFiles[i];
+        statuses[i] = 'uploading';
+        renderFileList(statuses);
+        try {
+          var ext  = file.name.split('.').pop().toLowerCase() || 'jpg';
+          var path = userId+'/'+(jobId||'general')+'/'+Date.now()+'-'+randHex()+'.'+ext;
+          var upRes = await db.storage.from('job-photos').upload(path, file, {cacheControl:'3600',upsert:false});
+          if (upRes.error) throw upRes.error;
+          var urlData = db.storage.from('job-photos').getPublicUrl(path);
+          var insRes = await db.from('job_photos').insert({
+            user_id:userId, job_id:jobId||null,
+            storage_path:path, public_url:urlData.data.publicUrl, caption:caption
+          }).select().single();
+          if (insRes.error) throw insRes.error;
+          statuses[i] = 'done';
+          uploaded.push(insRes.data);
+        } catch(e) {
+          console.error(e);
+          statuses[i] = 'error';
         }
+        renderFileList(statuses);
+      }
+
+      allPhotos = uploaded.concat(allPhotos);
+      renderPhotos();
+      btn.disabled = false; btn.textContent = 'Upload';
+      var n = statuses.filter(function(s){return s==='done';}).length;
+      if (n > 0) { showToast(n+' photo'+(n!==1?'s':'')+' uploaded.'); setTimeout(closeUpload, 1000); }
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────────
+    async function init() {
+      var { data: { session } } = await db.auth.getSession();
+      if (!session) { window.location.href = '/login.html'; return; }
+      userId = session.user.id;
+
+      var [pRes, jRes] = await Promise.all([
+        db.from('job_photos').select('*').order('created_at', {ascending:false}),
+        db.from('jobs').select('id,job_address,job_city').order('created_at', {ascending:false})
+      ]);
+
+      allPhotos = pRes.data || [];
+      allJobs   = jRes.data  || [];
+
+      // Build filter bar
+      var usedJobIds = [...new Set(allPhotos.filter(function(p){return p.job_id;}).map(function(p){return p.job_id;}))];
+      var jobsWithPhotos = allJobs.filter(function(j){return usedJobIds.includes(j.id);});
+      var hasGeneral = allPhotos.some(function(p){return !p.job_id;});
+
+      var chips = '<button class="filter-chip active" onclick="filterPhotos(null,this)">All Photos ('+allPhotos.length+')</button>';
+      jobsWithPhotos.forEach(function(j){
+        var cnt = allPhotos.filter(function(p){return p.job_id===j.id;}).length;
+        var lbl = (j.job_address||'Job')+(j.job_city?', '+j.job_city:'');
+        chips += '<button class="filter-chip" onclick="filterPhotos(\''+j.id+'\',this)" title="'+lbl+'">'+lbl+' ('+cnt+')</button>';
       });
-    }
+      if (hasGeneral) {
+        var gc = allPhotos.filter(function(p){return !p.job_id;}).length;
+        chips += '<button class="filter-chip" onclick="filterPhotos(\'__gen\',this)">General ('+gc+')</button>';
+      }
+      document.getElementById('filter-bar').innerHTML = chips;
 
-    function uploadFile(file, caption, jobId, done) {
-      var ext = file.name.split('.').pop().toLowerCase() || 'jpg';
-      var path = currentUser.id + '/' + Date.now() + '-' + Math.random().toString(36).slice(2) + '.' + ext;
-
-      var progress = document.getElementById('upload-progress');
-      var bar = document.getElementById('progress-bar');
-      var label = document.getElementById('progress-label');
-      progress.style.display = 'block';
-      label.textContent = 'Uploading ' + (file.name.length > 30 ? file.name.substring(0,30) + '...' : file.name);
-      bar.style.width = '30%';
-
-      db.storage.from('job-bucket').upload(path, file, { contentType: file.type, upsert: false }).then(function(uploadRes) {
-        if (uploadRes.error) {
-          progress.style.display = 'none';
-          showToast('Upload failed: ' + uploadRes.error.message, true);
-          if (done) done();
-          return;
-        }
-        bar.style.width = '70%';
-
-        var pubUrl = db.storage.from('job-bucket').getPublicUrl(path).data.publicUrl;
-
-        db.from('job_photos').insert({
-          user_id:      currentUser.id,
-          job_id:       jobId,
-          storage_path: path,
-          public_url:   pubUrl,
-          caption:      caption || null
-        }).select().then(function(insertRes) {
-          bar.style.width = '100%';
-          setTimeout(function() { progress.style.display = 'none'; bar.style.width = '0%'; }, 500);
-
-          if (insertRes.error) {
-            showToast('Saved to storage but DB error: ' + insertRes.error.message, true);
-          } else {
-            showToast('Photo uploaded!');
-            loadPhotos();
-          }
-          if (done) done();
-        });
+      // Populate job dropdown
+      var sel = document.getElementById('upload-job');
+      allJobs.forEach(function(j){
+        var o = document.createElement('option');
+        o.value = j.id;
+        o.textContent = (j.job_address||'Job')+(j.job_city?', '+j.job_city:'');
+        sel.appendChild(o);
       });
+
+      renderPhotos();
     }
 
-    function deletePhoto(id, storagePath) {
-      if (!confirm('Delete this photo? This cannot be undone.')) return;
-      db.storage.from('job-bucket').remove([storagePath]).then(function() {
-        db.from('job_photos').delete().eq('id', id).then(function() {
-          allPhotos = allPhotos.filter(function(p) { return p.id !== id; });
-          filterPhotos();
-          showToast('Photo deleted.');
-        });
-      });
-    }
-
-    function openLightbox(url, caption) {
-      document.getElementById('lightbox-img').src = url;
-      document.getElementById('lightbox-caption').textContent = caption;
-      document.getElementById('lightbox').classList.add('open');
-    }
-    function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
-
-    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeLightbox(); document.getElementById('caption-modal').classList.remove('open'); } });
-
-    function showToast(msg, isErr) {
-      var t = document.getElementById('toast');
-      t.textContent = msg;
-      t.className = 'toast' + (isErr ? ' error' : '');
-      t.classList.add('show');
-      setTimeout(function() { t.classList.remove('show'); }, 3000);
-    }
-
-    function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    init();
   </script>
 </body>
 </html>

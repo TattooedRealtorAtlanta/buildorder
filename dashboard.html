@@ -397,6 +397,13 @@
 
       renderDocs();
 
+      // Photo count
+      try {
+        var phRes = await db.from('job_photos').select('id', {count:'exact',head:true});
+        var phCount = phRes.count || 0;
+        document.getElementById('tc-photos').textContent = phCount + ' photo' + (phCount !== 1 ? 's' : '');
+      } catch(e) { document.getElementById('tc-photos').textContent = '0 photos'; }
+
       // Share links
       var slR = await db.from('share_links')
         .select('id, token, document_type, client_name, client_email, signed_at, created_at, expires_at')
