@@ -129,6 +129,25 @@
     .nav-link { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.8rem; font-size: 0.75rem; color: var(--dim); cursor: pointer; font-family: inherit; text-decoration: none; transition: color 0.2s, border-color 0.2s; }
     .nav-link:hover { color: var(--white); border-color: var(--amber); }
 
+    /* Share Links */
+    .share-row {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+      padding: 0.85rem 1.25rem; margin-bottom: 0.5rem;
+      display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap;
+    }
+    .share-row-main { flex: 1; min-width: 0; }
+    .share-row-title { font-weight: 700; font-size: 0.84rem; margin-bottom: 0.1rem; }
+    .share-row-date { font-size: 0.72rem; color: var(--muted); }
+    .btn-copy-link {
+      background: none; border: 1px solid var(--border); border-radius: 6px;
+      padding: 0.3rem 0.75rem; font-size: 0.72rem; font-weight: 700; color: var(--dim);
+      cursor: pointer; font-family: inherit; transition: color 0.15s, border-color 0.15s;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .btn-copy-link:hover { color: var(--amber); border-color: var(--amber); }
+    .status-pending  { background: rgba(148,163,184,0.12); color: var(--muted); }
+    .status-expired  { background: rgba(239,68,68,0.1); color: var(--red); }
+
     @media (max-width: 750px) {
       .stats { grid-template-columns: repeat(2, 1fr); }
       .tools-grid { grid-template-columns: repeat(2, 1fr); }
@@ -242,6 +261,16 @@
     </div>
     <div class="doc-list" id="doc-list">
       <div class="empty-state"><p>Loading&hellip;</p></div>
+    </div>
+
+    <!-- Share Links -->
+    <div style="margin-top:2.5rem;">
+      <div class="recent-header">
+        <div class="section-label" style="margin-bottom:0;">&#128279; Shared Documents</div>
+      </div>
+      <div id="share-list">
+        <div class="empty-state"><p>Loading&hellip;</p></div>
+      </div>
     </div>
 
   </main>
@@ -367,6 +396,62 @@
         .sort(function(a, b) { return new Date(b.created_at) - new Date(a.created_at); });
 
       renderDocs();
+
+      // Share links
+      var slR = await db.from('share_links')
+        .select('id, token, document_type, client_name, client_email, signed_at, created_at, expires_at')
+        .order('created_at', { ascending: false })
+        .limit(25);
+      renderShareLinks(slR.data || []);
+    }
+
+    var SHARE_TYPE_LABELS = {
+      'contract':'Contract','estimate':'Estimate','invoice':'Invoice',
+      'change-order':'Change Order','subcontractor':'Subcontractor',
+      'lien-waiver':'Lien Waiver','takeoff':'Takeoff','document':'Document'
+    };
+    var SHARE_TYPE_PILL = {
+      'contract':'job','estimate':'est','invoice':'inv','change-order':'co',
+      'subcontractor':'sub','lien-waiver':'lien','takeoff':'tkof','document':'est'
+    };
+
+    function copyShareLink(token, btnId) {
+      var url = 'https://buildorder.ai/sign.html?token=' + token;
+      navigator.clipboard.writeText(url).then(function() {
+        var btn = document.getElementById(btnId);
+        if (btn) { btn.textContent = 'Copied!'; setTimeout(function() { btn.textContent = 'Copy Link'; }, 2000); }
+      });
+    }
+
+    function renderShareLinks(links) {
+      var el = document.getElementById('share-list');
+      if (!links.length) {
+        el.innerHTML = '<div class="empty-state"><h3>No shared documents yet</h3><p>Use the &#128279; Share button on any generated document to send a link to your client.</p></div>';
+        return;
+      }
+      var now = new Date();
+      el.innerHTML = links.map(function(l, i) {
+        var isSigned  = !!l.signed_at;
+        var isExpired = !isSigned && l.expires_at && new Date(l.expires_at) < now;
+        var statusClass = isSigned ? 'status-signed' : (isExpired ? 'status-expired' : 'status-pending');
+        var statusLabel = isSigned ? '&#10003; Signed'  : (isExpired ? 'Expired' : 'Pending');
+        var typeLabel   = SHARE_TYPE_LABELS[l.document_type] || 'Document';
+        var pillClass   = SHARE_TYPE_PILL[l.document_type]   || 'est';
+        var clientInfo  = isSigned
+          ? (l.client_name || l.client_email || 'Client signed')
+          : 'Awaiting signature';
+        var dateInfo = 'Shared ' + fmtDate(l.created_at) + (isExpired ? ' &middot; Expired' : ' &middot; Expires ' + fmtDate(l.expires_at));
+        var btnId = 'cpbtn-' + i;
+        return '<div class="share-row">' +
+          '<span class="type-pill pill-' + pillClass + '">' + typeLabel + '</span>' +
+          '<div class="share-row-main">' +
+            '<div class="share-row-title">' + clientInfo + '</div>' +
+            '<div class="share-row-date">' + dateInfo + '</div>' +
+          '</div>' +
+          '<span class="status-badge ' + statusClass + '">' + statusLabel + '</span>' +
+          (!isExpired ? '<button class="btn-copy-link" id="' + btnId + '" onclick="copyShareLink(\'' + l.token + '\',\'' + btnId + '\')">Copy Link</button>' : '') +
+        '</div>';
+      }).join('');
     }
 
     async function signOut() {
