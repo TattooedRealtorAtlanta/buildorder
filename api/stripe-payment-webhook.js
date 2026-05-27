@@ -36,6 +36,7 @@ module.exports = async function handler(req, res) {
 
     if (shareToken) {
       const paidAt = new Date().toISOString();
+      const amountPaid = (session.amount_total || 0) / 100;
 
       // Fetch link to get the invoice reference_id before updating
       const { data: link } = await db
@@ -54,15 +55,43 @@ module.exports = async function handler(req, res) {
         console.error('Failed to mark share link as paid:', error.message);
       }
 
-      // Also mark the invoice record as paid so the invoice page reflects it
+      // Update the invoice with partial or full payment
       if (link && link.reference_id) {
-        const { error: invErr } = await db
+        // Fetch current invoice to get total and existing deposit_paid
+        const { data: invoice } = await db
           .from('invoices')
-          .update({ status: 'paid' })
-          .eq('id', link.reference_id);
+          .select('total, deposit_paid')
+          .eq('id', link.reference_id)
+          .single();
 
-        if (invErr) {
-          console.error('Failed to mark invoice as paid:', invErr.message);
+        if (invoice) {
+          const invoiceTotal = Number(invoice.total || 0);
+          const existingDeposit = Number(invoice.deposit_paid || 0);
+          const newDepositPaid = Math.round((existingDeposit + amountPaid) * 100) / 100;
+          const newBalanceDue = Math.round((invoiceTotal - newDepositPaid) * 100) / 100;
+
+          const invoiceUpdate = newBalanceDue <= 0.005
+            ? { status: 'paid', deposit_paid: invoiceTotal, balance_due: 0 }
+            : { status: 'partial', deposit_paid: newDepositPaid, balance_due: newBalanceDue };
+
+          const { error: invErr } = await db
+            .from('invoices')
+            .update(invoiceUpdate)
+            .eq('id', link.reference_id);
+
+          if (invErr) {
+            console.error('Failed to update invoice payment:', invErr.message);
+          }
+        } else {
+          // Fallback: just mark paid if we can't fetch the invoice
+          const { error: invErr } = await db
+            .from('invoices')
+            .update({ status: 'paid' })
+            .eq('id', link.reference_id);
+
+          if (invErr) {
+            console.error('Failed to mark invoice as paid (fallback):', invErr.message);
+          }
         }
       }
     }

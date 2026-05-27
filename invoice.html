@@ -45,6 +45,7 @@
     .status-draft    { background: rgba(148,163,184,0.12); color: var(--muted); }
     .status-sent     { background: rgba(245,158,11,0.12); color: var(--amber); }
     .status-paid     { background: rgba(52,211,153,0.12); color: var(--green); }
+    .status-partial  { background: rgba(99,102,241,0.12); color: #A5B4FC; }
     .status-overdue  { background: rgba(239,68,68,0.12); color: var(--red); }
     .overdue-banner  { display:flex; align-items:center; gap:0.75rem; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:0.85rem 1.25rem; margin-bottom:1.5rem; font-size:0.85rem; color:var(--red); line-height:1.5; }
     .overdue-banner strong { font-weight:800; }
@@ -178,12 +179,12 @@
       var inv = currentInvoice;
       var now = Date.now();
       var dueDate = new Date(new Date(inv.created_at).getTime() + (inv.due_days || 30) * 86400 * 1000);
-      var isOverdue = inv.status !== 'paid' && dueDate.getTime() < now;
+      var isOverdue = inv.status !== 'paid' && inv.status !== 'partial' && dueDate.getTime() < now;
       var daysOverdue = isOverdue ? Math.floor((now - dueDate.getTime()) / 86400000) : 0;
 
-      var statusClass = { draft: 'status-draft', sent: 'status-sent', paid: 'status-paid' }[inv.status] || 'status-draft';
+      var statusClass = { draft: 'status-draft', sent: 'status-sent', paid: 'status-paid', partial: 'status-partial' }[inv.status] || 'status-draft';
       var location = [inv.job_city, inv.job_state].filter(Boolean).join(', ') || 'No location';
-      var balanceLabel = inv.status === 'paid' ? 'PAID' : fmt(inv.balance_due);
+      var balanceLabel = inv.status === 'paid' ? 'PAID' : inv.status === 'partial' ? 'PARTIAL — ' + fmt(inv.balance_due) + ' due' : fmt(inv.balance_due);
       var balanceColor = isOverdue ? 'color:var(--red);' : '';
 
       var paidBtn = inv.status !== 'paid'
@@ -383,16 +384,49 @@
 
     function openShare() {
       if (!currentInvoice || !currentInvoice.content) return;
+      shareUrl = null; // reset so payment type changes get a fresh link
+      var bal = Number(currentInvoice.balance_due || currentInvoice.total || 0);
+      var sel = document.getElementById('share-payment-type');
+      sel.innerHTML =
+        '<option value="full">Full balance &mdash; ' + fmt(bal) + '</option>' +
+        '<option value="half">50% deposit &mdash; ' + fmt(bal * 0.5) + '</option>' +
+        '<option value="third">33% deposit &mdash; ' + fmt(bal * 0.33) + '</option>' +
+        '<option value="none">Sign only (no payment)</option>' +
+        '<option value="custom">Custom amount&hellip;</option>';
+      document.getElementById('share-custom-wrap').style.display = 'none';
+      document.getElementById('share-loading').style.display = 'none';
+      document.getElementById('share-url-row').style.display = 'none';
+      document.getElementById('share-gen-btn').style.display = '';
       document.getElementById('share-modal').classList.remove('hidden');
-      if (shareUrl) {
-        document.getElementById('share-url-input').value = shareUrl;
-        document.getElementById('share-loading').style.display = 'none';
-        document.getElementById('share-url-row').style.display = 'flex';
-        return;
+    }
+
+    function onSharePaymentTypeChange() {
+      var v = document.getElementById('share-payment-type').value;
+      document.getElementById('share-custom-wrap').style.display = v === 'custom' ? '' : 'none';
+      shareUrl = null;
+      document.getElementById('share-loading').style.display = 'none';
+      document.getElementById('share-url-row').style.display = 'none';
+      document.getElementById('share-gen-btn').style.display = '';
+    }
+
+    function generateShareLink() {
+      var bal = Number(currentInvoice.balance_due || currentInvoice.total || 0);
+      var type = document.getElementById('share-payment-type').value;
+      var payAmt = null;
+      if (type === 'full')   payAmt = bal;
+      else if (type === 'half')  payAmt = Math.round(bal * 0.5 * 100) / 100;
+      else if (type === 'third') payAmt = Math.round(bal * 0.33 * 100) / 100;
+      else if (type === 'custom') {
+        payAmt = parseFloat(document.getElementById('share-custom-amount').value);
+        if (!payAmt || payAmt <= 0) { alert('Enter a valid custom amount.'); return; }
       }
+      // type === 'none' → payAmt stays null
+
+      document.getElementById('share-gen-btn').style.display = 'none';
       document.getElementById('share-loading').textContent = 'Generating link…';
       document.getElementById('share-loading').style.display = '';
       document.getElementById('share-url-row').style.display = 'none';
+
       db.auth.getSession().then(function(r) {
         var token = r.data && r.data.session ? r.data.session.access_token : '';
         fetch('/api/share', {
@@ -402,7 +436,7 @@
             document_content: currentInvoice.content,
             document_type: 'invoice',
             reference_id: invoiceId,
-            payment_amount: currentInvoice.balance_due || currentInvoice.total || null
+            payment_amount: payAmt
           })
         }).then(function(res) { return res.json(); }).then(function(d) {
           document.getElementById('share-loading').style.display = 'none';
@@ -413,10 +447,12 @@
           } else {
             document.getElementById('share-loading').textContent = 'Error generating link. Please try again.';
             document.getElementById('share-loading').style.display = '';
+            document.getElementById('share-gen-btn').style.display = '';
           }
         }).catch(function() {
           document.getElementById('share-loading').textContent = 'Network error. Please try again.';
           document.getElementById('share-loading').style.display = '';
+          document.getElementById('share-gen-btn').style.display = '';
         });
       });
     }
@@ -466,8 +502,16 @@
   <div class="modal-overlay hidden" id="share-modal">
     <div class="modal-box">
       <div class="modal-title">&#128279; Share with Client</div>
-      <div class="modal-sub">Send this link to your client — they can view and sign the document without creating an account.</div>
-      <div id="share-loading" style="color:var(--muted);font-size:0.82rem;text-align:center;padding:1rem 0;">Generating link…</div>
+      <div class="modal-sub">Choose how much your client will pay — then generate a secure link they can use to view, sign, and pay.</div>
+      <div class="modal-field">
+        <label class="modal-label">Payment Amount</label>
+        <select class="modal-input" id="share-payment-type" onchange="onSharePaymentTypeChange()"></select>
+      </div>
+      <div id="share-custom-wrap" class="modal-field" style="display:none;">
+        <label class="modal-label">Custom Amount ($)</label>
+        <input class="modal-input" type="number" id="share-custom-amount" placeholder="0.00" min="1" step="0.01">
+      </div>
+      <div id="share-loading" style="color:var(--muted);font-size:0.82rem;text-align:center;padding:1rem 0;display:none;">Generating link…</div>
       <div class="modal-field" id="share-url-row" style="display:none;">
         <label class="modal-label">Client Link (expires in 30 days)</label>
         <div style="display:flex;gap:0.5rem;align-items:center;">
@@ -475,7 +519,10 @@
           <button class="btn-send" id="copy-share-btn" onclick="copyShareLink()" style="white-space:nowrap;">Copy</button>
         </div>
       </div>
-      <div class="modal-actions"><button class="btn-cancel" onclick="closeShare()">Close</button></div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeShare()">Close</button>
+        <button class="btn-send" id="share-gen-btn" onclick="generateShareLink()">Generate Link</button>
+      </div>
     </div>
   </div>
   <div class="modal-overlay hidden" id="upgrade-modal">
