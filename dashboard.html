@@ -118,6 +118,13 @@
     .empty-state p { font-size: 0.82rem; }
     .expiry-alert { display: none; background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3); border-radius: 10px; padding: 0.75rem 1.25rem; margin-bottom: 1rem; font-size: 0.82rem; color: var(--amber); line-height: 1.55; }
     .expiry-alert a { color: var(--amber); font-weight: 700; }
+    .overdue-banner { display:none; background:rgba(239,68,68,0.07); border:1px solid rgba(239,68,68,0.28); border-radius:10px; padding:0.85rem 1.25rem; margin-bottom:1rem; display:flex; align-items:center; gap:0.9rem; }
+    .overdue-banner-icon { font-size:1.25rem; flex-shrink:0; }
+    .overdue-banner-text { flex:1; }
+    .overdue-banner-title { font-size:0.85rem; font-weight:800; color:var(--red); margin-bottom:0.15rem; }
+    .overdue-banner-sub { font-size:0.75rem; color:var(--muted); }
+    .btn-overdue-filter { background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.35); border-radius:7px; padding:0.35rem 0.85rem; font-size:0.75rem; font-weight:700; color:var(--red); cursor:pointer; font-family:inherit; white-space:nowrap; flex-shrink:0; transition:background 0.15s; }
+    .btn-overdue-filter:hover { background:rgba(239,68,68,0.25); }
     .plan-bar { display: flex; align-items: center; justify-content: space-between; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1.25rem; margin-bottom: 1.5rem; gap: 1rem; flex-wrap: wrap; }
     .plan-badge { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em; padding: 0.2rem 0.7rem; border-radius: 100px; }
     .badge-free    { background: rgba(148,163,184,0.12); color: var(--muted); }
@@ -225,6 +232,16 @@
     <!-- Expiry Alert -->
     <div class="expiry-alert" id="expiry-alert"></div>
 
+    <!-- Overdue Invoice Banner -->
+    <div class="overdue-banner" id="overdue-banner" style="display:none;">
+      <div class="overdue-banner-icon">&#9888;&#65039;</div>
+      <div class="overdue-banner-text">
+        <div class="overdue-banner-title" id="overdue-banner-title">Invoices overdue</div>
+        <div class="overdue-banner-sub">Follow up or mark as paid once received.</div>
+      </div>
+      <button class="btn-overdue-filter" onclick="filter('overdue')">View Overdue</button>
+    </div>
+
     <!-- Plan / Usage Bar -->
     <div id="plan-bar" class="plan-bar" style="display:none;">
       <div class="usage-bar-wrap">
@@ -307,6 +324,7 @@
       <div class="section-label" style="margin-bottom:0;" data-i18n="dash.recent">Recent Documents</div>
       <div class="filter-tabs">
         <button class="filter-btn active" onclick="filter('all')" data-i18n="dash.filter.all">All</button>
+        <button class="filter-btn" onclick="filter('overdue')" id="filter-btn-overdue" style="display:none;">&#9888; Overdue</button>
         <button class="filter-btn" onclick="filter('job')" data-i18n="dash.filter.contracts">Contracts</button>
         <button class="filter-btn" onclick="filter('est')" data-i18n="dash.filter.estimates">Estimates</button>
         <button class="filter-btn" onclick="filter('inv')" data-i18n="dash.filter.invoices">Invoices</button>
@@ -350,12 +368,21 @@
       currentFilter = type;
       var btns = document.querySelectorAll('.filter-btn');
       for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
-      btns[['all','job','est','inv','co','sub','lien','tkof'].indexOf(type)].classList.add('active');
+      var btn = document.getElementById(type === 'overdue' ? 'filter-btn-overdue' : null) ||
+                btns[['all','job','est','inv','co','sub','lien','tkof'].indexOf(type)];
+      if (btn) btn.classList.add('active');
       renderDocs();
     }
 
     function renderDocs() {
-      var docs = currentFilter === 'all' ? allDocs : allDocs.filter(function(d) { return d._type === currentFilter; });
+      var docs;
+      if (currentFilter === 'all') {
+        docs = allDocs;
+      } else if (currentFilter === 'overdue') {
+        docs = allDocs.filter(function(d) { return d._overdue; });
+      } else {
+        docs = allDocs.filter(function(d) { return d._type === currentFilter; });
+      }
       // Float overdue invoices to the top
       docs = docs.slice().sort(function(a, b) {
         if (a._overdue && !b._overdue) return -1;
@@ -439,6 +466,11 @@
 
       // Stats
       var totalDocs = jobs.length + ests.length + invs.length + cos.length + subs.length + liens.length + tkofs.length;
+      var nowMs = Date.now();
+      var overdueInvs = invs.filter(function(i) {
+        var dueDateMs = new Date(i.created_at).getTime() + (i.due_days || 30) * 86400 * 1000;
+        return i.status !== 'paid' && dueDateMs < nowMs;
+      });
       var outstandingAmt = invs
         .filter(function(i) { return i.status !== 'paid' && i.balance_due; })
         .reduce(function(s, i) { return s + Number(i.balance_due || 0); }, 0);
@@ -448,6 +480,22 @@
       document.getElementById('stat-outstanding').textContent = outstandingAmt > 0
         ? '$' + Math.round(outstandingAmt).toLocaleString()
         : invs.filter(function(i) { return i.status !== 'paid'; }).length;
+
+      // Overdue banner
+      if (overdueInvs.length > 0) {
+        var overdueTotal = overdueInvs.reduce(function(s, i) { return s + Number(i.balance_due || i.total || 0); }, 0);
+        var banner = document.getElementById('overdue-banner');
+        var overdueFilterBtn = document.getElementById('filter-btn-overdue');
+        if (banner) {
+          banner.style.display = 'flex';
+          var titleEl = document.getElementById('overdue-banner-title');
+          if (titleEl) {
+            titleEl.textContent = overdueInvs.length + ' invoice' + (overdueInvs.length !== 1 ? 's' : '') +
+              ' overdue' + (overdueTotal > 0 ? ' — $' + Math.round(overdueTotal).toLocaleString() + ' outstanding' : '');
+          }
+        }
+        if (overdueFilterBtn) overdueFilterBtn.style.display = '';
+      }
 
       // Tool counts
       document.getElementById('tc-jobs').textContent = jobs.length + ' contract' + (jobs.length !== 1 ? 's' : '');
@@ -461,7 +509,6 @@
       // Build unified doc list
       var jDocs = jobs.map(function(d) { return Object.assign({}, d, { _type:'job', _icon:'&#128196;', _typeLabel:'Contract', _url:'/job.html?id='+d.id, _title:(d.job_address || 'No address') + (d.job_city ? ', ' + d.job_city : ''), _sub: d.homeowner_name || 'No client', _val: d.contract_price ? fmt(d.contract_price) : '' }); });
       var eDocs = ests.map(function(d) { return Object.assign({}, d, { _type:'est', _icon:'&#128203;', _typeLabel:'Estimate', _url:'/estimate.html?id='+d.id, _title: d.homeowner_name || 'No client', _sub: d.work_type || '', _val: '' }); });
-      var nowMs = Date.now();
       var iDocs = invs.map(function(d) {
         var dueDateMs = new Date(d.created_at).getTime() + (d.due_days || 30) * 86400 * 1000;
         var isOverdue = d.status !== 'paid' && dueDateMs < nowMs;
