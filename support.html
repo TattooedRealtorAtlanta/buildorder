@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BuildOrder.ai &mdash; Support</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#F59E0B">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --bg:#090E1A; --bg2:#111827; --bg3:#1A2438; --amber:#F59E0B; --amber2:#FCD34D; --white:#F8FAFC; --muted:#94A3B8; --dim:#475569; --border:rgba(255,255,255,0.07); --green:#34D399; --red:#EF4444; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; }
+    .nav { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+    .logo { font-size: 1.2rem; font-weight: 900; letter-spacing: -0.03em; text-decoration: none; color: var(--white); }
+    .logo em { font-style: normal; color: var(--amber); }
+    .btn-back { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.9rem; font-size: 0.78rem; color: var(--dim); cursor: pointer; font-family: inherit; text-decoration: none; transition: color 0.2s, border-color 0.2s; }
+    .btn-back:hover { color: var(--white); border-color: var(--amber); }
+    .main { max-width: 700px; margin: 0 auto; padding: 2.5rem 2rem 5rem; }
+    h1 { font-size: 1.6rem; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 0.4rem; }
+    .subtitle { font-size: 0.88rem; color: var(--muted); margin-bottom: 2.5rem; line-height: 1.6; }
+
+    /* Contact card */
+    .contact-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 1.75rem 2rem; margin-bottom: 1.5rem; display: flex; align-items: flex-start; gap: 1.25rem; }
+    .contact-icon { font-size: 1.75rem; flex-shrink: 0; }
+    .contact-body h3 { font-size: 0.92rem; font-weight: 800; margin-bottom: 0.3rem; }
+    .contact-body p { font-size: 0.82rem; color: var(--muted); line-height: 1.6; margin-bottom: 0.6rem; }
+    .contact-link { display: inline-block; color: var(--amber); font-size: 0.82rem; font-weight: 700; text-decoration: none; }
+    .contact-link:hover { color: var(--amber2); text-decoration: underline; }
+
+    /* Feedback form */
+    .feedback-section { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 1.75rem 2rem; margin-bottom: 1.5rem; }
+    .section-title { font-size: 0.72rem; font-weight: 700; color: var(--dim); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 1.25rem; }
+    .cats { display: flex; gap: 0.4rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .cat { background: none; border: 1px solid var(--border); border-radius: 100px; padding: 0.3rem 0.8rem; font-size: 0.72rem; font-weight: 700; color: var(--muted); cursor: pointer; font-family: inherit; transition: all 0.15s; }
+    .cat:hover { color: var(--white); }
+    .cat.active { background: rgba(245,158,11,0.12); color: var(--amber); border-color: rgba(245,158,11,0.4); }
+    .form-label { font-size: 0.75rem; font-weight: 600; color: var(--muted); display: block; margin-bottom: 0.4rem; }
+    textarea.fb-msg { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 0.65rem 0.85rem; font-size: 0.85rem; color: var(--white); font-family: inherit; outline: none; resize: none; min-height: 110px; line-height: 1.6; transition: border-color 0.15s; }
+    textarea.fb-msg:focus { border-color: var(--amber); }
+    textarea.fb-msg::placeholder { color: var(--dim); }
+    .btn-send { background: var(--amber); color: #090E1A; border: none; border-radius: 10px; padding: 0.6rem 1.5rem; font-size: 0.85rem; font-weight: 900; cursor: pointer; font-family: inherit; margin-top: 0.85rem; transition: background 0.15s; }
+    .btn-send:hover { background: var(--amber2); }
+    .btn-send:disabled { opacity: 0.5; cursor: not-allowed; }
+    .fb-success { display: none; text-align: center; padding: 1.5rem 0 0.5rem; }
+    .fb-success .ico { font-size: 2.2rem; margin-bottom: 0.5rem; }
+    .fb-success strong { display: block; font-size: 0.95rem; color: var(--white); margin-bottom: 0.3rem; }
+    .fb-success p { font-size: 0.82rem; color: var(--muted); }
+
+    /* FAQ */
+    .faq-section { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 1.5rem; }
+    .faq-item { border-bottom: 1px solid var(--border); }
+    .faq-item:last-child { border-bottom: none; }
+    .faq-q { width: 100%; background: none; border: none; padding: 1.1rem 1.5rem; font-family: inherit; font-size: 0.88rem; font-weight: 700; color: var(--white); cursor: pointer; text-align: left; display: flex; justify-content: space-between; align-items: center; gap: 1rem; transition: background 0.15s; }
+    .faq-q:hover { background: rgba(255,255,255,0.03); }
+    .faq-caret { font-size: 0.7rem; color: var(--dim); transition: transform 0.2s; flex-shrink: 0; }
+    .faq-item.open .faq-caret { transform: rotate(180deg); }
+    .faq-a { display: none; padding: 0 1.5rem 1.1rem; font-size: 0.83rem; color: var(--muted); line-height: 1.7; }
+    .faq-item.open .faq-a { display: block; }
+    .faq-a a { color: var(--amber); text-decoration: none; }
+    .faq-a a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a href="/dashboard.html" class="logo">Build<em>Order</em></a>
+    <div style="display:flex;align-items:center;gap:0.75rem;">
+      <a href="/dashboard.html" class="btn-back">&larr; Dashboard</a>
+    </div>
+  </nav>
+
+  <main class="main">
+    <h1>Support</h1>
+    <p class="subtitle">Get help, report a bug, or send us your ideas. We read every message.</p>
+
+    <!-- Contact -->
+    <div class="contact-card">
+      <div class="contact-icon">&#9993;</div>
+      <div class="contact-body">
+        <h3>Email Support</h3>
+        <p>For billing questions, account issues, or anything that needs a direct reply — email us and we'll get back to you within one business day.</p>
+        <a class="contact-link" href="mailto:support@buildorder.ai">support@buildorder.ai</a>
+      </div>
+    </div>
+
+    <!-- Feedback form -->
+    <div class="feedback-section">
+      <div class="section-title">Send Feedback</div>
+      <div id="fb-form">
+        <div class="cats">
+          <button class="cat active" data-cat="general">&#128172; General</button>
+          <button class="cat" data-cat="bug">&#128027; Bug Report</button>
+          <button class="cat" data-cat="feature">&#10024; Feature Request</button>
+        </div>
+        <label class="form-label" for="fb-msg">What's on your mind?</label>
+        <textarea class="fb-msg" id="fb-msg" placeholder="Tell us what you're experiencing or what you'd love to see&#8230;"></textarea>
+        <button class="btn-send" id="fb-send" onclick="submitFeedback()">Send Feedback &#8594;</button>
+      </div>
+      <div class="fb-success" id="fb-success">
+        <div class="ico">&#10003;</div>
+        <strong>Got it &mdash; thank you!</strong>
+        <p>We read every piece of feedback. If a reply is needed, watch your inbox.</p>
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="faq-section" id="faq">
+      <div class="section-title" style="padding:1.1rem 1.5rem 0;margin-bottom:0.5rem;">Frequently Asked Questions</div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">How do I share an estimate or invoice with my client? <span class="faq-caret">&#9660;</span></button>
+        <div class="faq-a">Open any estimate or invoice, then click <strong>Share</strong>. You'll get a unique link you can send by text or email. Your client can view the document, sign it, and optionally pay — no account required on their end.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">How do I accept card payments from clients? <span class="faq-caret">&#9660;</span></button>
+        <div class="faq-a">Go to <a href="/settings.html">Settings</a> and connect your Stripe account under <strong>Accept Card Payments</strong>. Once connected, any invoice you share will include a Pay Now button for your client. Funds go directly to your Stripe account — BuildOrder never touches your money.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Can I use BuildOrder in Spanish? <span class="faq-caret">&#9660;</span></button>
+        <div class="faq-a">Yes. Use the <strong>EN / ES</strong> toggle in the top-right of the dashboard to switch the app language. Generated documents will also render in the selected language.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">What do the plan limits mean? <span class="faq-caret">&#9660;</span></button>
+        <div class="faq-a">The Free plan includes up to 3 estimates and 3 invoices per month. The Pro plan ($19/mo) removes all document limits and adds client management, payment collection, and priority support. The Business plan ($39/mo) adds team seats and white-label options. You can upgrade anytime from <a href="/settings.html">Settings</a>.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">How does AI document generation work? <span class="faq-caret">&#9660;</span></button>
+        <div class="faq-a">You fill in the job details and BuildOrder uses AI to write a complete, professional estimate or contract tailored to that scope of work. The document uses your business name, license number, and contact info from Settings. You can edit anything before sending.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Can I cancel my subscription? <span class="faq-caret">&#9660;</span></button>
+        <div class="faq-a">Yes, anytime. Go to <a href="/settings.html">Settings</a> and click <strong>Manage Billing</strong>. Your plan stays active through the end of the billing period and then moves to Free automatically. No cancellation fees.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">I found a bug. How do I report it? <span class="faq-caret">&#9660;</span></button>
+        <div class="faq-a">Use the feedback form above, choose <strong>Bug Report</strong>, and describe what happened and what page you were on. You can also email <a href="mailto:support@buildorder.ai">support@buildorder.ai</a> directly for faster handling of critical issues.</div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    var SUPABASE_URL  = 'https://pxqwtesczfhfjwdhxiyl.supabase.co';
+    var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwMDgzMTUsImV4cCI6MjA2MjU4NDMxNX0.gj68MR3GAxv-pKK2lFZdpL5mKPr_TcvkVoVuiCrH9G4';
+    var db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, { auth: { persistSession: true, storageKey: 'bo-auth' } });
+
+    // Category selection
+    document.querySelectorAll('.cat').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.cat').forEach(function(b) { b.classList.remove('active'); });
+        this.classList.add('active');
+      });
+    });
+
+    function toggleFaq(btn) {
+      var item = btn.closest('.faq-item');
+      var isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(function(el) { el.classList.remove('open'); });
+      if (!isOpen) item.classList.add('open');
+    }
+
+    async function submitFeedback() {
+      var msg = (document.getElementById('fb-msg').value || '').trim();
+      if (!msg) { document.getElementById('fb-msg').focus(); return; }
+
+      var activeBtn = document.querySelector('.cat.active');
+      var category  = activeBtn ? activeBtn.getAttribute('data-cat') : 'general';
+
+      var sendBtn = document.getElementById('fb-send');
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Sending…';
+
+      var token = '';
+      try {
+        var s = await db.auth.getSession();
+        if (s.data && s.data.session) token = s.data.session.access_token;
+      } catch(e) {}
+
+      try {
+        var headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = 'Bearer ' + token;
+
+        await fetch('/api/feedback', {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify({ category: category, message: msg, page_url: window.location.pathname })
+        });
+
+        document.getElementById('fb-form').style.display    = 'none';
+        document.getElementById('fb-success').style.display = 'block';
+      } catch(e) {
+        sendBtn.disabled  = false;
+        sendBtn.textContent = 'Send Feedback →';
+        alert('Could not send feedback. Please try again.');
+      }
+    }
+  </script>
+  <script src="/feedback-widget.js"></script>
+</body>
+</html>
