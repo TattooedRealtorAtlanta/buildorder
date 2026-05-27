@@ -42,9 +42,12 @@
     .inv-title { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.3rem; }
     .inv-meta { font-size: 0.82rem; color: var(--muted); }
     .status-badge { display: inline-block; padding: 0.25rem 0.7rem; border-radius: 100px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
-    .status-draft { background: rgba(148,163,184,0.12); color: var(--muted); }
-    .status-sent  { background: rgba(245,158,11,0.12); color: var(--amber); }
-    .status-paid  { background: rgba(52,211,153,0.12); color: var(--green); }
+    .status-draft    { background: rgba(148,163,184,0.12); color: var(--muted); }
+    .status-sent     { background: rgba(245,158,11,0.12); color: var(--amber); }
+    .status-paid     { background: rgba(52,211,153,0.12); color: var(--green); }
+    .status-overdue  { background: rgba(239,68,68,0.12); color: var(--red); }
+    .overdue-banner  { display:flex; align-items:center; gap:0.75rem; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:0.85rem 1.25rem; margin-bottom:1.5rem; font-size:0.85rem; color:var(--red); line-height:1.5; }
+    .overdue-banner strong { font-weight:800; }
 
     .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
     .info-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem 1.5rem; }
@@ -173,9 +176,15 @@
 
     function renderPage() {
       var inv = currentInvoice;
+      var now = Date.now();
+      var dueDate = new Date(new Date(inv.created_at).getTime() + (inv.due_days || 30) * 86400 * 1000);
+      var isOverdue = inv.status !== 'paid' && dueDate.getTime() < now;
+      var daysOverdue = isOverdue ? Math.floor((now - dueDate.getTime()) / 86400000) : 0;
+
       var statusClass = { draft: 'status-draft', sent: 'status-sent', paid: 'status-paid' }[inv.status] || 'status-draft';
       var location = [inv.job_city, inv.job_state].filter(Boolean).join(', ') || 'No location';
       var balanceLabel = inv.status === 'paid' ? 'PAID' : fmt(inv.balance_due);
+      var balanceColor = isOverdue ? 'color:var(--red);' : '';
 
       var paidBtn = inv.status !== 'paid'
         ? '<button class="btn-paid" onclick="markPaid()">' + T('inv.btn.mark_paid') + '</button>'
@@ -192,13 +201,22 @@
           '<button class="btn-generate" onclick="generateInvoice()">' + T('inv.btn.regen') + '</button>'
         : '<button class="btn-generate" onclick="generateInvoice()">' + T('inv.btn.gen') + '</button>';
 
+      var overdueBanner = isOverdue
+        ? '<div class="overdue-banner">&#9888;&#65039; <div><strong>Payment overdue by ' + daysOverdue + ' day' + (daysOverdue !== 1 ? 's' : '') + '</strong> &mdash; Due ' + formatDate(dueDate) + '. Follow up with ' + (inv.homeowner_name || 'your client') + ' or mark as paid if received.</div></div>'
+        : '';
+
       document.getElementById('page-content').innerHTML =
+        overdueBanner +
+
         '<div class="inv-header">' +
           '<div>' +
             '<div class="inv-title">' + (inv.homeowner_name || 'No client') + '</div>' +
             '<div class="inv-meta">' + (inv.work_type || 'Invoice') + ' &middot; ' + location + ' &middot; Created ' + formatDate(inv.created_at) + '</div>' +
           '</div>' +
-          '<span class="status-badge ' + statusClass + '">' + inv.status + '</span>' +
+          '<div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">' +
+            (isOverdue ? '<span class="status-badge status-overdue">&#9888; Overdue</span>' : '') +
+            '<span class="status-badge ' + statusClass + '">' + inv.status + '</span>' +
+          '</div>' +
         '</div>' +
 
         '<div class="info-grid">' +
@@ -209,13 +227,14 @@
             '<div class="info-row"><span class="info-label">' + T('inv.lbl.email2') + '</span><span class="info-value">' + (inv.homeowner_email || '&mdash;') + '</span></div>' +
             '<div class="info-row"><span class="info-label">' + T('inv.lbl.address2') + '</span><span class="info-value">' + (inv.job_address || '&mdash;') + '</span></div>' +
           '</div>' +
-          '<div class="info-card">' +
+          '<div class="info-card" style="' + (isOverdue ? 'border-color:rgba(239,68,68,0.3);' : '') + '">' +
             '<div class="info-card-title">' + T('inv.card.summary') + '</div>' +
             '<div class="info-row"><span class="info-label">' + T('inv.lbl.subtotal') + '</span><span class="info-value">' + fmt(inv.subtotal) + '</span></div>' +
             '<div class="info-row"><span class="info-label">Tax (' + (inv.tax_rate || 0) + '%)</span><span class="info-value">' + fmt(inv.tax_amount) + '</span></div>' +
             '<div class="info-row"><span class="info-label">' + T('inv.lbl.total') + '</span><span class="info-value">' + fmt(inv.total) + '</span></div>' +
             (inv.deposit_paid > 0 ? '<div class="info-row"><span class="info-label">' + T('inv.lbl.paid') + '</span><span class="info-value" style="color:var(--green);">-' + fmt(inv.deposit_paid) + '</span></div>' : '') +
-            '<div class="info-row" style="margin-top:0.5rem;"><span class="info-label" style="font-weight:700;color:var(--white);">' + T('inv.lbl.balance') + '</span><span class="balance-highlight">' + balanceLabel + '</span></div>' +
+            (inv.status !== 'paid' ? '<div class="info-row"><span class="info-label">Due Date</span><span class="info-value" style="' + (isOverdue ? 'color:var(--red);font-weight:700;' : '') + '">' + formatDate(dueDate) + '</span></div>' : '') +
+            '<div class="info-row" style="margin-top:0.5rem;"><span class="info-label" style="font-weight:700;color:var(--white);">' + T('inv.lbl.balance') + '</span><span class="balance-highlight" style="' + balanceColor + '">' + balanceLabel + '</span></div>' +
           '</div>' +
         '</div>' +
 

@@ -111,6 +111,7 @@
     .status-accepted { background: rgba(52,211,153,0.12); color: var(--green); }
     .status-paid     { background: rgba(52,211,153,0.12); color: var(--green); }
     .status-signed   { background: rgba(52,211,153,0.12); color: var(--green); }
+    .status-overdue  { background: rgba(239,68,68,0.12); color: var(--red); }
 
     .empty-state { text-align: center; padding: 3rem 2rem; color: var(--muted); }
     .empty-state h3 { font-size: 0.95rem; font-weight: 700; color: var(--white); margin-bottom: 0.35rem; }
@@ -354,18 +355,27 @@
 
     function renderDocs() {
       var docs = currentFilter === 'all' ? allDocs : allDocs.filter(function(d) { return d._type === currentFilter; });
+      // Float overdue invoices to the top
+      docs = docs.slice().sort(function(a, b) {
+        if (a._overdue && !b._overdue) return -1;
+        if (!a._overdue && b._overdue) return 1;
+        return 0;
+      });
       var list = document.getElementById('doc-list');
       if (docs.length === 0) {
         list.innerHTML = '<div class="empty-state"><h3>' + T('dash.empty') + '</h3><p>' + T('dash.empty.sub') + '</p></div>';
         return;
       }
       list.innerHTML = docs.map(function(d) {
-        return '<a href="' + d._url + '" class="doc-row">' +
+        var statusLabel = d._overdue ? 'Overdue' : (d.status || 'draft');
+        var statusClass = d._overdue ? 'status-overdue' : ('status-' + (d.status || 'draft'));
+        var rowStyle    = d._overdue ? ' style="border-color:rgba(239,68,68,0.25);"' : '';
+        return '<a href="' + d._url + '" class="doc-row"' + rowStyle + '>' +
           '<div class="doc-row-type">' + d._icon + '</div>' +
           '<div class="doc-row-main"><div class="doc-row-title">' + d._title + '</div><div class="doc-row-sub">' + d._sub + '</div></div>' +
           '<div style="flex-shrink:0;"><span class="type-pill pill-' + d._type + '">' + d._typeLabel + '</span></div>' +
-          '<div class="doc-row-meta"><div class="doc-row-val">' + d._val + '</div><div class="doc-row-date">' + fmtDate(d.created_at) + '</div></div>' +
-          '<div style="flex-shrink:0;"><span class="status-badge status-' + (d.status || 'draft') + '">' + (d.status || 'draft') + '</span></div>' +
+          '<div class="doc-row-meta"><div class="doc-row-val" style="' + (d._overdue ? 'color:var(--red);' : '') + '">' + d._val + '</div><div class="doc-row-date">' + fmtDate(d.created_at) + '</div></div>' +
+          '<div style="flex-shrink:0;"><span class="status-badge ' + statusClass + '">' + statusLabel + '</span></div>' +
           '</a>';
       }).join('');
     }
@@ -450,7 +460,20 @@
       // Build unified doc list
       var jDocs = jobs.map(function(d) { return Object.assign({}, d, { _type:'job', _icon:'&#128196;', _typeLabel:'Contract', _url:'/job.html?id='+d.id, _title:(d.job_address || 'No address') + (d.job_city ? ', ' + d.job_city : ''), _sub: d.homeowner_name || 'No client', _val: d.contract_price ? fmt(d.contract_price) : '' }); });
       var eDocs = ests.map(function(d) { return Object.assign({}, d, { _type:'est', _icon:'&#128203;', _typeLabel:'Estimate', _url:'/estimate.html?id='+d.id, _title: d.homeowner_name || 'No client', _sub: d.work_type || '', _val: '' }); });
-      var iDocs = invs.map(function(d) { return Object.assign({}, d, { _type:'inv', _icon:'&#128176;', _typeLabel:'Invoice', _url:'/invoice.html?id='+d.id, _title: d.homeowner_name || 'No client', _sub: d.work_type || '', _val: d.status === 'paid' ? 'PAID' : (d.balance_due ? fmt(d.balance_due) + ' due' : '') }); });
+      var nowMs = Date.now();
+      var iDocs = invs.map(function(d) {
+        var dueDateMs = new Date(d.created_at).getTime() + (d.due_days || 30) * 86400 * 1000;
+        var isOverdue = d.status !== 'paid' && dueDateMs < nowMs;
+        return Object.assign({}, d, {
+          _type:'inv', _icon: isOverdue ? '&#9888;&#65039;' : '&#128176;',
+          _typeLabel:'Invoice', _url:'/invoice.html?id='+d.id,
+          _title: d.homeowner_name || 'No client',
+          _sub: d.work_type || '',
+          _val: d.status === 'paid' ? 'PAID' : (d.balance_due ? fmt(d.balance_due) + ' due' : ''),
+          _overdue: isOverdue,
+          _dueDateMs: dueDateMs
+        });
+      });
       var cDocs = cos.map(function(d) { return Object.assign({}, d, { _type:'co', _icon:'&#128221;', _typeLabel:'Change Order', _url:'/change-order.html?id='+d.id, _title: d.homeowner_name || 'No client', _sub: d.work_type || '', _val: (Number(d.change_amount||0)>=0?'+':'') + fmt(d.change_amount) }); });
       var sDocs = subs.map(function(d) { return Object.assign({}, d, { _type:'sub', _icon:'&#129309;', _typeLabel:'Subcontractor', _url:'/subcontractor.html?id='+d.id, _title: d.sub_company || d.sub_name || 'No sub', _sub: d.work_type || '', _val: d.contract_amount ? fmt(d.contract_amount) : '' }); });
       var lDocs = liens.map(function(d) { return Object.assign({}, d, { _type:'lien', _icon:'&#9875;', _typeLabel:'Lien Waiver', _url:'/lien-waiver.html?id='+d.id, _title: d.customer_name || 'No customer', _sub: (d.job_city || '') + (d.job_state ? ', ' + d.job_state : ''), _val: d.amount ? fmt(d.amount) : '' }); });
@@ -482,6 +505,22 @@
         .gt('payment_amount', 0);
       renderMoney(moneyR.data || []);
 
+      // Overdue invoice alert
+      var overdueInvs = iDocs.filter(function(d) { return d._overdue; });
+      if (overdueInvs.length) {
+        var overdueNames = overdueInvs.map(function(d) { return d._title; }).join(', ');
+        var overdueTotal = overdueInvs.reduce(function(s, d) { return s + Number(d.balance_due || 0); }, 0);
+        var overdueAlert = document.getElementById('expiry-alert');
+        overdueAlert.innerHTML =
+          '&#9888; <strong>' + overdueInvs.length + ' overdue invoice' + (overdueInvs.length > 1 ? 's' : '') +
+          (overdueTotal > 0 ? ' &mdash; ' + fmt(overdueTotal) + ' outstanding' : '') +
+          ':</strong> ' + overdueNames + ' &mdash; follow up or mark as paid.';
+        overdueAlert.style.display = 'block';
+        overdueAlert.style.color = 'var(--red)';
+        overdueAlert.style.borderColor = 'rgba(239,68,68,0.3)';
+        overdueAlert.style.background = 'rgba(239,68,68,0.07)';
+      }
+
       // Expiry alert — estimates expiring within 3 days
       try {
         var estR = await db.from('estimates')
@@ -495,7 +534,8 @@
             var exp = new Date(e.created_at).getTime() + (e.valid_days || 30) * 86400000;
             return exp > now && exp <= now + threeDays;
           });
-          if (expiring.length) {
+          if (expiring.length && !overdueInvs.length) {
+            // Only show expiry alert if no overdue alert already shown
             var names = expiring.map(function(e) { return e.homeowner_name || 'client'; }).join(', ');
             var alert = document.getElementById('expiry-alert');
             alert.innerHTML = '&#9888; <strong>' + expiring.length + ' estimate' + (expiring.length > 1 ? 's' : '') + ' expiring in the next 3 days:</strong> ' + names + ' &mdash; follow up now before they go cold.';
