@@ -17,48 +17,65 @@ module.exports = async function handler(req, res) {
   const { data: { user }, error: authErr } = await db.auth.getUser(jwt);
   if (authErr || !user) return res.status(401).json({ error: 'Unauthorized' });
 
-  // ── GET: return OAuth URL + current connect status ──────────────────────
+  const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+
+  // ── GET: generate Account Link for Connect onboarding ──────────────────
+  // Uses Stripe Account Links (not legacy OAuth) — no STRIPE_CLIENT_ID needed.
+  // Creates a new Express account if the contractor doesn't have one, then
+  // generates a Stripe-hosted onboarding URL. Account ID is saved before
+  // redirect so it's available when the user returns.
   if (req.method === 'GET') {
-    const { data: profile } = await db
+    const { data: profile, error: profileErr } = await db
       .from('contractor_profiles')
-      .select('stripe_account_id')
+      .select('stripe_account_id, email, contractor_name, business_name')
       .eq('id', user.id)
       .single();
 
-    const clientId = process.env.STRIPE_CLIENT_ID;
-    const redirectUri = 'https://buildorder.ai/settings.html';
-    const oauthUrl = `https://connect.stripe.com/express/oauth/authorize?response_type=code&client_id=${clientId}&scope=read_write&redirect_uri=${encodeURIComponent(redirectUri)}&state=${user.id}`;
+    if (profileErr || !profile) return res.status(404).json({ error: 'Profile not found' });
 
-    return res.status(200).json({
-      connected: !!(profile && profile.stripe_account_id),
-      stripe_account_id: profile ? profile.stripe_account_id : null,
-      oauth_url: oauthUrl
-    });
-  }
+    let accountId = profile.stripe_account_id;
 
-  // ── POST: exchange OAuth code for Stripe account ID ─────────────────────
-  if (req.method === 'POST') {
-    const { code } = req.body || {};
-    if (!code) return res.status(400).json({ error: 'Missing code' });
+    // Create a new Express account if they don't have one yet
+    if (!accountId) {
+      try {
+        const account = await stripe.accounts.create({
+          type: 'express',
+          email: profile.email || undefined,
+          capabilities: {
+            card_payments: { requested: true },
+            transfers:     { requested: true }
+          },
+          metadata: { buildorder_user_id: user.id }
+        });
+        accountId = account.id;
 
-    const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+        const { error: saveErr } = await db
+          .from('contractor_profiles')
+          .update({ stripe_account_id: accountId })
+          .eq('id', user.id);
+
+        if (saveErr) {
+          console.error('Failed to save stripe_account_id:', saveErr.message);
+          return res.status(500).json({ error: 'Could not save account ID' });
+        }
+      } catch (createErr) {
+        console.error('Stripe account create failed:', createErr.message);
+        return res.status(500).json({ error: createErr.message });
+      }
+    }
+
+    // Generate a hosted onboarding link
     try {
-      const response = await stripe.oauth.token({
-        grant_type: 'authorization_code',
-        code
+      const accountLink = await stripe.accountLinks.create({
+        account:     accountId,
+        refresh_url: 'https://buildorder.ai/settings.html?connect=refresh',
+        return_url:  'https://buildorder.ai/settings.html?connect=success',
+        type:        'account_onboarding'
       });
-      const stripeAccountId = response.stripe_user_id;
-
-      const { error: updateErr } = await db
-        .from('contractor_profiles')
-        .update({ stripe_account_id: stripeAccountId })
-        .eq('id', user.id);
-
-      if (updateErr) return res.status(500).json({ error: updateErr.message });
-
-      return res.status(200).json({ success: true, stripe_account_id: stripeAccountId });
-    } catch (e) {
-      return res.status(400).json({ error: e.message });
+      return res.status(200).json({ oauth_url: accountLink.url });
+    } catch (linkErr) {
+      console.error('Account link create failed:', linkErr.message);
+      return res.status(500).json({ error: linkErr.message });
     }
   }
 

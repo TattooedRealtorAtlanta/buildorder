@@ -129,26 +129,20 @@
       sessionToken = sessionRes.data.session.access_token;
       userId = sessionRes.data.session.user.id;
 
-      // ── Handle Stripe Connect OAuth redirect ─────────────────────────────
+      // ── Handle Stripe Connect Account Link return ─────────────────────────
+      // Stripe redirects back to settings.html?connect=success or ?connect=refresh
       var urlParams = new URLSearchParams(window.location.search);
-      var stripeCode = urlParams.get('code');
-      if (stripeCode) {
+      var connectParam = urlParams.get('connect');
+      if (connectParam) {
         window.history.replaceState({}, '', '/settings.html');
-        document.getElementById('main-content').innerHTML =
-          '<div style="text-align:center;padding:4rem;color:var(--muted);">Connecting Stripe account…</div>';
-        var connectRes = await fetch('/api/stripe-connect', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionToken },
-          body: JSON.stringify({ code: stripeCode })
-        });
-        var connectData = await connectRes.json();
-        if (connectData.success) {
-          // Will show toast after page renders
+        if (connectParam === 'success') {
+          // Account ID was already saved before redirecting — just show the toast
           window._stripeJustConnected = true;
-        } else {
-          alert('Failed to connect Stripe: ' + (connectData.error || 'Unknown error'));
+        } else if (connectParam === 'refresh') {
+          // Link expired before they completed onboarding — let them try again
+          window._stripeConnectRefresh = true;
         }
-        // Profile reload below will pick up the new stripe_account_id
+        // Profile reload below will pick up the current stripe_account_id
       }
 
       var profileRes = await db.from('contractor_profiles').select('*').eq('id', userId).single();
@@ -169,6 +163,7 @@
 
       renderPage(profile, usageCount, effectivePlan, isFounder);
       if (window._stripeJustConnected) { showToast('Stripe account connected! ✓'); }
+      if (window._stripeConnectRefresh) { showToast('Connection timed out — click Connect Stripe Account to try again.'); }
       await loadRateLibrary();
     }
 
