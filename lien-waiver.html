@@ -125,7 +125,7 @@
       var sc = { draft: 'status-draft', sent: 'status-sent', signed: 'status-signed' }[d.status] || 'status-draft';
       var typeLabel = T(typeKeys[d.waiver_type] || 'tool.lien_waiver');
       var actions = d.content
-        ? '<button class="btn-action" onclick="copyDoc()">' + T('btn.copy') + '</button><button class="btn-action" onclick="dlDoc()">' + T('btn.download') + '</button><button class="btn-action" onclick="dlPdf()">' + T('btn.pdf') + '</button><button class="btn-action" onclick="openEmail()">' + T('btn.email') + '</button><button class="btn-generate" onclick="generate()">' + T('lw.btn.regen') + '</button>'
+        ? '<button class="btn-action" onclick="copyDoc()">' + T('btn.copy') + '</button><button class="btn-action" onclick="dlDoc()">' + T('btn.download') + '</button><button class="btn-action" onclick="dlPdf()">' + T('btn.pdf') + '</button><button class="btn-action" onclick="openEmail()">' + T('btn.email') + '</button><button class="btn-action" onclick="openShare()">&#128279; Share</button><button class="btn-generate" onclick="generate()">' + T('lw.btn.regen') + '</button>'
         : '<button class="btn-generate" onclick="generate()">' + T('lw.btn.gen') + '</button>';
 
       document.getElementById('page-content').innerHTML =
@@ -221,6 +221,55 @@
 
     function showUpgradeModal() { document.getElementById('upgrade-modal').classList.remove('hidden'); }
     function closeUpgradeModal() { document.getElementById('upgrade-modal').classList.add('hidden'); }
+
+    var shareUrl = null;
+
+    function openShare() {
+      if (!current || !current.content) return;
+      document.getElementById('share-modal').classList.remove('hidden');
+      if (shareUrl) {
+        document.getElementById('share-url-input').value = shareUrl;
+        document.getElementById('share-loading').style.display = 'none';
+        document.getElementById('share-url-row').style.display = 'flex';
+        return;
+      }
+      document.getElementById('share-loading').textContent = 'Generating link…';
+      document.getElementById('share-loading').style.display = '';
+      document.getElementById('share-url-row').style.display = 'none';
+      db.auth.getSession().then(function(r) {
+        var token = r.data && r.data.session ? r.data.session.access_token : '';
+        fetch('/api/share', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ document_content: current.content, document_type: 'lien-waiver' })
+        }).then(function(res) { return res.json(); }).then(function(d) {
+          document.getElementById('share-loading').style.display = 'none';
+          if (d.url) {
+            shareUrl = d.url;
+            document.getElementById('share-url-input').value = shareUrl;
+            document.getElementById('share-url-row').style.display = 'flex';
+          } else {
+            document.getElementById('share-loading').textContent = 'Error generating link. Please try again.';
+            document.getElementById('share-loading').style.display = '';
+          }
+        }).catch(function() {
+          document.getElementById('share-loading').textContent = 'Network error. Please try again.';
+          document.getElementById('share-loading').style.display = '';
+        });
+      });
+    }
+
+    function closeShare() { document.getElementById('share-modal').classList.add('hidden'); }
+
+    function copyShareLink() {
+      var v = document.getElementById('share-url-input').value;
+      if (!v) return;
+      navigator.clipboard.writeText(v).then(function() {
+        var btn = document.getElementById('copy-share-btn');
+        btn.textContent = 'Copied!';
+        setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+      });
+    }
   </script>
 
   <div class="modal-overlay hidden" id="email-modal">
@@ -231,6 +280,21 @@
       <div class="modal-field"><label class="modal-label">Recipient Name</label><input class="modal-input" type="text" id="email-name" placeholder="Recipient Name"></div>
       <div class="modal-field"><label class="modal-label">Subject</label><input class="modal-input" type="text" id="email-subject"></div>
       <div class="modal-actions"><button class="btn-cancel" onclick="closeEmail()">Cancel</button><button class="btn-send" id="send-btn" onclick="sendEmail()">Send Email</button></div>
+    </div>
+  </div>
+  <div class="modal-overlay hidden" id="share-modal">
+    <div class="modal-box">
+      <div class="modal-title">&#128279; Share with Client</div>
+      <div class="modal-sub">Send this link to the property owner or GC — they can view and sign without creating an account.</div>
+      <div id="share-loading" style="color:var(--muted);font-size:0.82rem;text-align:center;padding:1rem 0;">Generating link…</div>
+      <div class="modal-field" id="share-url-row" style="display:none;">
+        <label class="modal-label">Client Link (expires in 30 days)</label>
+        <div style="display:flex;gap:0.5rem;align-items:center;">
+          <input class="modal-input" type="text" id="share-url-input" readonly style="flex:1;font-size:0.75rem;">
+          <button class="btn-send" id="copy-share-btn" onclick="copyShareLink()" style="white-space:nowrap;">Copy</button>
+        </div>
+      </div>
+      <div class="modal-actions"><button class="btn-cancel" onclick="closeShare()">Close</button></div>
     </div>
   </div>
   <div class="modal-overlay hidden" id="upgrade-modal">
