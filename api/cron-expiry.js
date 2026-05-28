@@ -372,6 +372,114 @@ module.exports = async (req, res) => {
     }
   }
 
+  // ── Recurring invoice generation ────────────────────────────────────────
+  var todayStr = new Date().toISOString().slice(0, 10);
+
+  var { data: dueRecurring } = await supabase
+    .from('invoices')
+    .select('*')
+    .not('recurrence', 'is', null)
+    .lte('next_recur_date', todayStr);
+
+  if (dueRecurring && dueRecurring.length > 0) {
+    var recurUserIds = [...new Set(dueRecurring.map(function(i) { return i.user_id; }))];
+    var { data: recurProfiles } = await supabase
+      .from('contractor_profiles')
+      .select('id, contractor_name, business_name, email, phone')
+      .in('id', recurUserIds);
+
+    var recurProfileMap = {};
+    (recurProfiles || []).forEach(function(p) { recurProfileMap[p.id] = p; });
+
+    for (var inv of dueRecurring) {
+      try {
+        // Clone invoice as a new draft
+        var newInvoice = {
+          user_id:         inv.user_id,
+          homeowner_name:  inv.homeowner_name,
+          homeowner_email: inv.homeowner_email,
+          homeowner_phone: inv.homeowner_phone,
+          job_address:     inv.job_address,
+          job_city:        inv.job_city,
+          job_state:       inv.job_state,
+          work_type:       inv.work_type,
+          subtotal:        inv.subtotal,
+          tax_rate:        inv.tax_rate,
+          tax_amount:      inv.tax_amount,
+          total:           inv.total,
+          deposit_paid:    0,
+          balance_due:     inv.total,
+          due_days:        inv.due_days,
+          content:         inv.content,
+          status:          'sent',
+          recur_source_id: inv.recur_source_id || inv.id
+        };
+
+        var { data: created, error: createErr } = await supabase
+          .from('invoices')
+          .insert(newInvoice)
+          .select('id, doc_number')
+          .single();
+
+        if (createErr) { console.error('Recurring invoice create failed:', createErr.message); errs.push({ source_id: inv.id, error: createErr.message }); continue; }
+
+        // Calculate next recurrence date on the original
+        function nextDate(current, interval) {
+          var d = new Date(current + 'T00:00:00');
+          if (interval === 'weekly')    d.setDate(d.getDate() + 7);
+          else if (interval === 'biweekly')  d.setDate(d.getDate() + 14);
+          else if (interval === 'monthly')   d.setMonth(d.getMonth() + 1);
+          else if (interval === 'quarterly') d.setMonth(d.getMonth() + 3);
+          return d.toISOString().slice(0, 10);
+        }
+        var newNextDate = nextDate(inv.next_recur_date || todayStr, inv.recurrence);
+
+        await supabase.from('invoices').update({ next_recur_date: newNextDate }).eq('id', inv.id);
+
+        // Email client
+        if (inv.homeowner_email) {
+          var prof = recurProfileMap[inv.user_id];
+          var bizName = (prof && (prof.business_name || prof.contractor_name)) || 'Your contractor';
+          var clientFirst = (inv.homeowner_name || 'there').split(' ')[0];
+          var fmtTotal = '$' + Number(inv.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          var invoiceUrl = 'https://buildorder.ai/invoice.html?id=' + created.id;
+
+          await resend.emails.send({
+            from:     bizName + ' via BuildOrder <noreply@buildorder.ai>',
+            to:       [inv.homeowner_email],
+            reply_to: prof && prof.email ? prof.email : undefined,
+            subject:  'New invoice from ' + bizName + ' — ' + fmtTotal,
+            html: `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"></head>
+<body style="font-family:Inter,Arial,sans-serif;background:#F1F5F9;margin:0;padding:40px 16px;">
+  <div style="max-width:520px;margin:0 auto;">
+    <div style="background:#090E1A;border-radius:14px 14px 0 0;padding:28px 32px;">
+      <div style="font-size:20px;font-weight:900;letter-spacing:-0.03em;color:#F8FAFC;">${bizName}</div>
+    </div>
+    <div style="background:#fff;border-radius:0 0 14px 14px;padding:32px;border:1px solid #e5e7eb;border-top:none;">
+      <h1 style="font-size:19px;font-weight:900;color:#111827;margin:0 0 8px;">New invoice ready, ${clientFirst}.</h1>
+      <p style="font-size:14px;color:#6B7280;line-height:1.7;margin:0 0 24px;">
+        <strong style="color:#111827;">${bizName}</strong> has issued your recurring invoice for
+        <strong style="color:#111827;">${inv.work_type || 'services'}</strong> — <strong style="color:#111827;">${fmtTotal}</strong>.
+      </p>
+      <a href="${invoiceUrl}" style="display:block;text-align:center;background:#F59E0B;color:#090E1A;padding:14px 24px;border-radius:10px;font-size:15px;font-weight:900;text-decoration:none;margin-bottom:24px;">View Invoice &rarr;</a>
+      <p style="font-size:12px;color:#9CA3AF;margin:0;line-height:1.6;">
+        Sent via <a href="https://buildorder.ai" style="color:#F59E0B;text-decoration:none;">BuildOrder.ai</a> on behalf of ${bizName}
+      </p>
+    </div>
+  </div>
+</body></html>`
+          });
+        }
+
+        sent++;
+      } catch (recurErr) {
+        console.error('Recurring invoice failed for', inv.id, recurErr.message);
+        errs.push({ source_id: inv.id, error: recurErr.message });
+      }
+    }
+  }
+
   return res.status(200).json({
     sent,
     checked: expiring.length,

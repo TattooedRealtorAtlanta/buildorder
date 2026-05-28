@@ -249,7 +249,77 @@
               ? '<div class="invoice-body"><pre class="invoice-text">' + escapeHtml(inv.content) + '</pre></div>'
               : '<div class="no-invoice"><h3>' + T('inv.no.h') + '</h3><p>' + T('inv.no.p') + '</p></div>') +
           '</div>' +
+        '</div>' +
+
+        renderRecurringSection(inv);
+    }
+
+    function renderRecurringSection(inv) {
+      var base = '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:1.25rem 1.5rem;margin-top:1.25rem;">';
+      if (inv.recurrence) {
+        var intervalLabels = { weekly:'Weekly', biweekly:'Every 2 Weeks', monthly:'Monthly', quarterly:'Quarterly' };
+        var nextDate = inv.next_recur_date ? new Date(inv.next_recur_date + 'T00:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : '—';
+        return base +
+          '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;">' +
+            '<div>' +
+              '<div style="font-size:0.78rem;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;">&#8635; Recurring Invoice</div>' +
+              '<div style="font-size:0.88rem;color:var(--muted);">' + (intervalLabels[inv.recurrence]||inv.recurrence) + ' &mdash; next invoice <strong style="color:var(--white);">' + nextDate + '</strong></div>' +
+            '</div>' +
+            '<button onclick="cancelRecurring()" style="background:none;border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:0.35rem 0.9rem;font-size:0.75rem;font-weight:700;color:var(--red);cursor:pointer;font-family:inherit;">Cancel Recurring</button>' +
+          '</div>' +
         '</div>';
+      }
+      return base +
+        '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;">' +
+          '<div>' +
+            '<div style="font-size:0.85rem;font-weight:700;margin-bottom:0.2rem;">&#8635; Make This Invoice Recurring</div>' +
+            '<div style="font-size:0.78rem;color:var(--muted);">Auto-generate and send this invoice on a schedule.</div>' +
+          '</div>' +
+          '<div style="display:flex;align-items:center;gap:0.6rem;">' +
+            '<select id="recur-interval" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:0.4rem 0.75rem;font-size:0.82rem;color:var(--white);font-family:inherit;outline:none;">' +
+              '<option value="monthly">Monthly</option>' +
+              '<option value="weekly">Weekly</option>' +
+              '<option value="biweekly">Every 2 Weeks</option>' +
+              '<option value="quarterly">Quarterly</option>' +
+            '</select>' +
+            '<button onclick="enableRecurring()" style="background:var(--amber);color:#090E1A;border:none;border-radius:8px;padding:0.4rem 1rem;font-size:0.82rem;font-weight:800;cursor:pointer;font-family:inherit;">Enable</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }
+
+    function enableRecurring() {
+      var interval = document.getElementById('recur-interval').value;
+      var nextDate = calcNextRecurDate(new Date(), interval);
+      db.auth.getSession().then(function(r) {
+        return db.from('invoices').update({ recurrence: interval, next_recur_date: nextDate }).eq('id', invoiceId);
+      }).then(function(res) {
+        if (res.error) { alert('Error: ' + res.error.message); return; }
+        currentInvoice.recurrence = interval;
+        currentInvoice.next_recur_date = nextDate;
+        renderPage();
+        showToast('&#10003; Recurring invoice enabled — ' + interval);
+      });
+    }
+
+    function cancelRecurring() {
+      if (!confirm('Stop recurring invoices for this client?')) return;
+      db.from('invoices').update({ recurrence: null, next_recur_date: null }).eq('id', invoiceId).then(function(res) {
+        if (res.error) { alert('Error: ' + res.error.message); return; }
+        currentInvoice.recurrence = null;
+        currentInvoice.next_recur_date = null;
+        renderPage();
+        showToast('Recurring invoices cancelled');
+      });
+    }
+
+    function calcNextRecurDate(from, interval) {
+      var d = new Date(from);
+      if (interval === 'weekly')    d.setDate(d.getDate() + 7);
+      else if (interval === 'biweekly')  d.setDate(d.getDate() + 14);
+      else if (interval === 'monthly')   d.setMonth(d.getMonth() + 1);
+      else if (interval === 'quarterly') d.setMonth(d.getMonth() + 3);
+      return d.toISOString().slice(0, 10);
     }
 
     function generateInvoice() {

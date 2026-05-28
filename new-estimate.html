@@ -257,7 +257,11 @@
           </select>
         </div>
         <div class="field full">
-          <label data-i18n="est.lbl.description">Project Description</label>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.35rem;">
+            <label style="margin-bottom:0;" data-i18n="est.lbl.description">Project Description</label>
+            <button class="btn-from-lib" id="photo-btn" onclick="triggerPhotoAnalyze()" style="margin-top:0;font-size:0.75rem;padding:0.3rem 0.75rem;">&#128247; Analyze Photo</button>
+            <input type="file" id="photo-input" accept="image/*" style="display:none" onchange="analyzePhoto(this.files[0])">
+          </div>
           <textarea id="project_description" placeholder="Describe the work in detail. The more specific you are, the better the AI-generated line items will be. Example: Replace 25-year-old architectural shingles on a 2,200 sq ft single-story home. Remove existing two layers of shingles, inspect and replace any rotted decking, install new felt underlayment, install new 30-year architectural shingles, replace all flashing, and install new ridge cap."></textarea>
         </div>
         <div class="field">
@@ -405,6 +409,70 @@
         });
       });
     }
+    // ── Photo Analyzer ────────────────────────────────────────────────
+    function triggerPhotoAnalyze() {
+      document.getElementById('photo-input').value = '';
+      document.getElementById('photo-input').click();
+    }
+
+    function analyzePhoto(file) {
+      if (!file) return;
+      var btn = document.getElementById('photo-btn');
+      btn.textContent = '⏳ Analyzing…';
+      btn.disabled = true;
+
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        // e.g. "data:image/jpeg;base64,/9j/..."
+        var dataUrl = e.target.result;
+        var commaIdx = dataUrl.indexOf(',');
+        var meta = dataUrl.slice(5, commaIdx);           // "image/jpeg;base64"
+        var mediaType = meta.split(';')[0];              // "image/jpeg"
+        var base64 = dataUrl.slice(commaIdx + 1);
+
+        db.auth.getSession().then(function(r) {
+          var token = r.data && r.data.session ? r.data.session.access_token : '';
+          return fetch('/api/analyze-photo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ image_base64: base64, media_type: mediaType })
+          });
+        }).then(function(res) {
+          return res.json();
+        }).then(function(data) {
+          btn.textContent = '📷 Analyze Photo';
+          btn.disabled = false;
+          if (!data.success) { alert(data.error || 'Analysis failed'); return; }
+
+          if (data.work_type) {
+            var sel = document.getElementById('work_type');
+            // Try exact match first, then set as first option value
+            var matched = false;
+            for (var i = 0; i < sel.options.length; i++) {
+              if (sel.options[i].text.toLowerCase().includes(data.work_type.toLowerCase()) ||
+                  data.work_type.toLowerCase().includes(sel.options[i].text.toLowerCase())) {
+                sel.selectedIndex = i;
+                matched = true;
+                break;
+              }
+            }
+            if (!matched && data.work_type) sel.options[0].text = data.work_type;
+          }
+
+          var descEl = document.getElementById('project_description');
+          var combined = data.scope + (data.notes ? '\n\nNotes: ' + data.notes : '');
+          descEl.value = combined.trim();
+          descEl.focus();
+          descEl.dispatchEvent(new Event('input'));
+        }).catch(function(err) {
+          btn.textContent = '📷 Analyze Photo';
+          btn.disabled = false;
+          alert('Photo analysis failed. Please try again.');
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+
     // ── Rate Library picker ────────────────────────────────────────────
     var libraryCache = null;
 
