@@ -508,7 +508,7 @@
 
       // Build unified doc list
       var jDocs = jobs.map(function(d) { return Object.assign({}, d, { _type:'job', _icon:'&#128196;', _typeLabel:'Contract', _url:'/job.html?id='+d.id, _title:(d.job_address || 'No address') + (d.job_city ? ', ' + d.job_city : ''), _sub: d.homeowner_name || 'No client', _val: d.contract_price ? fmt(d.contract_price) : '' }); });
-      var eDocs = ests.map(function(d) { return Object.assign({}, d, { _type:'est', _icon:'&#128203;', _typeLabel:'Estimate', _url:'/estimate.html?id='+d.id, _title: d.homeowner_name || 'No client', _sub: d.work_type || '', _val: '' }); });
+      var eDocs = ests.map(function(d) { return Object.assign({}, d, { _type:'est', _icon:'&#128203;', _typeLabel:'Estimate', _url:'/estimate.html?id='+d.id, _title: d.homeowner_name || 'No client', _sub: (d.doc_number ? d.doc_number + (d.work_type ? ' · ' : '') : '') + (d.work_type || ''), _val: '' }); });
       var iDocs = invs.map(function(d) {
         var dueDateMs = new Date(d.created_at).getTime() + (d.due_days || 30) * 86400 * 1000;
         var isOverdue = d.status !== 'paid' && dueDateMs < nowMs;
@@ -516,13 +516,13 @@
           _type:'inv', _icon: isOverdue ? '&#9888;&#65039;' : '&#128176;',
           _typeLabel:'Invoice', _url:'/invoice.html?id='+d.id,
           _title: d.homeowner_name || 'No client',
-          _sub: d.work_type || '',
+          _sub: (d.doc_number ? d.doc_number + (d.work_type ? ' · ' : '') : '') + (d.work_type || ''),
           _val: d.status === 'paid' ? 'PAID' : (d.balance_due ? fmt(d.balance_due) + ' due' : ''),
           _overdue: isOverdue,
           _dueDateMs: dueDateMs
         });
       });
-      var cDocs = cos.map(function(d) { return Object.assign({}, d, { _type:'co', _icon:'&#128221;', _typeLabel:'Change Order', _url:'/change-order.html?id='+d.id, _title: d.homeowner_name || 'No client', _sub: d.work_type || '', _val: (Number(d.change_amount||0)>=0?'+':'') + fmt(d.change_amount) }); });
+      var cDocs = cos.map(function(d) { return Object.assign({}, d, { _type:'co', _icon:'&#128221;', _typeLabel:'Change Order', _url:'/change-order.html?id='+d.id, _title: d.homeowner_name || 'No client', _sub: (d.doc_number ? d.doc_number + (d.work_type ? ' · ' : '') : '') + (d.work_type || ''), _val: (Number(d.change_amount||0)>=0?'+':'') + fmt(d.change_amount) }); });
       var sDocs = subs.map(function(d) { return Object.assign({}, d, { _type:'sub', _icon:'&#129309;', _typeLabel:'Subcontractor', _url:'/subcontractor.html?id='+d.id, _title: d.sub_company || d.sub_name || 'No sub', _sub: d.work_type || '', _val: d.contract_amount ? fmt(d.contract_amount) : '' }); });
       var lDocs = liens.map(function(d) { return Object.assign({}, d, { _type:'lien', _icon:'&#9875;', _typeLabel:'Lien Waiver', _url:'/lien-waiver.html?id='+d.id, _title: d.customer_name || 'No customer', _sub: (d.job_city || '') + (d.job_state ? ', ' + d.job_state : ''), _val: d.amount ? fmt(d.amount) : '' }); });
       var tDocs = tkofs.map(function(d) { return Object.assign({}, d, { _type:'tkof', _icon:'&#128296;', _typeLabel:'Takeoff', _url:'/takeoff.html?id='+d.id, _title: d.project_name || d.project_type || 'Material Takeoff', _sub: d.job_address || '', _val: '' }); });
