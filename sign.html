@@ -411,7 +411,7 @@
             '<div class="state-sub">Your signature has been recorded. The contractor will be notified.' + (paySection ? ' Ready to pay? See below.' : ' You can close this window.') + '</div>' +
           '</div>' +
           paySection +
-          '<div class="powered-by">Secure document portal powered by <a href="https://buildorder.ai" target="_blank">BuildOrder.ai</a></div>';
+          '<div class="powered-by">Secure document portal powered by <a href="https://buildorder.ai/login.html?ref=' + (docData && docData.user_id ? docData.user_id : '') + '&tab=signup" target="_blank">BuildOrder.ai</a></div>';
       } catch(e) {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Submit Signature';
@@ -510,7 +510,7 @@
         html += buildPaySection(data.payment_amount);
       }
 
-      html += '<div class="powered-by">Secure document portal powered by <a href="https://buildorder.ai" target="_blank">BuildOrder.ai</a></div>';
+      html += '<div class="powered-by">Secure document portal powered by <a href="https://buildorder.ai/login.html?ref=' + (data.user_id || '') + '&tab=signup" target="_blank">BuildOrder.ai</a></div>';
 
       document.getElementById('main').innerHTML = html;
 

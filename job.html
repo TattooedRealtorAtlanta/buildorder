@@ -437,7 +437,10 @@
             <div class="job-title">${job.job_address || 'No address'}, ${job.job_city || ''} ${job.job_state || ''}</div>
             <div class="job-meta">${job.work_type || ''} &middot; Created ${formatDate(job.created_at)}</div>
           </div>
-          <span class="status-badge ${statusClass}">${T('status.' + job.status) || job.status}</span>
+          <div style="display:flex;align-items:center;gap:0.75rem;">
+            <button class="btn-action" style="color:var(--amber);border-color:rgba(245,158,11,0.3);" onclick="openChangeOrder()">&#43; Change Order</button>
+            <span class="status-badge ${statusClass}">${T('status.' + job.status) || job.status}</span>
+          </div>
         </div>
 
         <div class="info-grid">
@@ -573,6 +576,21 @@
 
     function escapeHtml(str) {
       return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function openChangeOrder() {
+      if (!currentJob) return;
+      var j = currentJob;
+      var p = new URLSearchParams();
+      if (j.homeowner_name)    p.set('homeowner_name',          j.homeowner_name);
+      if (j.homeowner_email)   p.set('homeowner_email',         j.homeowner_email);
+      if (j.homeowner_phone)   p.set('homeowner_phone',         j.homeowner_phone);
+      if (j.job_address)       p.set('job_address',             j.job_address);
+      if (j.job_city)          p.set('job_city',                j.job_city);
+      if (j.job_state)         p.set('job_state',               j.job_state);
+      if (j.work_type)         p.set('work_type',               j.work_type);
+      if (j.contract_price)    p.set('original_contract_price', String(j.contract_price));
+      window.location.href = '/new-change-order.html?' + p.toString();
     }
 
     async function setJobStatus(newStatus) {

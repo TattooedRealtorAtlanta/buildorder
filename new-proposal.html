@@ -179,7 +179,16 @@
     var db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, storageKey: 'bo-auth' } });
 
     db.auth.getSession().then(function(r) {
-      if (!r.data.session) { window.location.href = '/login.html'; }
+      if (!r.data.session) { window.location.href = '/login.html'; return; }
+      var p = new URLSearchParams(window.location.search);
+      if (p.get('homeowner_name'))  document.getElementById('homeowner_name').value  = p.get('homeowner_name');
+      if (p.get('homeowner_email')) document.getElementById('homeowner_email').value = p.get('homeowner_email');
+      if (p.get('homeowner_phone')) document.getElementById('homeowner_phone').value = p.get('homeowner_phone');
+      if (p.get('job_address'))     document.getElementById('job_address').value     = p.get('job_address');
+      if (p.get('job_city'))        document.getElementById('job_city').value        = p.get('job_city');
+      if (p.get('job_state'))       document.getElementById('job_state').value       = (p.get('job_state') || '').toUpperCase();
+      if (p.get('work_type'))       document.getElementById('work_type').value       = p.get('work_type');
+      if (p.get('description'))     document.getElementById('description').value     = p.get('description');
     });
 
     function g(id) { return (document.getElementById(id).value || '').trim(); }

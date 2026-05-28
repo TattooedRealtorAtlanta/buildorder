@@ -203,6 +203,15 @@
 
     db.auth.getSession().then(function(res) {
       if (!res.data.session) { window.location.href = '/login.html'; return; }
+      var p = new URLSearchParams(window.location.search);
+      if (p.get('homeowner_name'))          document.getElementById('homeowner_name').value           = p.get('homeowner_name');
+      if (p.get('homeowner_email'))         document.getElementById('homeowner_email').value          = p.get('homeowner_email');
+      if (p.get('job_address'))             document.getElementById('job_address').value              = p.get('job_address');
+      if (p.get('job_city'))                document.getElementById('job_city').value                 = p.get('job_city');
+      if (p.get('job_state'))               document.getElementById('job_state').value                = (p.get('job_state') || '').toUpperCase();
+      if (p.get('work_type'))               document.getElementById('work_type').value                = p.get('work_type');
+      if (p.get('original_contract_price')) document.getElementById('original_contract_price').value = p.get('original_contract_price');
+      recalc();
     });
 
     function recalc() {

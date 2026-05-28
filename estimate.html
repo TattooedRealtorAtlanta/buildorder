@@ -218,6 +218,7 @@
                   '<button class="btn-action" onclick="openShare()">&#9997; eSign</button>' +
                   '<button class="btn-action" onclick="duplicateDoc(\'estimate\')">Duplicate</button>' +
                   '<button class="btn-contract" onclick="convertToContract()">&#8594; Contract</button>' +
+                  '<button class="btn-action" style="color:var(--green);border-color:rgba(52,211,153,0.3);" onclick="convertToProposal()">&#8594; Proposal</button>' +
                   '<button class="btn-action" style="color:var(--amber);border-color:rgba(245,158,11,0.3);" onclick="convertToInvoice()">&#8594; Invoice</button>' +
                   (est.status === 'accepted'
                     ? '<span style="background:rgba(52,211,153,0.12);color:var(--green);border-radius:8px;padding:0.45rem 0.9rem;font-size:0.78rem;font-weight:700;">&#10003; Won</span>'
@@ -462,6 +463,21 @@
       if (est.total)           p.set('contract_price',       String(est.total));
       if (est.notes)           p.set('project_description',  est.notes);
       window.location.href = '/new-job.html?' + p.toString();
+    }
+
+    function convertToProposal() {
+      if (!currentEstimate) return;
+      var est = currentEstimate;
+      var p = new URLSearchParams();
+      if (est.homeowner_name)  p.set('homeowner_name',  est.homeowner_name);
+      if (est.homeowner_email) p.set('homeowner_email', est.homeowner_email);
+      if (est.homeowner_phone) p.set('homeowner_phone', est.homeowner_phone);
+      if (est.job_address)     p.set('job_address',     est.job_address);
+      if (est.job_city)        p.set('job_city',        est.job_city);
+      if (est.job_state)       p.set('job_state',       est.job_state);
+      if (est.work_type)       p.set('work_type',       est.work_type);
+      if (est.notes)           p.set('description',     est.notes);
+      window.location.href = '/new-proposal.html?' + p.toString();
     }
 
     function convertToInvoice() {

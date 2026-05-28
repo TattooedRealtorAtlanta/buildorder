@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Free Contractor Invoice App — Send & Get Paid Fast — BuildOrder.ai</title>
+  <meta name="description" content="Create and send professional contractor invoices in minutes. Collect payments online with Stripe. Free contractor invoice app — no spreadsheets, no chasing checks.">
+  <meta name="keywords" content="contractor invoice app, free contractor invoice, construction invoice software, contractor billing app, send invoice get paid contractor">
+  <meta property="og:title" content="Free Contractor Invoice App — BuildOrder.ai">
+  <meta property="og:description" content="Send professional invoices and collect payments online. AI-powered contractor invoicing with Stripe built in.">
+  <meta property="og:url" content="https://buildorder.ai/contractor-invoice-app">
+  <link rel="canonical" href="https://buildorder.ai/contractor-invoice-app">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --bg:#090E1A; --bg2:#111827; --bg3:#1A2438; --amber:#F59E0B; --white:#F8FAFC; --muted:#94A3B8; --border:rgba(255,255,255,0.07); --green:#34D399; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; }
+    nav { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-size: 1.2rem; font-weight: 900; letter-spacing: -0.03em; text-decoration: none; color: var(--white); }
+    .logo em { font-style: normal; color: var(--amber); }
+    .btn-nav { background: var(--amber); color: #090E1A; font-weight: 700; font-size: 0.82rem; padding: 0.45rem 1.1rem; border-radius: 8px; text-decoration: none; }
+    main { max-width: 860px; margin: 0 auto; padding: 4rem 1.5rem 5rem; }
+    .hero-badge { display: inline-block; background: rgba(52,211,153,0.12); color: var(--green); font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; padding: 4px 12px; border-radius: 100px; margin-bottom: 1.25rem; }
+    h1 { font-size: 2.6rem; font-weight: 900; line-height: 1.15; letter-spacing: -0.03em; margin-bottom: 1.25rem; }
+    h1 em { font-style: normal; color: var(--amber); }
+    .hero-sub { font-size: 1.1rem; color: var(--muted); line-height: 1.7; max-width: 620px; margin-bottom: 2.5rem; }
+    .cta-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 4rem; }
+    .btn-primary { background: var(--amber); color: #090E1A; font-weight: 800; font-size: 1rem; padding: 0.8rem 2rem; border-radius: 10px; text-decoration: none; }
+    .btn-secondary { background: none; border: 1px solid var(--border); color: var(--white); font-weight: 600; font-size: 1rem; padding: 0.8rem 2rem; border-radius: 10px; text-decoration: none; }
+    h2 { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 1.5rem; }
+    .pain-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 4rem; }
+    .pain-cell { background: var(--bg2); padding: 1.25rem 1.5rem; }
+    .pain-label { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.6rem; }
+    .pain-label.before { color: #EF4444; }
+    .pain-label.after { color: var(--green); }
+    .pain-text { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+    .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 4rem; }
+    .feature-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; }
+    .feature-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+    .feature-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .feature-desc { font-size: 0.83rem; color: var(--muted); line-height: 1.6; }
+    .faq { margin-bottom: 4rem; }
+    .faq-item { border-bottom: 1px solid var(--border); padding: 1.25rem 0; }
+    .faq-q { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .faq-a { font-size: 0.85rem; color: var(--muted); line-height: 1.65; }
+    .bottom-cta { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 2.5rem; text-align: center; }
+    .bottom-cta h2 { margin-bottom: 0.75rem; }
+    .bottom-cta p { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.75rem; }
+    footer { text-align: center; padding: 2rem; font-size: 0.75rem; color: var(--muted); border-top: 1px solid var(--border); }
+    footer a { color: var(--amber); text-decoration: none; }
+    @media (max-width: 600px) { .pain-grid { grid-template-columns: 1fr; } h1 { font-size: 2rem; } }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a class="logo" href="/"><em>Build</em>Order</a>
+    <a class="btn-nav" href="/login.html?tab=signup">Start Free</a>
+  </nav>
+
+  <main>
+    <div class="hero-badge">&#10003; Invoices &amp; Payments</div>
+    <h1>Send an invoice.<br><em>Get paid today.</em></h1>
+    <p class="hero-sub">BuildOrder creates professional contractor invoices in seconds and collects payment online through Stripe — no chasing checks, no Excel sheets, no waiting.</p>
+    <div class="cta-row">
+      <a class="btn-primary" href="/login.html?tab=signup">Create a Free Invoice</a>
+      <a class="btn-secondary" href="/">See All Features</a>
+    </div>
+
+    <h2>Stop doing it the hard way</h2>
+    <div class="pain-grid">
+      <div class="pain-cell">
+        <div class="pain-label before">Before BuildOrder</div>
+        <div class="pain-text">Build invoice in Excel. Export to PDF. Email it. Wait for a check. Drive to the bank. Hope it clears.</div>
+      </div>
+      <div class="pain-cell">
+        <div class="pain-label after">With BuildOrder</div>
+        <div class="pain-text">Invoice generated in 60 seconds. Client pays online. Funds in your account within 2 days. Automatic receipt sent.</div>
+      </div>
+      <div class="pain-cell">
+        <div class="pain-label before">Before</div>
+        <div class="pain-text">Manually track who's paid, who owes, what's overdue. Spreadsheet gets out of date the moment you close it.</div>
+      </div>
+      <div class="pain-cell">
+        <div class="pain-label after">After</div>
+        <div class="pain-text">Dashboard shows paid, partial, and overdue invoices at a glance. Status updates automatically when payment clears.</div>
+      </div>
+    </div>
+
+    <h2>What's included</h2>
+    <div class="features">
+      <div class="feature-card">
+        <div class="feature-icon">&#9889;</div>
+        <div class="feature-title">AI-Written Invoices</div>
+        <div class="feature-desc">Describe the work done and BuildOrder generates a complete invoice with itemized line items — no manual entry needed.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#128179;</div>
+        <div class="feature-title">Online Payment via Stripe</div>
+        <div class="feature-desc">Connect your Stripe account. Clients pay by card directly from the invoice link. You get an email when payment clears.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#128233;</div>
+        <div class="feature-title">Automatic Receipt Emails</div>
+        <div class="feature-desc">Client gets a branded receipt the moment payment is processed — your business name, the job, the amount, the date.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#128260;</div>
+        <div class="feature-title">Partial Payments</div>
+        <div class="feature-desc">Deposit paid up front? BuildOrder tracks partial payments and shows the remaining balance due on the invoice automatically.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#8594;</div>
+        <div class="feature-title">Convert from Estimate</div>
+        <div class="feature-desc">Turn an approved estimate into an invoice with one click. Client info and pricing pre-fill — nothing to retype.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#128200;</div>
+        <div class="feature-title">Payment Status Dashboard</div>
+        <div class="feature-desc">See every invoice — paid, partial, overdue — in one view. Know exactly where your money stands without opening a spreadsheet.</div>
+      </div>
+    </div>
+
+    <div class="faq">
+      <h2>Billing questions</h2>
+      <div class="faq-item">
+        <div class="faq-q">How does online payment work?</div>
+        <div class="faq-a">Connect your Stripe account (free to set up). When you send an invoice with a payment link, clients pay by card. Stripe deposits the funds to your bank account within 1–2 business days.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">What are the payment processing fees?</div>
+        <div class="faq-a">Stripe charges 2.9% + 30¢ per transaction — the industry standard. BuildOrder doesn't add any additional fees on top of that.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Can I invoice for partial payments or deposits?</div>
+        <div class="faq-a">Yes. Set a deposit percentage on your proposal and BuildOrder tracks the deposit separately from the final balance. Both payments are recorded automatically.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Do I need a Stripe account to send invoices?</div>
+        <div class="faq-a">No. You can create and send invoices without Stripe — clients just can't pay online. To collect card payments, connect a Stripe account from your BuildOrder settings.</div>
+      </div>
+    </div>
+
+    <div class="bottom-cta">
+      <h2>Your next invoice takes 60 seconds</h2>
+      <p>Free plan. No credit card required to start.</p>
+      <a class="btn-primary" href="/login.html?tab=signup">Create Your Free Account</a>
+    </div>
+  </main>
+
+  <footer>
+    <a href="/">BuildOrder.ai</a> &mdash; AI-powered contractor documents &mdash;
+    <a href="/contractor-estimate-software.html">Estimates</a> &middot;
+    <a href="/roofing-estimate-software.html">Roofing</a>
+  </footer>
+
+</body>
+</html>

@@ -129,7 +129,10 @@
         <div class="page-title">&#128247; Job Photo Log</div>
         <div class="page-sub">Upload and organize job site photos by project.</div>
       </div>
-      <button class="btn-upload" onclick="openUpload()">&#43; Upload Photos</button>
+      <div style="display:flex;gap:0.75rem;align-items:center;">
+        <button class="btn-upload" style="background:none;border:1px solid rgba(245,158,11,0.4);color:#F59E0B;" onclick="exportReport()">&#128247; Export PDF</button>
+        <button class="btn-upload" onclick="openUpload()">&#43; Upload Photos</button>
+      </div>
     </div>
 
     <div class="filter-bar" id="filter-bar">
@@ -195,6 +198,41 @@
     function randHex() { return Math.random().toString(36).substr(2, 8); }
     function esc(s) { return (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
     function showToast(msg) { var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(function(){t.classList.remove('show');},2500); }
+
+    function exportReport() {
+      var photos = allPhotos.filter(function(p) {
+        if (currentFilter === null) return true;
+        if (currentFilter === '__gen') return !p.job_id;
+        return p.job_id === currentFilter;
+      });
+      if (!photos.length) { alert('No photos to export.'); return; }
+      var title = currentFilter === null ? 'All Job Photos'
+        : currentFilter === '__gen' ? 'General Photos'
+        : 'Photos — ' + jobLabel(currentFilter);
+      var rows = photos.map(function(p) {
+        return '<div style="break-inside:avoid;margin-bottom:18px;">' +
+          '<img src="' + p.public_url + '" style="width:100%;max-height:300px;object-fit:cover;border-radius:6px;display:block;">' +
+          '<div style="font-size:12px;color:#374151;margin-top:6px;">' +
+            '<strong>' + jobLabel(p.job_id) + '</strong>' +
+            (p.caption ? ' &mdash; ' + p.caption.replace(/</g,'&lt;') : '') +
+            '<span style="float:right;color:#6B7280;">' + fmtDate(p.created_at) + '</span>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+      var win = window.open('', '_blank');
+      win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + title + '</title>' +
+        '<style>body{font-family:Inter,Arial,sans-serif;padding:32px;max-width:900px;margin:0 auto;}' +
+        'h1{font-size:20px;font-weight:900;margin-bottom:4px;}' +
+        '.meta{font-size:12px;color:#6B7280;margin-bottom:24px;}' +
+        '.grid{columns:2;column-gap:18px;}' +
+        '@media print{@page{margin:20mm;}}</style></head>' +
+        '<body><h1>' + title + '</h1>' +
+        '<div class="meta">' + photos.length + ' photo' + (photos.length !== 1 ? 's' : '') + ' &mdash; BuildOrder.ai</div>' +
+        '<div class="grid">' + rows + '</div></body></html>');
+      win.document.close();
+      win.focus();
+      setTimeout(function() { win.print(); }, 400);
+    }
 
     function jobLabel(jobId) {
       if (!jobId) return 'General';
