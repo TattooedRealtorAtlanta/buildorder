@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BuildOrder.ai &mdash; Quick Quote</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:    #090E1A;
+      --bg2:   #111827;
+      --bg3:   #1A2438;
+      --amber: #F59E0B;
+      --amber2:#FCD34D;
+      --white: #F8FAFC;
+      --muted: #94A3B8;
+      --dim:   #475569;
+      --border:rgba(255,255,255,0.07);
+      --green: #34D399;
+      --red:   #EF4444;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; }
+    .nav { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+    .logo { font-size: 1.2rem; font-weight: 900; letter-spacing: -0.03em; text-decoration: none; color: var(--white); }
+    .logo em { font-style: normal; color: var(--amber); }
+    .btn-back { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.9rem; font-size: 0.78rem; color: var(--dim); cursor: pointer; font-family: inherit; text-decoration: none; transition: color 0.2s, border-color 0.2s; }
+    .btn-back:hover { color: var(--white); border-color: var(--amber); }
+    .main { max-width: 660px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+    .page-title { font-size: 1.5rem; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 0.35rem; }
+    .page-title em { font-style: normal; color: var(--amber); }
+    .page-sub { font-size: 0.875rem; color: var(--muted); margin-bottom: 2rem; line-height: 1.6; }
+    .card { background: var(--bg3); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; margin-bottom: 1.25rem; }
+    .field { margin-bottom: 1.1rem; }
+    label { display: block; font-size: 0.72rem; font-weight: 700; color: var(--muted); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.06em; }
+    label .opt { color: var(--dim); font-weight: 400; text-transform: none; letter-spacing: 0; }
+    input, textarea { width: 100%; background: var(--bg2); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.9rem; color: var(--white); font-family: inherit; outline: none; transition: border-color 0.2s; }
+    input::placeholder, textarea::placeholder { color: var(--dim); }
+    input:focus, textarea:focus { border-color: var(--amber); }
+    textarea { resize: vertical; min-height: 130px; line-height: 1.6; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; }
+    .examples { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.6rem; }
+    .example-chip { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); border-radius: 20px; padding: 0.3rem 0.75rem; font-size: 0.72rem; color: var(--amber); cursor: pointer; transition: background 0.15s; user-select: none; }
+    .example-chip:hover { background: rgba(245,158,11,0.16); }
+    .btn-generate { width: 100%; background: var(--amber); color: #090E1A; border: none; border-radius: 12px; padding: 1rem; font-size: 1rem; font-weight: 900; cursor: pointer; font-family: inherit; transition: background 0.15s; margin-top: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+    .btn-generate:hover { background: var(--amber2); }
+    .btn-generate:disabled { opacity: 0.6; cursor: not-allowed; }
+    .loading-state { display: none; text-align: center; padding: 3rem 1rem; }
+    .loading-icon { font-size: 2.5rem; margin-bottom: 1rem; animation: spin 1.5s linear infinite; display: inline-block; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .loading-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .loading-sub { font-size: 0.82rem; color: var(--muted); }
+    .loading-steps { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .loading-step { font-size: 0.78rem; color: var(--dim); display: flex; align-items: center; gap: 0.5rem; }
+    .loading-step.active { color: var(--amber); }
+    .loading-step.done { color: var(--green); }
+    .msg { font-size: 0.82rem; color: var(--red); margin-top: 0.75rem; min-height: 1rem; }
+    .tip { background: rgba(245,158,11,0.07); border: 1px solid rgba(245,158,11,0.15); border-radius: 10px; padding: 0.85rem 1rem; font-size: 0.78rem; color: var(--muted); line-height: 1.6; margin-bottom: 1.25rem; }
+    .tip strong { color: var(--amber); }
+    @media (max-width: 500px) { .grid-2 { grid-template-columns: 1fr; } .main { padding: 1.5rem 1rem 3rem; } }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="/" class="logo">Build<em>Order</em></a>
+    <a href="/dashboard.html" class="btn-back">&larr; Dashboard</a>
+  </nav>
+
+  <main class="main">
+
+    <div id="form-state">
+      <div class="page-title">⚡ Quick <em>Quote</em></div>
+      <p class="page-sub">Describe the job in plain English — BuildOrder reads it, extracts the details, and generates a complete estimate. No form required.</p>
+
+      <div class="tip">
+        <strong>The more detail you give, the better the estimate.</strong> Include the type of work, rough scope, materials if you know them, and location. You can always edit the result before sending.
+      </div>
+
+      <div class="card">
+        <div class="field">
+          <label>Describe the job</label>
+          <textarea id="job-description" placeholder="e.g. Install a new 30-square GAF Timberline HDZ roof on a 2-story house in Marietta, GA. Tear off existing shingles, replace any rotted decking, install ice &amp; water shield, new ridge cap and drip edge. The homeowner is Mike Johnson at 450 Oakwood Dr." rows="6"></textarea>
+          <div class="examples">
+            <span class="example-chip" onclick="fillExample('kitchen')">Kitchen remodel</span>
+            <span class="example-chip" onclick="fillExample('roof')">Roof replacement</span>
+            <span class="example-chip" onclick="fillExample('bathroom')">Bathroom renovation</span>
+            <span class="example-chip" onclick="fillExample('deck')">Deck build</span>
+            <span class="example-chip" onclick="fillExample('painting')">Interior painting</span>
+            <span class="example-chip" onclick="fillExample('hvac')">HVAC install</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:0.72rem;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:1rem;">Client Info <span style="font-weight:400;text-transform:none;color:var(--dim);letter-spacing:0;">(optional — fills in automatically if mentioned above)</span></div>
+        <div class="grid-2">
+          <div class="field" style="margin-bottom:0;">
+            <label>Client Name <span class="opt">(optional)</span></label>
+            <input type="text" id="client-name" placeholder="John Smith">
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label>Client Email <span class="opt">(optional)</span></label>
+            <input type="email" id="client-email" placeholder="client@email.com">
+          </div>
+        </div>
+        <div class="grid-2" style="margin-top:0.85rem;">
+          <div class="field" style="margin-bottom:0;">
+            <label>City <span class="opt">(optional)</span></label>
+            <input type="text" id="job-city" placeholder="Atlanta">
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label>State <span class="opt">(optional)</span></label>
+            <input type="text" id="job-state" placeholder="GA" maxlength="2">
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-generate" id="gen-btn" onclick="generate()">
+        <span>⚡</span> Generate Estimate
+      </button>
+      <div class="msg" id="msg"></div>
+    </div>
+
+    <div class="loading-state" id="loading-state">
+      <div class="loading-icon">⚡</div>
+      <div class="loading-title">Building your estimate&hellip;</div>
+      <div class="loading-sub">This takes about 15–20 seconds.</div>
+      <div class="loading-steps">
+        <div class="loading-step active" id="step-1">📋 Reading job description</div>
+        <div class="loading-step" id="step-2">🔍 Extracting scope and details</div>
+        <div class="loading-step" id="step-3">💰 Pricing out line items</div>
+        <div class="loading-step" id="step-4">📄 Formatting your estimate</div>
+        <div class="loading-step" id="step-5">✅ Almost done</div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    var SUPABASE_URL = 'https://pxqwtesczfhfjwdhxiyl.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDI3MDcsImV4cCI6MjA5NTIxODcwN30.rNmcfsteMK_IdyWkGLrNA5ZOlRVHQYahDrnIWmPGCLM';
+    var db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, storageKey: 'bo-auth' } });
+
+    var sessionToken = '';
+
+    db.auth.getSession().then(function(r) {
+      if (!r.data.session) { window.location.href = '/login.html'; return; }
+      sessionToken = r.data.session.access_token;
+    });
+
+    var EXAMPLES = {
+      kitchen: 'Complete kitchen remodel for Sarah Williams at 220 Maple Ave, Kennesaw, GA. Demo existing cabinets and flooring, install new 42" shaker cabinets, quartz countertops, tile backsplash, LVP flooring, and stainless steel sink/faucet. About 180 sq ft kitchen.',
+      roof: 'Tear off and replace roof on a single-story 2,000 sq ft house for Tom Bradley at 8812 Pine Ridge Rd, Roswell, GA. Remove existing shingles, replace any bad decking boards, install GAF Timberline HDZ architectural shingles in charcoal, ice & water shield in valleys, new ridge cap and aluminum drip edge.',
+      bathroom: 'Full master bathroom renovation for the Hendersons on Lake Shore Dr, Acworth GA. Demo existing tile shower, flooring, and vanity. Install new 48" double vanity with vessel sinks, 60x36 tiled shower with frameless glass door, new toilet, LVP flooring, and exhaust fan. About 80 sq ft.',
+      deck: 'Build a new 12x20 pressure treated deck off the back of the house for Dave Cooper in Smyrna GA. Include steps down to yard, built-in bench seating on two sides, and a pergola over half the deck. Ground level to deck surface is about 3 feet.',
+      painting: 'Interior painting for Jennifer Moore in Marietta, GA. Paint entire interior of 1,800 sq ft 3BR/2BA house — ceilings, walls, trim, and doors. Walls in Sherwin Williams Accessible Beige, ceilings flat white, trim semi-gloss white. All prep and two coats included.',
+      hvac: 'Install a new 3.5-ton Carrier 2-stage heat pump system with air handler for a 1,900 sq ft home in Woodstock GA. Remove and haul old system, replace filter media, add UV light, and program new Ecobee thermostat. Client is Bob Patterson.'
+    };
+
+    function fillExample(key) {
+      var ta = document.getElementById('job-description');
+      ta.value = EXAMPLES[key] || '';
+      ta.focus();
+    }
+
+    var stepIdx = 0;
+    var stepTimer = null;
+
+    function animateSteps() {
+      var steps = ['step-1','step-2','step-3','step-4','step-5'];
+      stepIdx = 0;
+      document.getElementById(steps[0]).className = 'loading-step active';
+
+      stepTimer = setInterval(function() {
+        if (stepIdx < steps.length - 1) {
+          document.getElementById(steps[stepIdx]).className = 'loading-step done';
+          stepIdx++;
+          document.getElementById(steps[stepIdx]).className = 'loading-step active';
+        }
+      }, 3500);
+    }
+
+    async function generate() {
+      var desc = (document.getElementById('job-description').value || '').trim();
+      if (!desc || desc.length < 10) {
+        document.getElementById('msg').textContent = 'Please describe the job first.';
+        return;
+      }
+
+      document.getElementById('msg').textContent = '';
+      document.getElementById('gen-btn').disabled = true;
+      document.getElementById('form-state').style.display = 'none';
+      document.getElementById('loading-state').style.display = 'block';
+      animateSteps();
+
+      var body = {
+        description:  desc,
+        client_name:  (document.getElementById('client-name').value  || '').trim() || null,
+        client_email: (document.getElementById('client-email').value || '').trim() || null,
+        job_city:     (document.getElementById('job-city').value     || '').trim() || null,
+        job_state:    (document.getElementById('job-state').value    || '').trim().toUpperCase() || null
+      };
+
+      try {
+        var res = await fetch('/api/quick-quote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionToken },
+          body: JSON.stringify(body)
+        });
+        var data = await res.json();
+
+        clearInterval(stepTimer);
+
+        if (res.ok && data.success) {
+          window.location.href = '/estimate.html?id=' + data.estimate_id;
+        } else if (data.error === 'usage_limit') {
+          document.getElementById('loading-state').style.display = 'none';
+          document.getElementById('form-state').style.display = 'block';
+          document.getElementById('gen-btn').disabled = false;
+          document.getElementById('msg').innerHTML = 'Free plan limit reached (5/mo). <a href="/pricing.html" style="color:var(--amber);">Upgrade to Pro</a> for unlimited.';
+        } else {
+          document.getElementById('loading-state').style.display = 'none';
+          document.getElementById('form-state').style.display = 'block';
+          document.getElementById('gen-btn').disabled = false;
+          document.getElementById('msg').textContent = data.error || data.message || 'Something went wrong. Please try again.';
+        }
+      } catch (e) {
+        clearInterval(stepTimer);
+        document.getElementById('loading-state').style.display = 'none';
+        document.getElementById('form-state').style.display = 'block';
+        document.getElementById('gen-btn').disabled = false;
+        document.getElementById('msg').textContent = 'Network error. Please try again.';
+      }
+    }
+  </script>
+
+</body>
+</html>
