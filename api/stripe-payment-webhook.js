@@ -101,7 +101,7 @@ module.exports = async function handler(req, res) {
           try {
             const { data: prof } = await db
               .from('contractor_profiles')
-              .select('contractor_name, business_name, email, phone')
+              .select('contractor_name, business_name, email, phone, google_review_url')
               .eq('id', link.user_id)
               .single();
 
@@ -142,6 +142,7 @@ module.exports = async function handler(req, res) {
         <tr style="background:#f9fafb;"><td style="padding:10px 12px;font-weight:600;color:#374151;">Amount Paid</td><td style="padding:10px 12px;font-weight:800;color:#059669;font-size:16px;">${fmtAmt}</td></tr>
         <tr><td style="padding:10px 12px;font-weight:600;color:#374151;">Date</td><td style="padding:10px 12px;color:#111827;">${dateStr}</td></tr>
       </table>
+      ${prof && prof.google_review_url ? `<div style="background:#F9FAFB;border-radius:8px;padding:14px 16px;margin-bottom:20px;text-align:center;"><p style="font-size:13px;color:#374151;margin:0 0 8px;font-weight:600;">Happy with the work?</p><a href="${prof.google_review_url}" style="display:inline-block;background:#F59E0B;color:#090E1A;text-decoration:none;font-weight:800;font-size:13px;padding:8px 20px;border-radius:8px;">&#11088; Leave a Google Review</a></div>` : ''}
       <p style="font-size:11px;color:#9CA3AF;margin:0;line-height:1.6;">Please save this email for your records.<br>Sent via <a href="https://buildorder.ai" style="color:#F59E0B;text-decoration:none;">BuildOrder.ai</a> on behalf of ${bizName}</p>
     </div>
   </div>

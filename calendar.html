@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BuildOrder.ai — Job Calendar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#090E1A; --bg2:#111827; --bg3:#1A2438;
+      --amber:#F59E0B; --white:#F8FAFC; --muted:#94A3B8; --dim:#475569;
+      --border:rgba(255,255,255,0.07); --green:#34D399; --red:#EF4444;
+    }
+    body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--white); min-height:100vh; }
+    .nav { background:var(--bg2); border-bottom:1px solid var(--border); padding:0 2rem; height:60px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:10; }
+    .logo { font-size:1.2rem; font-weight:900; letter-spacing:-0.03em; text-decoration:none; color:var(--white); }
+    .logo em { font-style:normal; color:var(--amber); }
+    .nav-right { display:flex; align-items:center; gap:1rem; }
+    .btn-back { background:none; border:1px solid var(--border); border-radius:8px; padding:0.35rem 0.9rem; font-size:0.78rem; color:var(--dim); text-decoration:none; transition:color 0.2s,border-color 0.2s; }
+    .btn-back:hover { color:var(--white); border-color:var(--amber); }
+
+    .main { max-width:1000px; margin:0 auto; padding:2rem 1.5rem 4rem; }
+
+    /* ── Header ── */
+    .cal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem; }
+    .cal-title { font-size:1.4rem; font-weight:900; letter-spacing:-0.02em; }
+    .cal-nav { display:flex; align-items:center; gap:0.5rem; }
+    .btn-month { background:none; border:1px solid var(--border); border-radius:8px; padding:0.4rem 0.9rem; font-size:0.82rem; color:var(--muted); cursor:pointer; font-family:inherit; transition:color 0.2s,border-color 0.2s; }
+    .btn-month:hover { color:var(--white); border-color:var(--amber); }
+    .btn-today { background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.3); border-radius:8px; padding:0.4rem 0.9rem; font-size:0.82rem; color:var(--amber); cursor:pointer; font-family:inherit; font-weight:700; transition:background 0.2s; }
+    .btn-today:hover { background:rgba(245,158,11,0.2); }
+    .month-label { font-size:1rem; font-weight:700; min-width:160px; text-align:center; }
+
+    /* ── Legend ── */
+    .legend { display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:1.25rem; }
+    .legend-item { display:flex; align-items:center; gap:0.4rem; font-size:0.75rem; color:var(--muted); }
+    .legend-dot { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
+
+    /* ── Grid ── */
+    .cal-grid { background:var(--bg2); border:1px solid var(--border); border-radius:16px; overflow:hidden; }
+    .cal-days-header { display:grid; grid-template-columns:repeat(7,1fr); background:var(--bg3); border-bottom:1px solid var(--border); }
+    .cal-day-name { padding:0.6rem 0.5rem; text-align:center; font-size:0.7rem; font-weight:700; color:var(--dim); text-transform:uppercase; letter-spacing:0.06em; }
+    .cal-body { display:grid; grid-template-columns:repeat(7,1fr); }
+    .cal-cell { border-right:1px solid var(--border); border-bottom:1px solid var(--border); min-height:100px; padding:0.5rem; position:relative; }
+    .cal-cell:nth-child(7n) { border-right:none; }
+    .cal-cell.other-month { opacity:0.35; }
+    .cal-cell.today .cell-num { background:var(--amber); color:#090E1A; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; }
+    .cell-num { font-size:0.78rem; font-weight:700; color:var(--muted); margin-bottom:0.3rem; width:24px; height:24px; display:flex; align-items:center; justify-content:center; }
+    .job-chip { display:block; font-size:0.68rem; font-weight:700; padding:3px 6px; border-radius:5px; margin-bottom:3px; text-decoration:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer; transition:opacity 0.15s; line-height:1.3; }
+    .job-chip:hover { opacity:0.8; }
+    .chip-planning   { background:rgba(148,163,184,0.15); color:var(--muted); }
+    .chip-scheduled  { background:rgba(245,158,11,0.18); color:var(--amber); }
+    .chip-in_progress{ background:rgba(52,211,153,0.15); color:var(--green); }
+    .chip-complete   { background:rgba(71,85,105,0.3);   color:var(--dim); }
+    .chip-more { font-size:0.65rem; color:var(--dim); padding:1px 4px; }
+
+    /* ── No-start-date list ── */
+    .unscheduled { background:var(--bg2); border:1px solid var(--border); border-radius:14px; padding:1.25rem 1.5rem; margin-top:1.5rem; }
+    .unscheduled-title { font-size:0.72rem; font-weight:700; color:var(--dim); text-transform:uppercase; letter-spacing:0.07em; margin-bottom:1rem; }
+    .unsched-row { display:flex; align-items:center; justify-content:space-between; padding:0.6rem 0; border-bottom:1px solid var(--border); }
+    .unsched-row:last-child { border-bottom:none; }
+    .unsched-info { font-size:0.85rem; font-weight:600; }
+    .unsched-sub { font-size:0.78rem; color:var(--muted); }
+    .unsched-badge { font-size:0.7rem; font-weight:700; padding:3px 8px; border-radius:100px; }
+    .badge-planning   { background:rgba(148,163,184,0.15); color:var(--muted); }
+    .badge-scheduled  { background:rgba(245,158,11,0.15); color:var(--amber); }
+    .badge-in_progress{ background:rgba(52,211,153,0.12); color:var(--green); }
+    .badge-complete   { background:rgba(71,85,105,0.25);  color:var(--dim); }
+
+    .empty-state { padding:3rem; text-align:center; color:var(--muted); font-size:0.9rem; line-height:1.7; }
+
+    @media (max-width:640px) {
+      .cal-cell { min-height:60px; padding:0.3rem; }
+      .job-chip { font-size:0.6rem; padding:2px 4px; }
+      .cell-num { font-size:0.7rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a class="logo" href="/dashboard.html">Build<em>Order</em></a>
+    <div class="nav-right">
+      <a href="/dashboard.html" class="btn-back">&#8592; Dashboard</a>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div class="cal-header">
+      <div class="cal-title">&#128197; Job Calendar</div>
+      <div class="cal-nav">
+        <button class="btn-month" onclick="prevMonth()">&#8592;</button>
+        <div class="month-label" id="month-label"></div>
+        <button class="btn-month" onclick="nextMonth()">&#8594;</button>
+        <button class="btn-today" onclick="goToday()">Today</button>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot chip-planning" style="width:10px;height:10px;border-radius:3px;background:rgba(148,163,184,0.25);"></div> Planning</div>
+      <div class="legend-item"><div class="legend-dot" style="background:rgba(245,158,11,0.4);border-radius:3px;"></div> Scheduled</div>
+      <div class="legend-item"><div class="legend-dot" style="background:rgba(52,211,153,0.35);border-radius:3px;"></div> In Progress</div>
+      <div class="legend-item"><div class="legend-dot" style="background:rgba(71,85,105,0.5);border-radius:3px;"></div> Complete</div>
+    </div>
+
+    <div class="cal-grid" id="cal-grid">
+      <div class="cal-days-header">
+        <div class="cal-day-name">Sun</div><div class="cal-day-name">Mon</div><div class="cal-day-name">Tue</div>
+        <div class="cal-day-name">Wed</div><div class="cal-day-name">Thu</div><div class="cal-day-name">Fri</div>
+        <div class="cal-day-name">Sat</div>
+      </div>
+      <div class="cal-body" id="cal-body">
+        <div class="empty-state" style="grid-column:1/-1;">Loading&hellip;</div>
+      </div>
+    </div>
+
+    <div id="unscheduled-section"></div>
+  </main>
+
+  <script>
+    var SUPABASE_URL = 'https://pxqwtesczfhfjwdhxiyl.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDI3MDcsImV4cCI6MjA5NTIxODcwN30.rNmcfsteMK_IdyWkGLrNA5ZOlRVHQYahDrnIWmPGCLM';
+    var db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, storageKey: 'bo-auth' } });
+
+    var allJobs = [];
+    var viewYear, viewMonth; // 0-indexed month
+
+    function today() { var d = new Date(); return { y: d.getFullYear(), m: d.getMonth() }; }
+
+    db.auth.getSession().then(function(r) {
+      if (!r.data.session) { window.location.href = '/login.html'; return; }
+      var t = today();
+      viewYear = t.y; viewMonth = t.m;
+      db.from('jobs')
+        .select('id, homeowner_name, job_address, job_city, job_state, work_type, job_status, start_date, contract_price')
+        .order('start_date', { ascending: true })
+        .then(function(res) {
+          allJobs = res.data || [];
+          render();
+        });
+    });
+
+    function prevMonth() { viewMonth--; if (viewMonth < 0) { viewMonth = 11; viewYear--; } render(); }
+    function nextMonth() { viewMonth++; if (viewMonth > 11) { viewMonth = 0; viewYear++; } render(); }
+    function goToday() { var t = today(); viewYear = t.y; viewMonth = t.m; render(); }
+
+    var MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+    function jobLabel(j) {
+      return j.homeowner_name || j.job_address || j.work_type || 'Job';
+    }
+
+    function chipClass(status) {
+      var m = { planning:'chip-planning', scheduled:'chip-scheduled', in_progress:'chip-in_progress', complete:'chip-complete' };
+      return m[status] || 'chip-planning';
+    }
+    function badgeClass(status) {
+      var m = { planning:'badge-planning', scheduled:'badge-scheduled', in_progress:'badge-in_progress', complete:'badge-complete' };
+      return m[status] || 'badge-planning';
+    }
+    function statusLabel(s) {
+      var m = { planning:'Planning', scheduled:'Scheduled', in_progress:'In Progress', complete:'Complete' };
+      return m[s] || s;
+    }
+
+    function render() {
+      document.getElementById('month-label').textContent = MONTH_NAMES[viewMonth] + ' ' + viewYear;
+
+      var firstDay = new Date(viewYear, viewMonth, 1).getDay(); // 0=Sun
+      var daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+      var daysInPrev  = new Date(viewYear, viewMonth, 0).getDate();
+      var todayObj = today();
+      var isCurrentMonth = (viewYear === todayObj.y && viewMonth === todayObj.m);
+
+      // Build day→jobs map
+      var dayMap = {};
+      allJobs.forEach(function(j) {
+        if (!j.start_date) return;
+        var d = new Date(j.start_date + 'T00:00:00'); // parse as local
+        if (d.getFullYear() !== viewYear || d.getMonth() !== viewMonth) return;
+        var day = d.getDate();
+        if (!dayMap[day]) dayMap[day] = [];
+        dayMap[day].push(j);
+      });
+
+      var cells = [];
+
+      // Prev month padding
+      for (var i = firstDay - 1; i >= 0; i--) {
+        cells.push({ day: daysInPrev - i, cur: false, jobs: [] });
+      }
+      // Current month
+      for (var d2 = 1; d2 <= daysInMonth; d2++) {
+        cells.push({ day: d2, cur: true, jobs: dayMap[d2] || [] });
+      }
+      // Next month padding
+      var rem = 7 - (cells.length % 7);
+      if (rem < 7) { for (var n = 1; n <= rem; n++) cells.push({ day: n, cur: false, jobs: [] }); }
+
+      var html = cells.map(function(cell) {
+        var isToday = isCurrentMonth && cell.cur && cell.day === new Date().getDate();
+        var cls = 'cal-cell' + (cell.cur ? '' : ' other-month') + (isToday ? ' today' : '');
+        var chips = '';
+        var MAX = 3;
+        if (cell.jobs.length > 0) {
+          cell.jobs.slice(0, MAX).forEach(function(j) {
+            chips += '<a class="job-chip ' + chipClass(j.job_status) + '" href="/job.html?id=' + j.id + '" title="' + (jobLabel(j)).replace(/"/g,'&quot;') + '">' + jobLabel(j) + '</a>';
+          });
+          if (cell.jobs.length > MAX) {
+            chips += '<div class="chip-more">+' + (cell.jobs.length - MAX) + ' more</div>';
+          }
+        }
+        return '<div class="' + cls + '"><div class="cell-num">' + cell.day + '</div>' + chips + '</div>';
+      }).join('');
+
+      document.getElementById('cal-body').innerHTML = html || '<div class="empty-state" style="grid-column:1/-1;">No jobs to display.</div>';
+
+      // Unscheduled jobs
+      var unsched = allJobs.filter(function(j) { return !j.start_date; });
+      var sec = document.getElementById('unscheduled-section');
+      if (unsched.length === 0) { sec.innerHTML = ''; return; }
+      sec.innerHTML = '<div class="unscheduled">' +
+        '<div class="unscheduled-title">&#128337; Jobs without a start date (' + unsched.length + ')</div>' +
+        unsched.map(function(j) {
+          return '<a href="/job.html?id=' + j.id + '" style="text-decoration:none;color:inherit;display:block;">' +
+            '<div class="unsched-row">' +
+              '<div><div class="unsched-info">' + (j.homeowner_name || j.job_address || 'Job') + '</div>' +
+              '<div class="unsched-sub">' + (j.work_type || '') + (j.job_city ? (j.work_type ? ' &mdash; ' : '') + j.job_city : '') + '</div></div>' +
+              '<span class="unsched-badge ' + badgeClass(j.job_status) + '">' + statusLabel(j.job_status || 'planning') + '</span>' +
+            '</div></a>';
+        }).join('') +
+        '</div>';
+    }
+  </script>
+
+</body>
+</html>

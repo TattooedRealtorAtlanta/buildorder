@@ -214,6 +214,7 @@
       <div class="lang-toggle"><button class="lang-btn" id="lang-btn-en" onclick="setLang('en')">EN</button><span class="lang-sep">|</span><button class="lang-btn" id="lang-btn-es" onclick="setLang('es')">ES</button></div>
       <span class="nav-name" id="nav-name"></span>
       <a href="/clients.html" class="nav-link">&#128100; Clients</a>
+      <a href="/calendar.html" class="nav-link">&#128197; Calendar</a>
       <a href="/analytics.html" class="nav-link">&#128200; Analytics</a>
       <a href="/settings.html" class="nav-link">&#9881; Settings</a>
       <a href="/support.html" class="nav-link">&#10067; Support</a>
@@ -332,6 +333,18 @@
         <div class="tool-desc" data-i18n="tool.photos.desc">Upload &amp; organize job site photos</div>
         <div class="tool-count" id="tc-photos">Photo log</div>
       </a>
+      <a href="/pricebook.html" class="tool-card">
+        <div class="tool-icon">&#128218;</div>
+        <div class="tool-name">Pricebook</div>
+        <div class="tool-desc">Saved line items &amp; materials</div>
+        <div class="tool-count" id="tc-pricebook">0 items</div>
+      </a>
+      <a href="/calendar.html" class="tool-card">
+        <div class="tool-icon">&#128197;</div>
+        <div class="tool-name">Calendar</div>
+        <div class="tool-desc">Jobs by start date</div>
+        <div class="tool-count" id="tc-calendar">&nbsp;</div>
+      </a>
     </div>
 
     <!-- Money Panel -->
@@ -358,7 +371,10 @@
 
     <!-- Recent Docs -->
     <div class="recent-header">
-      <div class="section-label" style="margin-bottom:0;" data-i18n="dash.recent">Recent Documents</div>
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <div class="section-label" style="margin-bottom:0;" data-i18n="dash.recent">Recent Documents</div>
+        <button onclick="exportCSV()" style="background:none;border:1px solid var(--border);border-radius:7px;padding:0.25rem 0.7rem;font-size:0.72rem;font-weight:700;color:var(--dim);cursor:pointer;font-family:inherit;transition:color 0.2s,border-color 0.2s;" onmouseover="this.style.color='var(--amber)';this.style.borderColor='rgba(245,158,11,0.4)'" onmouseout="this.style.color='var(--dim)';this.style.borderColor='var(--border)'">&#8595; Export CSV</button>
+      </div>
       <div class="filter-tabs">
         <button class="filter-btn active" onclick="filter('all')" data-i18n="dash.filter.all">All</button>
         <button class="filter-btn" onclick="filter('overdue')" id="filter-btn-overdue" style="display:none;">&#9888; Overdue</button>
@@ -410,6 +426,32 @@
                 btns[['all','job','est','inv','co','sub','lien','tkof'].indexOf(type)];
       if (btn) btn.classList.add('active');
       renderDocs();
+    }
+
+    function exportCSV() {
+      var docs = currentFilter === 'all' ? allDocs
+        : currentFilter === 'overdue' ? allDocs.filter(function(d){ return d._overdue; })
+        : allDocs.filter(function(d){ return d._type === currentFilter; });
+      if (!docs.length) { alert('No documents to export.'); return; }
+      var headers = ['Type','Doc #','Client','Work Type','Amount','Status','Created'];
+      var rows = docs.map(function(d) {
+        var amount = d.total || d.contract_price || d.balance_due || d.change_amount || d.contract_amount || d.amount || '';
+        return [
+          d._typeLabel || d._type,
+          d.doc_number || '',
+          d._title || '',
+          d.work_type || d._sub || '',
+          amount ? Number(amount).toFixed(2) : '',
+          d.status || '',
+          d.created_at ? new Date(d.created_at).toLocaleDateString('en-US') : ''
+        ].map(function(v){ return '"' + String(v).replace(/"/g,'""') + '"'; }).join(',');
+      });
+      var csv = [headers.join(',')].concat(rows).join('\r\n');
+      var blob = new Blob([csv], { type: 'text/csv' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = 'buildorder-export-' + new Date().toISOString().slice(0,10) + '.csv';
+      a.click(); URL.revokeObjectURL(url);
     }
 
     function renderDocs() {
@@ -582,6 +624,8 @@
       document.getElementById('tc-lien').textContent = liens.length + ' waiver' + (liens.length !== 1 ? 's' : '');
       document.getElementById('tc-tkof').textContent = tkofs.length + ' takeoff' + (tkofs.length !== 1 ? 's' : '');
       document.getElementById('tc-prop').textContent = props.length + ' proposal' + (props.length !== 1 ? 's' : '');
+      var pbCount = rateItemsR.count || 0;
+      document.getElementById('tc-pricebook').textContent = pbCount + ' item' + (pbCount !== 1 ? 's' : '');
 
       // Build unified doc list
       var jDocs = jobs.map(function(d) { return Object.assign({}, d, { _type:'job', _icon:'&#128196;', _typeLabel:'Contract', _url:'/job.html?id='+d.id, _title:(d.job_address || 'No address') + (d.job_city ? ', ' + d.job_city : ''), _sub: d.homeowner_name || 'No client', _val: d.contract_price ? fmt(d.contract_price) : '' }); });

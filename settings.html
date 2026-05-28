@@ -245,6 +245,7 @@
             '<div class="form-field"><label class="form-label">State</label><input class="form-input" type="text" id="f-state" value="' + esc(p.state) + '" maxlength="2"></div>' +
           '</div>' +
           '<div class="form-field"><label class="form-label">ZIP</label><input class="form-input" type="text" id="f-zip" value="' + esc(p.zip) + '" maxlength="10" style="max-width:160px;"></div>' +
+          '<div class="form-field" style="margin-top:0.25rem;"><label class="form-label">Google Review Link <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--dim);">(optional — clients see this after paying)</span></label><input class="form-input" type="url" id="f-review-url" value="' + esc(p.google_review_url || '') + '" placeholder="https://g.page/r/…/review"></div>' +
           '<button class="btn-save" id="save-btn" onclick="saveProfile()">Save Profile</button>' +
         '</div>' +
 
@@ -366,6 +367,7 @@
       if (document.getElementById('f-cashapp'))       updates.payment_cashapp       = f('f-cashapp');
       if (document.getElementById('f-check'))         updates.payment_check_payable = f('f-check');
       if (document.getElementById('f-payment-other')) updates.payment_other         = f('f-payment-other');
+      if (document.getElementById('f-review-url'))   updates.google_review_url     = f('f-review-url') || null;
 
       var res = await db.from('contractor_profiles').update(updates).eq('id', userId);
       if (btn) { btn.disabled = false; btn.textContent = 'Save Profile'; }

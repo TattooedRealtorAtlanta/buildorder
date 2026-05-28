@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BuildOrder.ai — Pricebook</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#090E1A; --bg2:#111827; --bg3:#1A2438;
+      --amber:#F59E0B; --amber2:#FCD34D; --white:#F8FAFC; --muted:#94A3B8; --dim:#475569;
+      --border:rgba(255,255,255,0.07); --green:#34D399; --red:#EF4444;
+    }
+    body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--white); min-height:100vh; }
+    .nav { background:var(--bg2); border-bottom:1px solid var(--border); padding:0 2rem; height:60px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:10; }
+    .logo { font-size:1.2rem; font-weight:900; letter-spacing:-0.03em; text-decoration:none; color:var(--white); }
+    .logo em { font-style:normal; color:var(--amber); }
+    .nav-right { display:flex; align-items:center; gap:1rem; }
+    .btn-back { background:none; border:1px solid var(--border); border-radius:8px; padding:0.35rem 0.9rem; font-size:0.78rem; color:var(--dim); text-decoration:none; transition:color 0.2s,border-color 0.2s; }
+    .btn-back:hover { color:var(--white); border-color:var(--amber); }
+
+    .main { max-width:800px; margin:0 auto; padding:2.5rem 1.5rem 4rem; }
+    .page-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:2rem; flex-wrap:wrap; gap:1rem; }
+    .page-title { font-size:1.5rem; font-weight:900; letter-spacing:-0.02em; margin-bottom:0.3rem; }
+    .page-sub { font-size:0.85rem; color:var(--muted); line-height:1.6; max-width:480px; }
+    .btn-add { background:var(--amber); color:#090E1A; border:none; border-radius:10px; padding:0.6rem 1.4rem; font-size:0.85rem; font-weight:800; cursor:pointer; font-family:inherit; transition:background 0.15s; white-space:nowrap; }
+    .btn-add:hover { background:var(--amber2); }
+
+    /* ── Search ── */
+    .search-bar { position:relative; margin-bottom:1.25rem; }
+    .search-bar input { width:100%; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:0.65rem 1rem 0.65rem 2.5rem; font-size:0.88rem; color:var(--white); font-family:inherit; outline:none; transition:border-color 0.2s; }
+    .search-bar input:focus { border-color:var(--amber); }
+    .search-icon { position:absolute; left:0.85rem; top:50%; transform:translateY(-50%); color:var(--dim); font-size:0.9rem; pointer-events:none; }
+
+    /* ── Table ── */
+    .pb-table { background:var(--bg2); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+    .pb-header { display:grid; grid-template-columns:1fr 100px 120px 110px; gap:0.5rem; padding:0.65rem 1rem; background:var(--bg3); border-bottom:1px solid var(--border); font-size:0.7rem; font-weight:700; color:var(--dim); text-transform:uppercase; letter-spacing:0.07em; }
+    .pb-row { display:grid; grid-template-columns:1fr 100px 120px 110px; gap:0.5rem; padding:0.8rem 1rem; border-bottom:1px solid var(--border); align-items:center; transition:background 0.15s; }
+    .pb-row:last-child { border-bottom:none; }
+    .pb-row:hover { background:rgba(255,255,255,0.02); }
+    .pb-row.editing { background:var(--bg3); border-bottom-color:var(--amber); }
+    .pb-desc { font-size:0.88rem; font-weight:600; }
+    .pb-unit { font-size:0.82rem; color:var(--muted); }
+    .pb-price { font-size:0.88rem; font-weight:700; color:var(--amber); }
+    .pb-actions { display:flex; gap:0.4rem; justify-content:flex-end; }
+    .btn-edit { background:none; border:1px solid var(--border); border-radius:6px; padding:0.28rem 0.6rem; font-size:0.75rem; color:var(--muted); cursor:pointer; font-family:inherit; transition:color 0.2s,border-color 0.2s; }
+    .btn-edit:hover { color:var(--amber); border-color:rgba(245,158,11,0.4); }
+    .btn-del { background:none; border:1px solid rgba(239,68,68,0.25); border-radius:6px; padding:0.28rem 0.6rem; font-size:0.75rem; color:var(--red); cursor:pointer; font-family:inherit; transition:background 0.15s; }
+    .btn-del:hover { background:rgba(239,68,68,0.1); }
+    .btn-save-row { background:var(--amber); color:#090E1A; border:none; border-radius:6px; padding:0.28rem 0.7rem; font-size:0.75rem; font-weight:800; cursor:pointer; font-family:inherit; }
+    .btn-cancel-row { background:none; border:1px solid var(--border); border-radius:6px; padding:0.28rem 0.6rem; font-size:0.75rem; color:var(--muted); cursor:pointer; font-family:inherit; }
+    .edit-input { background:var(--bg); border:1px solid rgba(245,158,11,0.4); border-radius:6px; padding:0.3rem 0.5rem; font-size:0.82rem; color:var(--white); font-family:inherit; outline:none; width:100%; }
+    .edit-input:focus { border-color:var(--amber); }
+
+    /* ── Add form ── */
+    .add-form { background:var(--bg2); border:1px solid rgba(245,158,11,0.25); border-radius:14px; padding:1.5rem; margin-top:1.25rem; display:none; }
+    .add-form.visible { display:block; }
+    .add-form-title { font-size:0.85rem; font-weight:700; margin-bottom:1rem; }
+    .add-grid { display:grid; grid-template-columns:1fr 110px 130px; gap:0.75rem; align-items:end; }
+    .add-field label { display:block; font-size:0.72rem; font-weight:600; color:var(--muted); margin-bottom:0.3rem; text-transform:uppercase; letter-spacing:0.05em; }
+    .add-field input { width:100%; background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:0.55rem 0.8rem; font-size:0.85rem; color:var(--white); font-family:inherit; outline:none; transition:border-color 0.2s; }
+    .add-field input:focus { border-color:var(--amber); }
+    .add-actions { display:flex; gap:0.6rem; margin-top:1rem; justify-content:flex-end; }
+    .btn-create { background:var(--amber); color:#090E1A; border:none; border-radius:8px; padding:0.55rem 1.4rem; font-size:0.85rem; font-weight:800; cursor:pointer; font-family:inherit; }
+    .btn-cancel-add { background:none; border:1px solid var(--border); border-radius:8px; padding:0.55rem 1.1rem; font-size:0.85rem; font-weight:600; color:var(--muted); cursor:pointer; font-family:inherit; }
+
+    .empty-state { padding:3rem; text-align:center; color:var(--muted); font-size:0.9rem; line-height:1.7; }
+    .empty-icon { font-size:2.5rem; margin-bottom:0.75rem; }
+    .toast { position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%) translateY(20px); background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:0.6rem 1.25rem; font-size:0.82rem; font-weight:600; opacity:0; transition:opacity 0.25s,transform 0.25s; pointer-events:none; white-space:nowrap; z-index:100; }
+    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+    .count-badge { font-size:0.78rem; font-weight:600; color:var(--muted); margin-left:0.5rem; }
+
+    @media (max-width:600px) {
+      .pb-header { grid-template-columns:1fr 80px 70px; }
+      .pb-header > *:nth-child(3) { display:none; }
+      .pb-row { grid-template-columns:1fr 80px 70px; }
+      .pb-row > *:nth-child(3) { display:none; }
+      .add-grid { grid-template-columns:1fr 90px; }
+      .add-grid > *:nth-child(2) { display:none; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a class="logo" href="/dashboard.html">Build<em>Order</em></a>
+    <div class="nav-right">
+      <a href="/dashboard.html" class="btn-back">&#8592; Dashboard</a>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div class="page-header">
+      <div>
+        <div class="page-title">&#128218; Pricebook</div>
+        <div class="page-sub">Saved line items for estimates. Pick from your library instead of typing the same materials every time.</div>
+      </div>
+      <button class="btn-add" onclick="toggleAddForm()">&#43; Add Item</button>
+    </div>
+
+    <div class="search-bar">
+      <span class="search-icon">&#128269;</span>
+      <input type="text" id="search-input" placeholder="Search descriptions…" oninput="renderList()">
+    </div>
+
+    <div class="pb-table" id="pb-table">
+      <div class="pb-header">
+        <div>Description</div>
+        <div>Unit</div>
+        <div>Unit Price</div>
+        <div style="text-align:right;">Actions</div>
+      </div>
+      <div id="pb-body">
+        <div class="empty-state"><div class="empty-icon">&#128203;</div>Loading&hellip;</div>
+      </div>
+    </div>
+
+    <div class="add-form" id="add-form">
+      <div class="add-form-title">New Line Item</div>
+      <div class="add-grid">
+        <div class="add-field">
+          <label>Description</label>
+          <input type="text" id="new-desc" placeholder="e.g. Atlas HD Shingle (30-yr)" maxlength="200">
+        </div>
+        <div class="add-field">
+          <label>Unit <span style="font-weight:400;text-transform:none;">(optional)</span></label>
+          <input type="text" id="new-unit" placeholder="sq ft, ea, hr…" maxlength="30">
+        </div>
+        <div class="add-field">
+          <label>Unit Price ($)</label>
+          <input type="number" id="new-price" placeholder="0.00" min="0" step="0.01">
+        </div>
+      </div>
+      <div class="add-actions">
+        <button class="btn-cancel-add" onclick="toggleAddForm()">Cancel</button>
+        <button class="btn-create" onclick="createItem()">Save Item</button>
+      </div>
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    var SUPABASE_URL = 'https://pxqwtesczfhfjwdhxiyl.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDI3MDcsImV4cCI6MjA5NTIxODcwN30.rNmcfsteMK_IdyWkGLrNA5ZOlRVHQYahDrnIWmPGCLM';
+    var db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, storageKey: 'bo-auth' } });
+
+    var items = [];
+    var editingId = null;
+
+    function showToast(msg) { var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(function(){t.classList.remove('show');},2200); }
+    function fmtPrice(n) { return '$' + Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+    function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    db.auth.getSession().then(function(r) {
+      if (!r.data.session) { window.location.href = '/login.html'; return; }
+      loadItems();
+    });
+
+    function loadItems() {
+      db.from('line_item_templates').select('*').order('description').then(function(res) {
+        items = res.data || [];
+        renderList();
+      });
+    }
+
+    function renderList() {
+      var q = (document.getElementById('search-input').value || '').toLowerCase();
+      var filtered = q ? items.filter(function(i){ return (i.description||'').toLowerCase().includes(q); }) : items;
+      var body = document.getElementById('pb-body');
+      if (filtered.length === 0) {
+        body.innerHTML = '<div class="empty-state"><div class="empty-icon">&#128203;</div>' +
+          (items.length === 0 ? '<div style="font-weight:700;margin-bottom:0.4rem;">No items yet</div>Add your first saved line item — materials, services, or labor rates you use on every job.' : 'No items match "' + esc(q) + '"') + '</div>';
+        return;
+      }
+      body.innerHTML = filtered.map(function(item) {
+        if (editingId === item.id) return buildEditRow(item);
+        return '<div class="pb-row" id="row-'+item.id+'">' +
+          '<div class="pb-desc">' + esc(item.description) + '</div>' +
+          '<div class="pb-unit">' + esc(item.unit || '—') + '</div>' +
+          '<div class="pb-price">' + fmtPrice(item.unit_price) + '</div>' +
+          '<div class="pb-actions">' +
+            '<button class="btn-edit" onclick="startEdit(\''+item.id+'\')">Edit</button>' +
+            '<button class="btn-del" onclick="deleteItem(\''+item.id+'\')">&#128465;</button>' +
+          '</div></div>';
+      }).join('');
+    }
+
+    function buildEditRow(item) {
+      return '<div class="pb-row editing" id="row-'+item.id+'">' +
+        '<input class="edit-input" id="edit-desc" value="'+esc(item.description)+'" maxlength="200" placeholder="Description">' +
+        '<input class="edit-input" id="edit-unit" value="'+esc(item.unit||'')+'" maxlength="30" placeholder="Unit">' +
+        '<input class="edit-input" id="edit-price" type="number" value="'+(item.unit_price||0)+'" min="0" step="0.01" placeholder="Price">' +
+        '<div class="pb-actions">' +
+          '<button class="btn-save-row" onclick="saveEdit(\''+item.id+'\')">Save</button>' +
+          '<button class="btn-cancel-row" onclick="cancelEdit()">Cancel</button>' +
+        '</div></div>';
+    }
+
+    function startEdit(id) { editingId = id; renderList(); setTimeout(function(){ var el=document.getElementById('edit-desc'); if(el) el.focus(); },50); }
+    function cancelEdit() { editingId = null; renderList(); }
+
+    function saveEdit(id) {
+      var desc  = (document.getElementById('edit-desc').value  || '').trim();
+      var unit  = (document.getElementById('edit-unit').value  || '').trim();
+      var price = parseFloat(document.getElementById('edit-price').value) || 0;
+      if (!desc) { document.getElementById('edit-desc').focus(); return; }
+      db.from('line_item_templates').update({ description:desc, unit:unit||null, unit_price:price }).eq('id',id).then(function(res) {
+        if (res.error) { showToast('Error: ' + res.error.message); return; }
+        var idx = items.findIndex(function(i){return i.id===id;});
+        if (idx>=0) { items[idx].description=desc; items[idx].unit=unit||null; items[idx].unit_price=price; }
+        editingId = null;
+        renderList();
+        showToast('&#10003; Item updated');
+      });
+    }
+
+    function deleteItem(id) {
+      if (!confirm('Delete this item?')) return;
+      db.from('line_item_templates').delete().eq('id',id).then(function(res) {
+        if (res.error) { showToast('Error: ' + res.error.message); return; }
+        items = items.filter(function(i){return i.id!==id;});
+        if (editingId===id) editingId=null;
+        renderList();
+        showToast('Item deleted');
+      });
+    }
+
+    function toggleAddForm() {
+      var f = document.getElementById('add-form');
+      var visible = f.classList.contains('visible');
+      f.classList.toggle('visible', !visible);
+      if (!visible) {
+        document.getElementById('new-desc').value='';
+        document.getElementById('new-unit').value='';
+        document.getElementById('new-price').value='';
+        setTimeout(function(){ document.getElementById('new-desc').focus(); },50);
+      }
+    }
+
+    function createItem() {
+      var desc  = (document.getElementById('new-desc').value  || '').trim();
+      var unit  = (document.getElementById('new-unit').value  || '').trim();
+      var price = parseFloat(document.getElementById('new-price').value) || 0;
+      if (!desc) { document.getElementById('new-desc').focus(); return; }
+      db.auth.getUser().then(function(r) {
+        if (!r.data.user) return;
+        return db.from('line_item_templates').insert({ user_id:r.data.user.id, description:desc, unit:unit||null, unit_price:price }).select().single();
+      }).then(function(res) {
+        if (!res || res.error) { showToast('Error saving item'); return; }
+        items.push(res.data);
+        items.sort(function(a,b){ return a.description.localeCompare(b.description); });
+        document.getElementById('add-form').classList.remove('visible');
+        renderList();
+        showToast('&#10003; Item added to pricebook');
+      });
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') { cancelEdit(); document.getElementById('add-form').classList.remove('visible'); }
+    });
+  </script>
+
+</body>
+</html>
