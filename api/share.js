@@ -38,16 +38,18 @@ module.exports = async function handler(req, res) {
       return res.status(410).json({ error: 'Link expired' });
     }
 
-    // ── Determine if card payment is available ────────────────────────────
-    let payment_available = false;
-    if (data.payment_amount && Number(data.payment_amount) > 0) {
-      const { data: prof } = await db
-        .from('contractor_profiles')
-        .select('stripe_account_id')
-        .eq('id', data.user_id)
-        .single();
-      payment_available = !!(prof && prof.stripe_account_id);
-    }
+    // ── Fetch contractor profile (logo, name, payment) ───────────────────
+    const { data: prof } = await db
+      .from('contractor_profiles')
+      .select('stripe_account_id, logo_url, contractor_name, business_name')
+      .eq('id', data.user_id)
+      .single();
+
+    const payment_available = !!(
+      data.payment_amount && Number(data.payment_amount) > 0 && prof?.stripe_account_id
+    );
+    const contractor_logo = prof?.logo_url || null;
+    const contractor_name = prof?.business_name || prof?.contractor_name || null;
 
     // ── Fire "client viewed" notification on first open ──────────────────
     if (!data.viewed_at) {
@@ -100,7 +102,7 @@ module.exports = async function handler(req, res) {
       }
     }
 
-    return res.status(200).json({ ...data, payment_available });
+    return res.status(200).json({ ...data, payment_available, contractor_logo, contractor_name });
   }
 
   // ── POST ────────────────────────────────────────────────────────────────

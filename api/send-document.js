@@ -39,7 +39,7 @@ module.exports = async function handler(req, res) {
   // Plan check — email delivery is Pro+
   const { data: profile } = await db
     .from('contractor_profiles')
-    .select('plan, founding_member, pro_expires_at, contractor_name, business_name, email, phone, license_number')
+    .select('plan, founding_member, pro_expires_at, contractor_name, business_name, email, phone, license_number, logo_url')
     .eq('id', user.id)
     .single();
 
@@ -125,9 +125,11 @@ module.exports = async function handler(req, res) {
       html: `<!DOCTYPE html>
 <html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="font-family:Arial,sans-serif;max-width:650px;margin:40px auto;color:#222;padding:0 16px;background:#fff;">
-  <div style="background:#F59E0B;border-radius:10px 10px 0 0;padding:20px 28px;">
-    <h1 style="margin:0;font-size:20px;color:#090E1A;font-weight:900;">${bizName}</h1>
-    ${profile.license_number ? `<p style="margin:4px 0 0;font-size:12px;color:rgba(9,14,26,0.65);">License #${profile.license_number}</p>` : ''}
+  <div style="background:#090E1A;border-radius:10px 10px 0 0;padding:20px 28px;border-bottom:3px solid #F59E0B;">
+    ${profile.logo_url
+      ? `<img src="${profile.logo_url}" alt="${bizName}" style="height:52px;width:auto;max-width:200px;object-fit:contain;display:block;margin-bottom:${profile.license_number ? '6px' : '0'}">`
+      : `<h1 style="margin:0;font-size:20px;color:#F8FAFC;font-weight:900;">${bizName}</h1>`}
+    ${profile.license_number ? `<p style="margin:4px 0 0;font-size:12px;color:#94A3B8;">License #${profile.license_number}</p>` : ''}
   </div>
   <div style="background:#f9f9f9;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 10px 10px;padding:28px;">
     <h2 style="margin:0 0 8px;font-size:18px;font-weight:800;color:#111;">${docLabel}</h2>

@@ -425,7 +425,20 @@
       var isPaid = !!(data.paid_at || paid);
       var paymentAvailable = !!(data.payment_available && data.payment_amount && Number(data.payment_amount) > 0);
 
-      var html =
+      // Contractor branding header
+      var html = '';
+      if (data.contractor_logo || data.contractor_name) {
+        html += '<div style="display:flex;align-items:center;gap:1rem;padding:1rem 0 1.25rem;border-bottom:1px solid var(--border);margin-bottom:1.25rem;">';
+        if (data.contractor_logo) {
+          html += '<img src="' + data.contractor_logo + '" alt="Logo" style="height:48px;width:auto;max-width:140px;object-fit:contain;border-radius:6px;">';
+        }
+        if (data.contractor_name) {
+          html += '<span style="font-size:1rem;font-weight:800;color:var(--white);letter-spacing:-0.01em;">' + data.contractor_name + '</span>';
+        }
+        html += '</div>';
+      }
+
+      html +=
         '<div class="doc-meta-bar">' +
           '<div>' +
             '<div class="doc-meta-type">' + typeLabel + '</div>' +

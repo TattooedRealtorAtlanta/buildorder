@@ -53,6 +53,15 @@
     .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1.25rem; font-size: 0.85rem; font-weight: 600; color: var(--green); opacity: 0; transform: translateY(10px); transition: opacity 0.2s, transform 0.2s; pointer-events: none; z-index: 100; }
     .toast.show { opacity: 1; transform: translateY(0); }
     @media (max-width: 550px) { .form-row { grid-template-columns: 1fr; } }
+    /* Logo upload */
+    .logo-preview-wrap { display:flex; align-items:center; gap:1.25rem; margin-bottom:1.25rem; }
+    .logo-preview-img { width:80px; height:80px; border-radius:10px; object-fit:contain; background:var(--bg3); border:1px solid var(--border); padding:6px; display:none; }
+    .logo-placeholder { width:80px; height:80px; border-radius:10px; background:var(--bg3); border:1px dashed rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; font-size:1.6rem; flex-shrink:0; }
+    .logo-upload-actions { display:flex; gap:0.6rem; flex-wrap:wrap; }
+    .btn-upload-logo { background:var(--amber); color:#090E1A; border:none; border-radius:8px; padding:0.45rem 1rem; font-size:0.78rem; font-weight:800; cursor:pointer; font-family:inherit; transition:background 0.15s; }
+    .btn-upload-logo:hover { background:var(--amber2); }
+    .btn-remove-logo { background:none; border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:0.45rem 1rem; font-size:0.78rem; font-weight:600; color:var(--red); cursor:pointer; font-family:inherit; transition:background 0.15s; }
+    .btn-remove-logo:hover { background:rgba(239,68,68,0.08); }
     /* Stripe Connect */
     .stripe-connected { display:flex; align-items:center; gap:0.85rem; background:rgba(52,211,153,0.08); border:1px solid rgba(52,211,153,0.25); border-radius:10px; padding:0.9rem 1.1rem; }
     .stripe-connected-icon { font-size:1.3rem; color:var(--green); flex-shrink:0; }
@@ -202,6 +211,26 @@
 
         '<div class="section">' +
           '<div class="section-title">Business Profile</div>' +
+
+          // ── Logo upload ──────────────────────────────────────────────
+          '<div style="margin-bottom:1.5rem;">' +
+            '<label class="form-label">Business Logo</label>' +
+            '<div class="logo-preview-wrap">' +
+              (p.logo_url
+                ? '<img id="logo-preview-img" class="logo-preview-img" src="' + esc(p.logo_url) + '" style="display:block;" alt="Logo">'
+                : '<div class="logo-placeholder" id="logo-placeholder">🏗️</div>' +
+                  '<img id="logo-preview-img" class="logo-preview-img" src="" alt="Logo">') +
+              '<div>' +
+                '<div class="logo-upload-actions">' +
+                  '<button class="btn-upload-logo" onclick="document.getElementById(\'logo-file-input\').click()">Upload Logo</button>' +
+                  (p.logo_url ? '<button class="btn-remove-logo" onclick="removeLogo()">Remove</button>' : '') +
+                '</div>' +
+                '<p style="font-size:0.72rem;color:var(--dim);margin-top:0.5rem;line-height:1.5;">JPG, PNG, or SVG &mdash; max 2 MB.<br>Appears on emails and the client sign page.</p>' +
+              '</div>' +
+            '</div>' +
+            '<input type="file" id="logo-file-input" accept="image/*" style="display:none" onchange="handleLogoFile(this)">' +
+          '</div>' +
+
           '<div class="form-row">' +
             '<div class="form-field"><label class="form-label">Your Name</label><input class="form-input" type="text" id="f-cname" value="' + esc(p.contractor_name) + '"></div>' +
             '<div class="form-field"><label class="form-label">Business Name</label><input class="form-input" type="text" id="f-bname" value="' + esc(p.business_name) + '"></div>' +
@@ -427,6 +456,59 @@
       });
       if (res.ok) { await loadTeamMembers(); showToast('Team member removed.'); }
       else { alert('Failed to remove team member.'); }
+    }
+
+    // ── Logo upload ────────────────────────────────────────────────────────
+    function handleLogoFile(input) {
+      var file = input.files[0];
+      if (!file) return;
+      if (file.size > 2 * 1024 * 1024) { alert('Logo must be under 2 MB.'); input.value = ''; return; }
+      var allowed = ['image/jpeg','image/jpg','image/png','image/gif','image/webp','image/svg+xml'];
+      if (!allowed.includes(file.type.toLowerCase())) { alert('Only JPG, PNG, GIF, WebP, or SVG files are allowed.'); input.value = ''; return; }
+
+      var reader = new FileReader();
+      reader.onload = async function(e) {
+        var base64   = e.target.result.split(',')[1];
+        var mimeType = file.type;
+        var ext      = file.name.split('.').pop().toLowerCase();
+
+        showToast('Uploading logo…');
+
+        var res = await fetch('/api/upload-logo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionToken },
+          body: JSON.stringify({ base64: base64, mimeType: mimeType, ext: ext })
+        });
+        var data = await res.json();
+        if (res.ok && data.logo_url) {
+          var img = document.getElementById('logo-preview-img');
+          var ph  = document.getElementById('logo-placeholder');
+          if (img) { img.src = data.logo_url; img.style.display = 'block'; }
+          if (ph)  ph.style.display = 'none';
+          showToast('Logo uploaded! ✓');
+        } else {
+          alert('Upload failed: ' + (data.error || 'Unknown error'));
+        }
+        input.value = '';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function removeLogo() {
+      if (!confirm('Remove your logo?')) return;
+      var res = await fetch('/api/upload-logo', {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + sessionToken }
+      });
+      if (res.ok) {
+        var img = document.getElementById('logo-preview-img');
+        var ph  = document.getElementById('logo-placeholder');
+        if (img) { img.src = ''; img.style.display = 'none'; }
+        if (ph)  ph.style.display = 'flex';
+        showToast('Logo removed.');
+      } else {
+        alert('Could not remove logo. Please try again.');
+      }
     }
 
     async function openPortal() {
