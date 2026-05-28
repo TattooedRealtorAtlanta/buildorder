@@ -218,6 +218,7 @@
                   '<button class="btn-action" onclick="openShare()">&#9997; eSign</button>' +
                   '<button class="btn-action" onclick="duplicateDoc(\'estimate\')">Duplicate</button>' +
                   '<button class="btn-contract" onclick="convertToContract()">&#8594; Contract</button>' +
+                  '<button class="btn-action" style="color:var(--amber);border-color:rgba(245,158,11,0.3);" onclick="convertToInvoice()">&#8594; Invoice</button>' +
                   (est.status === 'accepted'
                     ? '<span style="background:rgba(52,211,153,0.12);color:var(--green);border-radius:8px;padding:0.45rem 0.9rem;font-size:0.78rem;font-weight:700;">&#10003; Won</span>'
                     : '<button class="btn-action" style="color:var(--green);border-color:rgba(52,211,153,0.3);" onclick="markWon()">&#10003; Mark Won</button>') +
@@ -461,6 +462,35 @@
       if (est.total)           p.set('contract_price',       String(est.total));
       if (est.notes)           p.set('project_description',  est.notes);
       window.location.href = '/new-job.html?' + p.toString();
+    }
+
+    function convertToInvoice() {
+      if (!currentEstimate) return;
+      var est = currentEstimate;
+      var total = Number(est.total) || 0;
+      db.auth.getSession().then(function(r) {
+        var row = {
+          homeowner_name:  est.homeowner_name  || null,
+          homeowner_email: est.homeowner_email || null,
+          homeowner_phone: est.homeowner_phone || null,
+          job_address:     est.job_address     || null,
+          job_city:        est.job_city        || null,
+          job_state:       est.job_state       || null,
+          work_type:       est.work_type       || null,
+          subtotal:        total,
+          tax_rate:        0,
+          tax_amount:      0,
+          total:           total,
+          deposit_paid:    0,
+          balance_due:     total,
+          due_days:        30,
+          status:          'draft'
+        };
+        db.from('invoices').insert(row).select('id').single().then(function(res) {
+          if (res.error || !res.data) { alert('Could not create invoice: ' + (res.error?.message || 'Unknown error')); return; }
+          window.location.href = '/invoice.html?id=' + res.data.id + '&generate=true';
+        });
+      });
     }
 
     function copyShareLink() {

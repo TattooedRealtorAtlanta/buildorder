@@ -203,6 +203,32 @@
     .status-chip.active-in_progress { background:rgba(99,102,241,0.12); color:#818CF8; border-color:#818CF8; }
     .status-chip.active-complete    { background:rgba(52,211,153,0.12); color:var(--green); border-color:var(--green); }
 
+    /* Job Costs */
+    .costs-section { background:var(--bg2); border:1px solid var(--border); border-radius:12px; margin-bottom:1.5rem; overflow:hidden; }
+    .costs-header { display:flex; align-items:center; justify-content:space-between; padding:1.1rem 1.5rem; border-bottom:1px solid var(--border); }
+    .costs-title { font-size:0.7rem; font-weight:700; color:var(--dim); text-transform:uppercase; letter-spacing:0.07em; }
+    .costs-body { padding:1.25rem 1.5rem; }
+    .costs-summary { display:grid; grid-template-columns:repeat(3,1fr); gap:0.75rem; margin-bottom:1.25rem; }
+    .costs-stat { background:var(--bg3); border:1px solid var(--border); border-radius:10px; padding:0.9rem 1rem; }
+    .costs-stat-label { font-size:0.68rem; font-weight:700; color:var(--dim); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.3rem; }
+    .costs-stat-val { font-size:1.05rem; font-weight:800; color:var(--white); }
+    .costs-list { margin-bottom:1.1rem; }
+    .cost-row { display:flex; align-items:center; gap:0.75rem; padding:0.55rem 0; border-bottom:1px solid var(--border); font-size:0.83rem; }
+    .cost-row:last-child { border-bottom:none; }
+    .cost-desc { flex:1; color:var(--white); }
+    .cost-cat { font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; padding:0.15rem 0.5rem; border-radius:4px; background:rgba(148,163,184,0.1); color:var(--muted); flex-shrink:0; }
+    .cost-amt { font-weight:700; color:var(--amber); min-width:70px; text-align:right; flex-shrink:0; }
+    .cost-del { background:none; border:none; color:var(--dim); cursor:pointer; font-size:0.85rem; padding:0.1rem 0.3rem; flex-shrink:0; transition:color 0.15s; }
+    .cost-del:hover { color:var(--red); }
+    .cost-add-row { display:grid; grid-template-columns:1fr auto auto auto; gap:0.5rem; align-items:center; }
+    .cost-input { background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:0.5rem 0.75rem; font-size:0.83rem; color:var(--white); font-family:inherit; outline:none; transition:border-color 0.15s; }
+    .cost-input:focus { border-color:var(--amber); }
+    .cost-select { background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:0.5rem 0.6rem; font-size:0.8rem; color:var(--white); font-family:inherit; outline:none; cursor:pointer; }
+    .cost-select option { background:var(--bg2); }
+    .btn-add-cost { background:var(--amber); color:#090E1A; border:none; border-radius:8px; padding:0.5rem 1rem; font-size:0.8rem; font-weight:800; cursor:pointer; font-family:inherit; white-space:nowrap; transition:background 0.15s; }
+    .btn-add-cost:hover { background:var(--amber2); }
+    @media (max-width:600px) { .costs-summary { grid-template-columns:repeat(3,1fr); } .cost-add-row { grid-template-columns:1fr 1fr; } }
+
     /* Internal notes */
     .notes-section { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:1.25rem 1.5rem; margin-bottom:1.5rem; }
     .notes-header { font-size:0.7rem; color:var(--dim); font-weight:700; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:0.75rem; }
@@ -294,6 +320,7 @@
 
     let currentJob = null;
     let currentContract = null;
+    let currentCosts = [];
 
     async function init() {
       const { data: { session } } = await db.auth.getSession();
@@ -318,14 +345,13 @@
 
       currentJob = job;
 
-      const { data: docs } = await db.from('documents')
-        .select('*')
-        .eq('job_id', jobId)
-        .eq('doc_type', 'contract')
-        .order('created_at', { ascending: false })
-        .limit(1);
+      const [docsRes, costsRes] = await Promise.all([
+        db.from('documents').select('*').eq('job_id', jobId).eq('doc_type', 'contract').order('created_at', { ascending: false }).limit(1),
+        db.from('job_costs').select('*').eq('job_id', jobId).order('logged_at', { ascending: false })
+      ]);
 
-      currentContract = docs?.[0] || null;
+      currentContract = docsRes.data?.[0] || null;
+      currentCosts = costsRes.data || [];
 
       renderPage();
       attachNotesListener();
@@ -333,6 +359,62 @@
       if (autoGenerate && !currentContract) {
         generateContract();
       }
+    }
+
+    function renderCostsSection(job) {
+      var contractPrice = Number(job.contract_price) || 0;
+      var totalCosts = currentCosts.reduce(function(s, c) { return s + Number(c.amount); }, 0);
+      var profit = contractPrice - totalCosts;
+      var margin = contractPrice > 0 ? (profit / contractPrice * 100) : 0;
+      var profitColor = profit >= 0 ? 'var(--green)' : 'var(--red)';
+      var costRows = currentCosts.map(function(c) {
+        return '<div class="cost-row">' +
+          '<span class="cost-desc">' + escapeHtml(c.description) + '</span>' +
+          '<span class="cost-cat">' + escapeHtml(c.category) + '</span>' +
+          '<span class="cost-amt">$' + Number(c.amount).toFixed(2) + '</span>' +
+          '<button class="cost-del" onclick="deleteCost(\'' + c.id + '\')" title="Remove">&times;</button>' +
+          '</div>';
+      }).join('');
+      return '<div class="costs-section">' +
+        '<div class="costs-header">' +
+          '<div class="costs-title">&#128181; Job Costs</div>' +
+        '</div>' +
+        '<div class="costs-body">' +
+          '<div class="costs-summary">' +
+            '<div class="costs-stat"><div class="costs-stat-label">Contract</div><div class="costs-stat-val">' + (contractPrice > 0 ? '$' + contractPrice.toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2}) : '&mdash;') + '</div></div>' +
+            '<div class="costs-stat"><div class="costs-stat-label">Total Costs</div><div class="costs-stat-val">$' + totalCosts.toFixed(2) + '</div></div>' +
+            '<div class="costs-stat"><div class="costs-stat-label">Profit</div><div class="costs-stat-val" style="color:' + profitColor + ';">' + (contractPrice > 0 ? '$' + profit.toFixed(2) + ' <span style="font-size:0.75rem;font-weight:600;">(' + margin.toFixed(1) + '%)</span>' : '&mdash;') + '</div></div>' +
+          '</div>' +
+          (currentCosts.length > 0 ? '<div class="costs-list">' + costRows + '</div>' : '') +
+          '<div class="cost-add-row">' +
+            '<input class="cost-input" id="cost-desc-input" placeholder="Description (e.g. Lumber, Labor)" style="min-width:0;">' +
+            '<input class="cost-input" id="cost-amt-input" type="number" placeholder="Amount" min="0" step="0.01" style="width:110px;">' +
+            '<select class="cost-select" id="cost-cat-select"><option value="materials">Materials</option><option value="labor">Labor</option><option value="equipment">Equipment</option><option value="subcontractor">Subcontractor</option><option value="other">Other</option></select>' +
+            '<button class="btn-add-cost" onclick="addCost()">+ Add</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }
+
+    async function addCost() {
+      var desc = document.getElementById('cost-desc-input').value.trim();
+      var amt = parseFloat(document.getElementById('cost-amt-input').value);
+      var cat = document.getElementById('cost-cat-select').value;
+      if (!desc) { alert('Please enter a description.'); return; }
+      if (!amt || amt <= 0) { alert('Please enter a valid amount.'); return; }
+      var { data, error } = await db.from('job_costs').insert({ job_id: jobId, description: desc, amount: amt, category: cat }).select().single();
+      if (error) { alert('Error saving cost: ' + error.message); return; }
+      currentCosts.unshift(data);
+      renderPage();
+      attachNotesListener();
+    }
+
+    async function deleteCost(costId) {
+      var { error } = await db.from('job_costs').delete().eq('id', costId);
+      if (error) { alert('Error deleting cost: ' + error.message); return; }
+      currentCosts = currentCosts.filter(function(c) { return c.id !== costId; });
+      renderPage();
+      attachNotesListener();
     }
 
     function formatDate(dateStr) {
@@ -389,6 +471,8 @@
           <textarea class="notes-textarea" id="notes-input" placeholder="Private notes, reminders, material lists…">${escapeHtml(job.notes || '')}</textarea>
           <div class="notes-hint">Auto-saves when you click away</div>
         </div>
+
+        ${renderCostsSection(job)}
 
         <div class="contract-section">
           <div class="contract-header">

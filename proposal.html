@@ -243,6 +243,7 @@
           '<button class="btn-action" onclick="openEmail()">&#9993; Email</button>' +
           '<button class="btn-sign" onclick="openShare()">&#9997; eSign &amp; Send</button>' +
           '<button class="btn-action" onclick="duplicateDoc()">Duplicate</button>' +
+          '<button class="btn-action" style="color:var(--amber);border-color:rgba(245,158,11,0.3);" onclick="convertToInvoice()">&#8594; Invoice</button>' +
           (p.status === 'accepted'
             ? '<span class="btn-accepted">&#10003; Accepted</span>'
             : '<button class="btn-action" style="color:var(--green);border-color:rgba(52,211,153,0.3);" onclick="markAccepted()">&#10003; Mark Accepted</button>') +
@@ -482,6 +483,33 @@
           setTimeout(function() { window.location.href = '/proposal.html?id=' + d.new_id; }, 900);
         } else { alert('Could not duplicate: ' + (d.error || 'Unknown error')); }
       }).catch(function() { alert('Duplicate failed.'); });
+    }
+
+    function convertToInvoice() {
+      if (!currentProposal) return;
+      var p = currentProposal;
+      var total = Number(p.total) || 0;
+      var row = {
+        homeowner_name:  p.homeowner_name  || null,
+        homeowner_email: p.homeowner_email || null,
+        homeowner_phone: p.homeowner_phone || null,
+        job_address:     p.job_address     || null,
+        job_city:        p.job_city        || null,
+        job_state:       p.job_state       || null,
+        work_type:       p.work_type       || null,
+        subtotal:        total,
+        tax_rate:        0,
+        tax_amount:      0,
+        total:           total,
+        deposit_paid:    0,
+        balance_due:     total,
+        due_days:        p.net_days        || 30,
+        status:          'draft'
+      };
+      db.from('invoices').insert(row).select('id').single().then(function(res) {
+        if (res.error || !res.data) { alert('Could not create invoice: ' + (res.error?.message || 'Unknown error')); return; }
+        window.location.href = '/invoice.html?id=' + res.data.id + '&generate=true';
+      });
     }
 
     function showToast(msg) {

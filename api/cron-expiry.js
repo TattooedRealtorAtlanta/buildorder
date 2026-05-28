@@ -267,6 +267,7 @@ module.exports = async (req, res) => {
       'contract':      'Home Improvement Contract',
       'estimate':      'Estimate',
       'invoice':       'Invoice',
+      'proposal':      'Proposal & Contract',
       'change-order':  'Change Order',
       'subcontractor': 'Subcontractor Agreement',
       'lien-waiver':   'Lien Waiver',
