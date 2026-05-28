@@ -185,6 +185,7 @@
         <a href="#tools" class="nav-link" id="nav-tools">Tools</a>
         <a href="#features" class="nav-link" id="nav-features">Features</a>
         <a href="#pricing" class="nav-link" id="nav-pricing">Pricing</a>
+        <a href="/compare.html" class="nav-link">Compare</a>
         <div class="lang-toggle">
           <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
           <span class="lang-sep">|</span>
@@ -461,6 +462,101 @@
       </div>
     </section>
   </div>
+
+  <!-- COMPARISON -->
+  <section style="padding:5rem 2rem;background:var(--bg);">
+    <div style="max-width:960px;margin:0 auto;">
+      <div class="section-eyebrow">How We Compare</div>
+      <div class="section-title" style="margin-bottom:0.75rem;">Built for contractors. Not field service giants.</div>
+      <div class="section-sub" style="margin-bottom:2.5rem;">See how BuildOrder stacks up against the tools most contractors are already using.</div>
+
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+        <table style="width:100%;border-collapse:collapse;font-size:0.85rem;min-width:640px;">
+          <thead>
+            <tr>
+              <th style="text-align:left;padding:0.75rem 1rem;color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);width:30%;">Feature</th>
+              <th style="text-align:center;padding:0.75rem 0.75rem;color:var(--amber);font-weight:800;border-bottom:2px solid var(--amber);background:rgba(245,158,11,0.06);border-radius:8px 8px 0 0;">BuildOrder</th>
+              <th style="text-align:center;padding:0.75rem 0.75rem;color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);">Joist</th>
+              <th style="text-align:center;padding:0.75rem 0.75rem;color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);">Invoice2go</th>
+              <th style="text-align:center;padding:0.75rem 0.75rem;color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);">Jobber</th>
+            </tr>
+          </thead>
+          <tbody id="compare-body">
+            <!-- Row macro: ✅ = yes (green), ❌ = no (red), text = neutral -->
+          </tbody>
+        </table>
+      </div>
+
+      <p style="font-size:0.72rem;color:var(--dim);margin-top:1.25rem;text-align:center;">
+        Competitor pricing and features current as of May 2026. Verify at each provider&rsquo;s website before purchasing. &mdash;
+        <a href="/compare.html" style="color:var(--amber);text-decoration:none;">Full comparison &rarr;</a>
+      </p>
+
+      <div style="text-align:center;margin-top:2.5rem;">
+        <a href="/login.html?tab=signup" class="btn-hero" style="display:inline-block;">Try BuildOrder Free &mdash; No Credit Card</a>
+      </div>
+    </div>
+  </section>
+
+  <script>
+  (function(){
+    var rows = [
+      ['AI document generation',        '✅ Full AI',         '❌ No',             '❌ No',           '⚡ Auto-draft only'],
+      ['Document types',                '8 types',           '2 types',           '2 types',          '4 types'],
+      ['Native eSign',                  '✅ Built-in',        '❌ No',             '❌ No',            '❌ Requires DocuSign'],
+      ['eSign + payment in one link',   '✅ Yes',             '❌ No',             '❌ No',            '❌ No'],
+      ['Payment collection',            '✅ Yes',             '✅ Yes',            '✅ Yes',           '✅ Yes'],
+      ['Client portal',                 '✅ Yes',             '❌ No',             '❌ No',            '✅ Client Hub'],
+      ['Photo job log',                 '✅ Yes',             '❌ No',             '❌ No',            '✅ Yes'],
+      ['Pricebook / line items',        '✅ Yes',             '✅ Basic',          '✅ Basic',         '✅ Yes'],
+      ['Recurring invoices',            '✅ Yes',             '❌ No',             '✅ Yes',           '✅ Yes'],
+      ['Bilingual (EN / ES)',           '✅ Yes',             '❌ No',             '❌ No',            '❌ No'],
+      ['Starting price',                '$0 / mo',           'Free / $12+ /mo',   '$7+ /mo',          '$29+ /mo'],
+      ['Native mobile app',             '❌ Mobile web',      '✅ iOS + Android',  '✅ iOS + Android', '✅ iOS + Android'],
+      ['Scheduling &amp; dispatch',     '❌ Calendar view',   '❌ No',             '❌ No',            '✅ Full dispatch'],
+    ];
+
+    var green = '#34D399', red = '#EF4444', amber = '#F59E0B', muted = '#94A3B8';
+
+    function cellColor(v) {
+      if (v.startsWith('✅')) return green;
+      if (v.startsWith('❌')) return red;
+      if (v.startsWith('⚡')) return amber;
+      return muted;
+    }
+
+    var tbody = document.getElementById('compare-body');
+    if (!tbody) return;
+
+    rows.forEach(function(row, i) {
+      var tr = document.createElement('tr');
+      tr.style.borderBottom = '1px solid rgba(255,255,255,0.04)';
+      if (i % 2 === 0) tr.style.background = 'rgba(255,255,255,0.01)';
+
+      // Feature label
+      var td0 = document.createElement('td');
+      td0.innerHTML = row[0];
+      td0.style.cssText = 'padding:0.65rem 1rem;color:#94A3B8;font-weight:500;';
+      tr.appendChild(td0);
+
+      // BuildOrder column
+      var td1 = document.createElement('td');
+      td1.innerHTML = row[1];
+      td1.style.cssText = 'padding:0.65rem 0.75rem;text-align:center;font-weight:700;background:rgba(245,158,11,0.04);color:' + cellColor(row[1]) + ';';
+      tr.appendChild(td1);
+
+      // Competitors
+      [row[2], row[3], row[4]].forEach(function(v) {
+        var td = document.createElement('td');
+        td.innerHTML = v;
+        td.style.cssText = 'padding:0.65rem 0.75rem;text-align:center;color:' + cellColor(v) + ';';
+        tr.appendChild(td);
+      });
+
+      tbody.appendChild(tr);
+    });
+  })();
+  </script>
 
   <!-- FOOTER CTA -->
   <section style="text-align:center;padding:4rem 2rem;background:var(--bg);">
