@@ -37,6 +37,8 @@
     .btn-edit:hover { color: var(--white); border-color: var(--amber); }
     .btn-del { background: none; border: 1px solid transparent; border-radius: 7px; padding: 0.3rem 0.7rem; font-size: 0.72rem; font-weight: 600; color: var(--dim); cursor: pointer; font-family: inherit; transition: color 0.15s; }
     .btn-del:hover { color: var(--red); }
+    .btn-portal { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.25); border-radius: 7px; padding: 0.3rem 0.7rem; font-size: 0.72rem; font-weight: 700; color: var(--amber); cursor: pointer; font-family: inherit; transition: background 0.15s, border-color 0.15s; }
+    .btn-portal:hover { background: rgba(245,158,11,0.2); border-color: var(--amber); }
     .empty-state { text-align: center; padding: 3.5rem 2rem; color: var(--muted); }
     .empty-state h3 { font-size: 1rem; font-weight: 700; color: var(--white); margin-bottom: 0.4rem; }
     .empty-state p { font-size: 0.82rem; margin-bottom: 1.5rem; }
@@ -160,6 +162,7 @@
             '<div class="client-sub">' + (sub || '&mdash;') + '</div>' +
           '</div>' +
           '<div class="client-actions">' +
+            (c.email ? '<button class="btn-portal" onclick="sendPortal(\'' + c.id + '\',\'' + (c.name||'').replace(/'/g,"\\'") + '\')">&#128279; Portal</button>' : '') +
             '<button class="btn-edit" onclick="editClient(\'' + c.id + '\')">Edit</button>' +
             '<button class="btn-del" onclick="deleteClient(\'' + c.id + '\',\'' + (c.name||'').replace(/'/g,"\\'") + '\')">Delete</button>' +
           '</div>' +
@@ -219,6 +222,30 @@
       } else {
         var err = await res.json();
         alert('Error: ' + (err.error || 'Failed to save'));
+      }
+    }
+
+    async function sendPortal(id, name) {
+      if (!confirm('Send a portal link to ' + name + '? They\'ll get an email with a private link to view all their documents.')) return;
+      var res = await fetch('/api/portal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionToken },
+        body: JSON.stringify({ client_id: id })
+      });
+      var data = await res.json();
+      if (res.ok && data.success) {
+        if (data.email_sent) {
+          showToast('Portal link sent to ' + name + '!');
+        } else {
+          // Email failed — show manual copy prompt
+          var copied = false;
+          if (navigator.clipboard) {
+            try { await navigator.clipboard.writeText(data.portal_url); copied = true; } catch(e) {}
+          }
+          alert((data.warning || 'Email could not be sent.') + '\n\nPortal URL' + (copied ? ' copied to clipboard' : '') + ':\n' + data.portal_url);
+        }
+      } else {
+        alert('Error: ' + (data.error || 'Failed to send portal'));
       }
     }
 

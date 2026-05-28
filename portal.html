@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BuildOrder.ai &mdash; Document Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:    #090E1A;
+      --bg2:   #111827;
+      --bg3:   #1A2438;
+      --amber: #F59E0B;
+      --amber2:#FCD34D;
+      --white: #F8FAFC;
+      --muted: #94A3B8;
+      --dim:   #475569;
+      --border:rgba(255,255,255,0.07);
+      --green: #34D399;
+      --red:   #EF4444;
+      --blue:  #60A5FA;
+      --purple:#A5B4FC;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; }
+
+    /* Nav */
+    .nav { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 58px; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-size: 1.15rem; font-weight: 900; letter-spacing: -0.03em; color: var(--white); text-decoration: none; }
+    .logo em { font-style: normal; color: var(--amber); }
+    .nav-tag { font-size: 0.72rem; font-weight: 600; color: var(--dim); background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 0.25rem 0.6rem; }
+
+    /* Main */
+    .main { max-width: 760px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+
+    /* Contractor card */
+    .contractor-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 16px; padding: 1.75rem 2rem; margin-bottom: 2rem; display: flex; align-items: flex-start; gap: 1.25rem; }
+    .contractor-avatar { width: 52px; height: 52px; border-radius: 50%; background: rgba(245,158,11,0.12); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 900; color: var(--amber); flex-shrink: 0; }
+    .contractor-info h2 { font-size: 1.05rem; font-weight: 800; margin-bottom: 0.25rem; }
+    .contractor-info p  { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+    .contractor-info a  { color: var(--amber); text-decoration: none; }
+    .contractor-info a:hover { text-decoration: underline; }
+
+    /* Section heading */
+    .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .section-title { font-size: 0.78rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .doc-count { font-size: 0.75rem; color: var(--dim); }
+
+    /* Document list */
+    .doc-list { display: flex; flex-direction: column; gap: 0.6rem; }
+    .doc-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; transition: border-color 0.2s; }
+    .doc-card:hover { border-color: rgba(245,158,11,0.3); }
+    .doc-icon { font-size: 1.4rem; flex-shrink: 0; width: 34px; text-align: center; }
+    .doc-body { flex: 1; min-width: 0; }
+    .doc-type { font-size: 0.82rem; font-weight: 700; margin-bottom: 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .doc-meta { font-size: 0.72rem; color: var(--muted); }
+    .doc-badges { display: flex; gap: 0.35rem; flex-shrink: 0; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+
+    /* Status badges */
+    .badge { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.68rem; font-weight: 700; border-radius: 5px; padding: 0.2rem 0.5rem; white-space: nowrap; }
+    .badge-signed  { background: rgba(52,211,153,0.1);  color: var(--green); }
+    .badge-paid    { background: rgba(52,211,153,0.1);  color: var(--green); }
+    .badge-pending { background: rgba(148,163,184,0.1); color: var(--muted); }
+    .badge-partial { background: rgba(165,180,252,0.1); color: var(--purple); }
+    .badge-payment { background: rgba(245,158,11,0.1);  color: var(--amber); }
+
+    .btn-open { background: var(--amber); color: #090E1A; border: none; border-radius: 8px; padding: 0.4rem 0.9rem; font-size: 0.75rem; font-weight: 800; cursor: pointer; font-family: inherit; text-decoration: none; display: inline-block; flex-shrink: 0; transition: background 0.15s; }
+    .btn-open:hover { background: var(--amber2); }
+
+    /* Empty state */
+    .empty { text-align: center; padding: 3.5rem 1rem; color: var(--muted); }
+    .empty h3 { font-size: 1rem; font-weight: 700; color: var(--white); margin-bottom: 0.4rem; }
+    .empty p { font-size: 0.82rem; }
+
+    /* Loading / error */
+    .loading { text-align: center; padding: 4rem 1rem; color: var(--muted); font-size: 0.9rem; }
+    .error-box { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: 12px; padding: 2rem; text-align: center; }
+    .error-box h3 { font-size: 1rem; font-weight: 700; color: var(--red); margin-bottom: 0.4rem; }
+    .error-box p { font-size: 0.82rem; color: var(--muted); }
+
+    /* Footer */
+    .footer { text-align: center; padding: 2rem; font-size: 0.72rem; color: var(--dim); line-height: 1.7; }
+    .footer a { color: var(--dim); text-decoration: underline; }
+
+    @media (max-width: 540px) {
+      .contractor-card { flex-direction: column; gap: 1rem; }
+      .doc-card { flex-wrap: wrap; }
+      .doc-badges { width: 100%; justify-content: flex-start; }
+      .btn-open { width: 100%; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="https://buildorder.ai" class="logo">Build<em>Order</em></a>
+    <div class="nav-tag">Client Portal</div>
+  </nav>
+
+  <main class="main" id="main">
+    <div class="loading">Loading your documents&hellip;</div>
+  </main>
+
+  <div class="footer">
+    Documents powered by <a href="https://buildorder.ai" target="_blank">BuildOrder.ai</a> &mdash;
+    <a href="/terms.html">Terms</a> &middot; <a href="/privacy.html">Privacy</a>
+  </div>
+
+  <script>
+    var TYPE_ICONS = {
+      'contract':      '📄',
+      'estimate':      '📋',
+      'invoice':       '💰',
+      'change-order':  '📝',
+      'subcontractor': '🤝',
+      'lien-waiver':   '⚓',
+      'takeoff':       '🔨',
+      'document':      '📃'
+    };
+    var TYPE_LABELS = {
+      'contract':      'Home Improvement Contract',
+      'estimate':      'Estimate',
+      'invoice':       'Invoice',
+      'change-order':  'Change Order',
+      'subcontractor': 'Subcontractor Agreement',
+      'lien-waiver':   'Lien Waiver',
+      'takeoff':       'Material Takeoff',
+      'document':      'Document'
+    };
+
+    function fmtDate(iso) {
+      if (!iso) return '';
+      return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    function fmtMoney(n) {
+      if (!n) return '';
+      return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function getToken() {
+      var params = new URLSearchParams(window.location.search);
+      return params.get('token') || '';
+    }
+
+    function renderError(msg) {
+      document.getElementById('main').innerHTML =
+        '<div class="error-box"><h3>Portal Unavailable</h3><p>' + msg + '</p></div>';
+    }
+
+    function renderPortal(data) {
+      var main = document.getElementById('main');
+      var c = data.contractor || {};
+      var bizName = c.business_name || c.contractor_name || 'Your Contractor';
+      var initials = bizName.split(' ').map(function(w) { return w[0]; }).slice(0,2).join('').toUpperCase();
+      var contactParts = [];
+      if (c.phone) contactParts.push('<a href="tel:' + c.phone + '">' + c.phone + '</a>');
+      if (c.email) contactParts.push('<a href="mailto:' + c.email + '">' + c.email + '</a>');
+      var addressParts = [];
+      if (c.address) addressParts.push(c.address);
+      if (c.city && c.state) addressParts.push(c.city + ', ' + c.state + (c.zip ? ' ' + c.zip : ''));
+      if (c.license_number) addressParts.push('Lic. ' + c.license_number);
+
+      var docs = data.documents || [];
+      var docsHtml = '';
+
+      if (!docs.length) {
+        docsHtml = '<div class="empty"><h3>No documents yet</h3><p>Your contractor hasn\'t shared any documents yet. Check back soon.</p></div>';
+      } else {
+        docsHtml = '<div class="doc-list">' + docs.map(function(d) {
+          var icon  = TYPE_ICONS[d.document_type] || '📃';
+          var label = TYPE_LABELS[d.document_type] || 'Document';
+          var ref   = d.reference_id ? ' &middot; ' + d.reference_id : '';
+          var date  = fmtDate(d.created_at);
+
+          // Build status badges
+          var badges = '';
+          var isSigned = !!d.signed_at;
+          var isPaid   = !!d.paid_at;
+          var hasPayment = d.payment_amount && Number(d.payment_amount) > 0;
+
+          if (isSigned) {
+            badges += '<span class="badge badge-signed">✓ Signed</span>';
+          } else {
+            badges += '<span class="badge badge-pending">Awaiting Signature</span>';
+          }
+          if (hasPayment) {
+            if (isPaid) {
+              badges += '<span class="badge badge-paid">✓ Paid</span>';
+            } else {
+              badges += '<span class="badge badge-payment">' + fmtMoney(d.payment_amount) + ' due</span>';
+            }
+          }
+
+          var openUrl = '/sign.html?token=' + d.token;
+
+          return '<div class="doc-card">' +
+            '<div class="doc-icon">' + icon + '</div>' +
+            '<div class="doc-body">' +
+              '<div class="doc-type">' + label + ref + '</div>' +
+              '<div class="doc-meta">' + date + '</div>' +
+            '</div>' +
+            '<div class="doc-badges">' + badges + '</div>' +
+            '<a class="btn-open" href="' + openUrl + '" target="_blank">Open</a>' +
+          '</div>';
+        }).join('') + '</div>';
+      }
+
+      var clientGreet = data.client_name ? 'Hi ' + data.client_name.split(' ')[0] + ',' : 'Hi there,';
+
+      main.innerHTML =
+        '<p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.5rem;">' + clientGreet + ' here are all your documents from <strong style="color:var(--white);">' + bizName + '</strong>.</p>' +
+
+        '<div class="contractor-card">' +
+          '<div class="contractor-avatar">' + initials + '</div>' +
+          '<div class="contractor-info">' +
+            '<h2>' + bizName + '</h2>' +
+            (contactParts.length ? '<p>' + contactParts.join(' &middot; ') + '</p>' : '') +
+            (addressParts.length ? '<p>' + addressParts.join(' &middot; ') + '</p>' : '') +
+          '</div>' +
+        '</div>' +
+
+        '<div class="section-head">' +
+          '<div class="section-title">Your Documents</div>' +
+          '<div class="doc-count">' + docs.length + ' document' + (docs.length !== 1 ? 's' : '') + '</div>' +
+        '</div>' +
+
+        docsHtml;
+    }
+
+    async function init() {
+      var token = getToken();
+      if (!token) { renderError('No portal token found in this URL. Make sure you used the full link from your email.'); return; }
+
+      try {
+        var res = await fetch('/api/portal?token=' + encodeURIComponent(token));
+        var data = await res.json();
+
+        if (!res.ok) {
+          renderError(data.error || 'This portal link is invalid or has expired.');
+          return;
+        }
+
+        renderPortal(data);
+      } catch (e) {
+        renderError('Could not load your portal. Please try again in a moment.');
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
