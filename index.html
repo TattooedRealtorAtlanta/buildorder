@@ -512,7 +512,7 @@
       ['Recurring invoices',            '✅ Yes',             '❌ No',             '✅ Yes',           '✅ Yes'],
       ['Bilingual (EN / ES)',           '✅ Yes',             '❌ No',             '❌ No',            '❌ No'],
       ['Starting price',                '$0 / mo',           'Free / $12+ /mo',   '$7+ /mo',          '$29+ /mo'],
-      ['Native mobile app',             '❌ Mobile web',      '✅ iOS + Android',  '✅ iOS + Android', '✅ iOS + Android'],
+      ['Native mobile app',             '⚡ Installable PWA', '✅ iOS + Android',  '✅ iOS + Android', '✅ iOS + Android'],
       ['Scheduling &amp; dispatch',     '❌ Calendar view',   '❌ No',             '❌ No',            '✅ Full dispatch'],
     ];
 
@@ -758,6 +758,12 @@
       document.getElementById('btn-en').classList.toggle('active', lang === 'en');
       document.getElementById('btn-es').classList.toggle('active', lang === 'es');
       document.documentElement.lang = lang;
+    }
+  </script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(function() {});
     }
   </script>
 

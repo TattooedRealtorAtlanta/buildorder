@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>You're Offline — BuildOrder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #090E1A;
+      color: #F8FAFC;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      text-align: center;
+    }
+    .icon {
+      font-size: 3.5rem;
+      margin-bottom: 1.5rem;
+      opacity: 0.6;
+    }
+    .logo {
+      font-size: 1rem;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      color: #F8FAFC;
+      text-decoration: none;
+      margin-bottom: 3rem;
+      display: block;
+    }
+    .logo em { font-style: normal; color: #F59E0B; }
+    h1 {
+      font-size: clamp(1.5rem, 5vw, 2rem);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      margin-bottom: 0.75rem;
+    }
+    p {
+      font-size: 0.95rem;
+      color: #94A3B8;
+      max-width: 380px;
+      line-height: 1.7;
+      margin-bottom: 2rem;
+    }
+    .btn {
+      display: inline-block;
+      background: #F59E0B;
+      color: #090E1A;
+      border: none;
+      border-radius: 10px;
+      padding: 0.8rem 1.75rem;
+      font-size: 0.9rem;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: inherit;
+      text-decoration: none;
+      margin: 0.4rem;
+    }
+    .btn-outline {
+      background: none;
+      border: 1px solid rgba(255,255,255,0.12);
+      color: #94A3B8;
+    }
+    .cached-note {
+      margin-top: 2.5rem;
+      font-size: 0.78rem;
+      color: #475569;
+      max-width: 340px;
+    }
+  </style>
+</head>
+<body>
+
+  <a href="/" class="logo">Build<em>Order</em></a>
+
+  <div class="icon">📡</div>
+  <h1>You're offline</h1>
+  <p>No internet connection detected. Check your signal and try again — your work is saved in BuildOrder and will be right where you left it.</p>
+
+  <div>
+    <button class="btn" onclick="window.location.reload()">Try Again</button>
+    <a href="/dashboard.html" class="btn btn-outline">Go to Dashboard</a>
+  </div>
+
+  <p class="cached-note">Pages you've visited recently may still load from cache even without a connection.</p>
+
+  <script>
+    // Auto-reload when connection comes back
+    window.addEventListener('online', function() {
+      window.location.reload();
+    });
+  </script>
+
+</body>
+</html>

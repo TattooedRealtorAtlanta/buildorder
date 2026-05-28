@@ -208,6 +208,25 @@
   </style>
 </head>
 <body>
+
+  <!-- PWA Install Banner -->
+  <div id="pwa-banner" style="display:none;background:#1A2438;border-bottom:1px solid rgba(245,158,11,0.2);padding:0.6rem 1.25rem;display:none;align-items:center;justify-content:space-between;gap:1rem;font-size:0.82rem;">
+    <div style="display:flex;align-items:center;gap:0.6rem;">
+      <span style="font-size:1.1rem;">📲</span>
+      <span style="color:#94A3B8;">Install <strong style="color:#F8FAFC;">BuildOrder</strong> as an app for faster access from your phone.</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:0.5rem;flex-shrink:0;">
+      <button id="pwa-install-btn" style="background:#F59E0B;color:#090E1A;border:none;border-radius:7px;padding:0.35rem 0.85rem;font-size:0.8rem;font-weight:800;cursor:pointer;font-family:inherit;">Install</button>
+      <button id="pwa-dismiss-btn" style="background:none;border:none;color:#475569;font-size:1.1rem;cursor:pointer;line-height:1;padding:0.2rem 0.3rem;" title="Dismiss">&times;</button>
+    </div>
+  </div>
+
+  <!-- iOS Install Tip (shown once on iPhone/iPad) -->
+  <div id="ios-banner" style="display:none;background:#1A2438;border-bottom:1px solid rgba(245,158,11,0.15);padding:0.65rem 1.25rem;align-items:center;justify-content:space-between;gap:1rem;font-size:0.8rem;">
+    <span style="color:#94A3B8;">&#128247; Tap <strong style="color:#F8FAFC;">Share</strong> &rarr; <strong style="color:#F8FAFC;">Add to Home Screen</strong> to install BuildOrder as an app.</span>
+    <button id="ios-dismiss-btn" style="background:none;border:none;color:#475569;font-size:1.1rem;cursor:pointer;flex-shrink:0;" title="Dismiss">&times;</button>
+  </div>
+
   <nav class="nav">
     <a href="/dashboard.html" class="logo">Build<em>Order</em></a>
     <div class="nav-right">
@@ -871,6 +890,54 @@
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(function() {});
     }
+
+    // ── PWA Install Prompt ──────────────────────────────────────────────────
+    var deferredInstallPrompt = null;
+
+    // Android / Chrome: catch the beforeinstallprompt event
+    window.addEventListener('beforeinstallprompt', function(e) {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      if (!localStorage.getItem('pwa-install-dismissed')) {
+        var banner = document.getElementById('pwa-banner');
+        if (banner) banner.style.display = 'flex';
+      }
+    });
+
+    document.getElementById('pwa-install-btn') && document.getElementById('pwa-install-btn').addEventListener('click', function() {
+      if (!deferredInstallPrompt) return;
+      deferredInstallPrompt.prompt();
+      deferredInstallPrompt.userChoice.then(function(result) {
+        deferredInstallPrompt = null;
+        var banner = document.getElementById('pwa-banner');
+        if (banner) banner.style.display = 'none';
+        if (result.outcome === 'accepted') localStorage.setItem('pwa-install-dismissed', '1');
+      });
+    });
+
+    document.getElementById('pwa-dismiss-btn') && document.getElementById('pwa-dismiss-btn').addEventListener('click', function() {
+      var banner = document.getElementById('pwa-banner');
+      if (banner) banner.style.display = 'none';
+      localStorage.setItem('pwa-install-dismissed', '1');
+    });
+
+    // iOS Safari: no beforeinstallprompt — show manual tip once
+    (function() {
+      var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+      var isStandalone = window.navigator.standalone;
+      if (isIOS && !isStandalone && !localStorage.getItem('ios-tip-dismissed')) {
+        var banner = document.getElementById('ios-banner');
+        if (banner) banner.style.display = 'flex';
+      }
+      var dismissBtn = document.getElementById('ios-dismiss-btn');
+      if (dismissBtn) {
+        dismissBtn.addEventListener('click', function() {
+          var banner = document.getElementById('ios-banner');
+          if (banner) banner.style.display = 'none';
+          localStorage.setItem('ios-tip-dismissed', '1');
+        });
+      }
+    })();
   </script>
   <script src="/feedback-widget.js"></script>
 </body>
