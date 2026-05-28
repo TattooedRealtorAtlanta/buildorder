@@ -1,6 +1,7 @@
 const Anthropic = require('@anthropic-ai/sdk');
 const { createClient } = require('@supabase/supabase-js');
 const { getEffectivePlan } = require('./_effectivePlan');
+const { buildRateContext } = require('./_rateLibrary');
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
@@ -62,6 +63,8 @@ module.exports = async function handler(req, res) {
   const depositPct = proposal.deposit_pct || 50;
   const balancePct = 100 - depositPct;
 
+  const rateContext = await buildRateContext(db, user.id);
+
   const prompt = `You are an expert contractor. Generate a professional PROPOSAL & CONTRACT AGREEMENT document for the job below.
 
 CONTRACTOR:
@@ -86,6 +89,7 @@ WORK TYPE: ${proposal.work_type || 'General Contractor Work'}
 DESCRIPTION:
 ${proposal.description || ''}
 
+${rateContext}
 PAYMENT TERMS:
 - Deposit (${depositPct}%) due at signing
 - Balance (${balancePct}%) due upon project completion

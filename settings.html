@@ -292,15 +292,34 @@
 
         '<div class="section">' +
           '<div class="section-title">Rate Library</div>' +
-          '<p style="font-size:0.78rem;color:var(--muted);margin-bottom:1.25rem;line-height:1.6;">Save your standard services and prices. On any estimate, click <strong style="color:var(--white);">From Library</strong> to drop them in instantly.</p>' +
+          '<p style="font-size:0.78rem;color:var(--muted);margin-bottom:1.25rem;line-height:1.6;">These rates power the AI pricing on every estimate, proposal, and Quick Quote you generate. The more you fill in, the more accurate your documents will be. <a href="/how-it-works.html" style="color:var(--amber);text-decoration:none;" target="_blank">How does pricing work? &#8599;</a></p>' +
+
+          '<div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.18);border-radius:10px;padding:1.1rem 1.25rem;margin-bottom:1.5rem;">' +
+            '<div style="font-size:0.7rem;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:0.85rem;">AI Pricing Defaults</div>' +
+            '<div class="form-row">' +
+              '<div class="form-field">' +
+                '<label class="form-label">Your Labor Rate <span style="font-weight:400;text-transform:none;color:var(--dim);">($/hr)</span></label>' +
+                '<input class="form-input" type="number" id="f-labor-rate" placeholder="e.g. 85" min="0" step="0.01" value="' + (p.labor_rate || '') + '">' +
+                '<div style="font-size:0.7rem;color:var(--dim);margin-top:0.3rem;">AI uses this for all labor line items</div>' +
+              '</div>' +
+              '<div class="form-field">' +
+                '<label class="form-label">Material Markup <span style="font-weight:400;text-transform:none;color:var(--dim);">(%)</span></label>' +
+                '<input class="form-input" type="number" id="f-markup-pct" placeholder="e.g. 20" min="0" max="200" step="1" value="' + (p.markup_pct || '') + '">' +
+                '<div style="font-size:0.7rem;color:var(--dim);margin-top:0.3rem;">Applied on top of material costs</div>' +
+              '</div>' +
+            '</div>' +
+            '<button class="btn-save" onclick="saveRateDefaults()" id="save-rate-defaults-btn" style="margin-top:0.25rem;">Save Pricing Defaults</button>' +
+          '</div>' +
+
+          '<div style="font-size:0.7rem;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:0.65rem;">Price List <span style="font-weight:400;text-transform:none;letter-spacing:0;">&mdash; specific materials &amp; services</span></div>' +
           '<div id="rate-library-items"><div style="color:var(--muted);font-size:0.82rem;padding:0.25rem 0;">Loading…</div></div>' +
           '<div class="form-row" style="margin-top:1.25rem;">' +
-            '<div class="form-field"><label class="form-label">Description</label><input class="form-input" type="text" id="lib-desc" placeholder="e.g. Install hardwood flooring"></div>' +
-            '<div class="form-field"><label class="form-label">Unit <span style="font-weight:400;text-transform:none;color:var(--dim);">(optional)</span></label><input class="form-input" type="text" id="lib-unit" placeholder="sq ft, hr, each…"></div>' +
+            '<div class="form-field"><label class="form-label">Item / Material</label><input class="form-input" type="text" id="lib-desc" placeholder="e.g. GAF Timberline HDZ shingles"></div>' +
+            '<div class="form-field"><label class="form-label">Unit <span style="font-weight:400;text-transform:none;color:var(--dim);">(optional)</span></label><input class="form-input" type="text" id="lib-unit" placeholder="sq, hr, sq ft, each…"></div>' +
           '</div>' +
           '<div style="display:flex;gap:0.75rem;align-items:flex-end;">' +
-            '<div class="form-field" style="flex:1;margin-bottom:0;"><label class="form-label">Unit Price ($)</label><input class="form-input" type="number" id="lib-price" placeholder="0.00" min="0" step="0.01"></div>' +
-            '<button class="btn-save" onclick="addTemplate()" style="flex-shrink:0;margin-bottom:1px;">+ Add to Library</button>' +
+            '<div class="form-field" style="flex:1;margin-bottom:0;"><label class="form-label">Your Price ($)</label><input class="form-input" type="number" id="lib-price" placeholder="0.00" min="0" step="0.01"></div>' +
+            '<button class="btn-save" onclick="addTemplate()" style="flex-shrink:0;margin-bottom:1px;">+ Add Item</button>' +
           '</div>' +
         '</div>' +
 
@@ -354,6 +373,22 @@
       if (btn3) { btn3.disabled = false; btn3.textContent = 'Save Payment Info'; }
       if (res.error) { alert('Error saving: ' + res.error.message); return; }
       showToast('Profile saved!');
+    }
+
+    async function saveRateDefaults() {
+      var btn = document.getElementById('save-rate-defaults-btn');
+      if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+      var laborRate = parseFloat(document.getElementById('f-labor-rate').value) || null;
+      var markupPct = parseInt(document.getElementById('f-markup-pct').value)   || null;
+      var updates = {};
+      if (laborRate !== null) updates.labor_rate = laborRate;
+      if (markupPct !== null) updates.markup_pct = markupPct;
+      if (laborRate === null) updates.labor_rate = null;
+      if (markupPct === null) updates.markup_pct = null;
+      var res = await db.from('contractor_profiles').update(updates).eq('id', userId);
+      if (btn) { btn.disabled = false; btn.textContent = 'Save Pricing Defaults'; }
+      if (res.error) { alert('Error saving: ' + res.error.message); return; }
+      showToast('Pricing defaults saved!');
     }
 
     async function loadRateLibrary() {

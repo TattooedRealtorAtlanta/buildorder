@@ -1,6 +1,7 @@
 const Anthropic = require('@anthropic-ai/sdk');
 const { createClient } = require('@supabase/supabase-js');
 const { getEffectivePlan } = require('./_effectivePlan');
+const { buildRateContext } = require('./_rateLibrary');
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -61,6 +62,8 @@ module.exports = async (req, res) => {
     ? `Apply ${estimate.tax_rate}% tax to materials only (not labor).`
     : 'No tax applies to this estimate.';
 
+  const rateContext = await buildRateContext(supabase, estimate.user_id);
+
   let prompt = `You are a professional estimating specialist generating a detailed home improvement estimate. Generate a complete, ready-to-send estimate using the information below.
 
 CONTRACTOR INFORMATION:
@@ -84,6 +87,7 @@ Type of Work: ${estimate.work_type || 'General Home Improvement'}
 Project Description: ${estimate.project_description}
 ${manualLineItems}
 
+${rateContext}
 ESTIMATE TERMS:
 Date: ${today}
 Valid Until: ${validUntilStr} (${estimate.valid_days || 30} days)

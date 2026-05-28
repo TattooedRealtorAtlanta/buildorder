@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BuildOrder.ai &mdash; How Pricing Works</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:    #090E1A;
+      --bg2:   #111827;
+      --bg3:   #1A2438;
+      --amber: #F59E0B;
+      --amber2:#FCD34D;
+      --white: #F8FAFC;
+      --muted: #94A3B8;
+      --dim:   #475569;
+      --border:rgba(255,255,255,0.07);
+      --green: #34D399;
+      --red:   #EF4444;
+      --blue:  #60A5FA;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; }
+    .nav { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+    .logo { font-size: 1.2rem; font-weight: 900; letter-spacing: -0.03em; text-decoration: none; color: var(--white); }
+    .logo em { font-style: normal; color: var(--amber); }
+    .btn-back { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.9rem; font-size: 0.78rem; color: var(--dim); cursor: pointer; font-family: inherit; text-decoration: none; transition: color 0.2s, border-color 0.2s; }
+    .btn-back:hover { color: var(--white); border-color: var(--amber); }
+
+    .main { max-width: 720px; margin: 0 auto; padding: 3rem 2rem 5rem; }
+    .page-title { font-size: 1.75rem; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 0.4rem; }
+    .page-title em { font-style: normal; color: var(--amber); }
+    .page-sub { font-size: 0.9rem; color: var(--muted); margin-bottom: 3rem; line-height: 1.7; }
+
+    .section { margin-bottom: 2.5rem; }
+    .section-title { font-size: 1rem; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.6rem; }
+    .section-title .icon { font-size: 1.15rem; }
+    .section-body { font-size: 0.875rem; color: var(--muted); line-height: 1.8; }
+    .section-body p { margin-bottom: 0.9rem; }
+    .section-body p:last-child { margin-bottom: 0; }
+    .section-body strong { color: var(--white); font-weight: 700; }
+    .section-body a { color: var(--amber); text-decoration: none; }
+    .section-body a:hover { text-decoration: underline; }
+
+    /* Pricing hierarchy */
+    .hierarchy { display: flex; flex-direction: column; gap: 0; margin: 1.25rem 0; }
+    .h-step { display: flex; gap: 1rem; align-items: flex-start; padding: 1.1rem 1.25rem; background: var(--bg2); border: 1px solid var(--border); position: relative; }
+    .h-step:first-child { border-radius: 12px 12px 0 0; }
+    .h-step:last-child  { border-radius: 0 0 12px 12px; border-top: none; }
+    .h-step:only-child  { border-radius: 12px; }
+    .h-step + .h-step   { border-top: none; }
+    .h-num { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 900; flex-shrink: 0; margin-top: 0.1rem; }
+    .h-num.first  { background: rgba(52,211,153,0.15); color: var(--green); }
+    .h-num.second { background: rgba(245,158,11,0.15); color: var(--amber); }
+    .h-num.third  { background: rgba(148,163,184,0.12); color: var(--muted); }
+    .h-content h4 { font-size: 0.875rem; font-weight: 800; margin-bottom: 0.25rem; }
+    .h-content p  { font-size: 0.8rem; color: var(--muted); line-height: 1.6; margin: 0; }
+    .h-badge { display: inline-block; font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 4px; padding: 0.15rem 0.4rem; margin-left: 0.4rem; vertical-align: middle; }
+    .badge-best    { background: rgba(52,211,153,0.15); color: var(--green); }
+    .badge-good    { background: rgba(245,158,11,0.12); color: var(--amber); }
+    .badge-fallback{ background: rgba(148,163,184,0.1); color: var(--muted); }
+
+    /* FAQ accordion */
+    .faq { margin-top: 1.25rem; }
+    .faq-item { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 0.6rem; overflow: hidden; }
+    .faq-q { width: 100%; background: var(--bg2); border: none; text-align: left; padding: 0.9rem 1.1rem; font-size: 0.875rem; font-weight: 700; color: var(--white); cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    .faq-q:hover { background: var(--bg3); }
+    .faq-arrow { font-size: 0.75rem; color: var(--dim); transition: transform 0.2s; flex-shrink: 0; }
+    .faq-a { display: none; padding: 0 1.1rem 0.9rem; font-size: 0.82rem; color: var(--muted); line-height: 1.7; background: var(--bg2); }
+    .faq-a strong { color: var(--white); }
+    .faq-item.open .faq-a { display: block; }
+    .faq-item.open .faq-arrow { transform: rotate(180deg); }
+
+    /* CTA */
+    .cta-box { background: rgba(245,158,11,0.07); border: 1px solid rgba(245,158,11,0.2); border-radius: 14px; padding: 1.75rem 2rem; text-align: center; margin-top: 3rem; }
+    .cta-box h3 { font-size: 1.05rem; font-weight: 800; margin-bottom: 0.4rem; }
+    .cta-box p { font-size: 0.82rem; color: var(--muted); margin-bottom: 1.25rem; line-height: 1.6; }
+    .btn-cta { display: inline-block; background: var(--amber); color: #090E1A; border: none; border-radius: 10px; padding: 0.65rem 1.5rem; font-size: 0.875rem; font-weight: 900; cursor: pointer; font-family: inherit; text-decoration: none; transition: background 0.15s; }
+    .btn-cta:hover { background: var(--amber2); }
+
+    hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
+    @media (max-width: 500px) {
+      .main { padding: 2rem 1rem 4rem; }
+      .nav { padding: 0 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="/dashboard.html" class="logo">Build<em>Order</em></a>
+    <a href="/dashboard.html" class="btn-back">&larr; Dashboard</a>
+  </nav>
+
+  <main class="main">
+
+    <div class="page-title">How <em>Pricing</em> Works</div>
+    <p class="page-sub">BuildOrder uses AI to generate estimates, proposals, and contracts. Here's exactly where the numbers come from, how accurate they are, and how to make them more accurate over time.</p>
+
+    <!-- The 3-source hierarchy -->
+    <div class="section">
+      <div class="section-title"><span class="icon">&#128200;</span> Where prices come from</div>
+      <div class="section-body">
+        <p>Every line item in a BuildOrder document is priced using a three-source hierarchy. The AI always uses the most accurate source available and falls back to the next when data isn't there yet.</p>
+      </div>
+
+      <div class="hierarchy">
+        <div class="h-step">
+          <div class="h-num first">1</div>
+          <div class="h-content">
+            <h4>Your Rate Library <span class="h-badge badge-best">Most accurate</span></h4>
+            <p>If you've saved a price in your Rate Library — like "$95/sq for GAF Timberline HDZ" or "$85/hr labor" — the AI uses that exact number. No estimation. No averaging. Your price.</p>
+          </div>
+        </div>
+        <div class="h-step">
+          <div class="h-num second">2</div>
+          <div class="h-content">
+            <h4>Location-adjusted AI estimates <span class="h-badge badge-good">Good baseline</span></h4>
+            <p>When an item isn't in your Rate Library, the AI estimates based on the job location (city + state). It knows that labor in San Francisco costs more than in rural Mississippi, and it adjusts accordingly. Your markup percentage is applied on top of material costs if you've set one.</p>
+          </div>
+        </div>
+        <div class="h-step">
+          <div class="h-num third">3</div>
+          <div class="h-content">
+            <h4>National average fallback <span class="h-badge badge-fallback">Rough estimate</span></h4>
+            <p>If no location is provided, the AI falls back to national averages from its training data. These are reasonable ballpark numbers — a good starting point — but you should always review and adjust before sending.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- Material costs -->
+    <div class="section">
+      <div class="section-title"><span class="icon">&#128296;</span> Material costs specifically</div>
+      <div class="section-body">
+        <p>Material prices fluctuate constantly — lumber, copper, shingles, drywall — and vary by supplier and region. The AI knows typical price ranges from its training data, but it can't know your supplier's current pricing.</p>
+        <p><strong>Best practice:</strong> Add your most common materials to the Rate Library with the prices you actually pay (or charge). Even a handful of entries — shingles, LVP flooring, drywall, paint — will make a meaningful difference in accuracy. The AI uses your price for those items and estimates everything else.</p>
+        <p>If you've set a <strong>material markup %</strong>, that's applied on top of whatever the AI estimates for materials — so your margin is preserved even when the AI is filling in the blanks.</p>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- Legal terms -->
+    <div class="section">
+      <div class="section-title"><span class="icon">&#128196;</span> About the legal terms &amp; conditions</div>
+      <div class="section-body">
+        <p>Contracts and proposals include state-specific terms and conditions generated by AI. The AI knows general contractor law by state — payment terms, lien rights, change order requirements, warranty standards — and incorporates those into the language.</p>
+        <p><strong>These are solid starting points</strong>, written in plain contractor language. They cover the most common scenarios: scope changes, payment disputes, weather delays, site access, and warranty periods.</p>
+        <p>BuildOrder.ai is not a law firm and these documents are not legal advice. For high-value jobs or anything unusual, have an attorney review before signing.</p>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- FAQ -->
+    <div class="section">
+      <div class="section-title"><span class="icon">&#10067;</span> Common questions</div>
+
+      <div class="faq">
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            How accurate are the estimates without a Rate Library?
+            <span class="faq-arrow">&#9660;</span>
+          </button>
+          <div class="faq-a">
+            For most common residential work — roofing, painting, drywall, flooring — the AI is usually within 10–20% of real market rates in your area. That's close enough to be a credible starting point, but not close enough to send without reviewing. For specialty work, custom materials, or highly competitive markets, the variance can be larger. Always review line items before sending.
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            Why does California cost more than Mississippi in the estimates?
+            <span class="faq-arrow">&#9660;</span>
+          </button>
+          <div class="faq-a">
+            The AI was trained on a large body of contractor data, pricing guides, and regional cost indexes. It has a general understanding of regional labor markets and cost-of-living differences. It isn't pulling from a live pricing database — it's using what it learned during training — but that knowledge is broadly accurate for major cost-of-living differences between states.
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            What happens when I add items to my Rate Library?
+            <span class="faq-arrow">&#9660;</span>
+          </button>
+          <div class="faq-a">
+            Every AI document you generate after that — estimates, proposals, Quick Quotes — will use your exact prices for those items. If you add "GAF Timberline HDZ: $95/sq" and then generate a roofing estimate, the AI will use $95/sq for that shingle, not its own estimate. Your other rates (labor, markup) apply to everything else the AI fills in.
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            Can I edit the document after it's generated?
+            <span class="faq-arrow">&#9660;</span>
+          </button>
+          <div class="faq-a">
+            Not directly in the editor — but you can copy the document, paste it anywhere (Word, Google Docs, Notes), edit it, and use that version. You can also regenerate with a more detailed description if the first result needs significant changes. The Rate Library is the best way to reduce the need for manual editing over time.
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            Does my Rate Library data leave BuildOrder?
+            <span class="faq-arrow">&#9660;</span>
+          </button>
+          <div class="faq-a">
+            Your Rate Library is included in the prompt sent to the AI when you generate a document — that's how the AI knows your prices. Anthropic (who makes the AI) does not train on API request data from BuildOrder. Your pricing stays private to you. See our <a href="/privacy.html">Privacy Policy</a> for full details.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-box">
+      <h3>Set up your Rate Library once. Every estimate gets better.</h3>
+      <p>Add your labor rate, markup %, and your most common materials in Settings. Takes 5 minutes and improves every document you generate from that point on.</p>
+      <a href="/settings.html#rate-library" class="btn-cta">&#9881; Open Rate Library in Settings</a>
+    </div>
+
+  </main>
+
+  <script>
+    function toggleFaq(btn) {
+      var item = btn.closest('.faq-item');
+      item.classList.toggle('open');
+    }
+  </script>
+
+</body>
+</html>

@@ -1,6 +1,7 @@
 const Anthropic = require('@anthropic-ai/sdk');
 const { createClient } = require('@supabase/supabase-js');
 const { getEffectivePlan } = require('./_effectivePlan');
+const { buildRateContext } = require('./_rateLibrary');
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
@@ -78,6 +79,7 @@ module.exports = async function handler(req, res) {
   const docNum = estRow.doc_number || ('EST-' + Date.now().toString().slice(-6));
 
   // Single Anthropic call: extract structure + generate full estimate
+  const rateContext = await buildRateContext(db, user.id);
   const prompt = `You are an expert contractor estimator. A contractor has described a job in plain English. Your job is to:
 1. Extract structured info from the description
 2. Generate a complete, professional estimate document
@@ -99,7 +101,7 @@ ${client_email  ? 'Client Email: ' + client_email  : ''}
 ${client_phone  ? 'Client Phone: ' + client_phone  : ''}
 ${job_city      ? 'City: ' + job_city              : ''}
 ${job_state     ? 'State: ' + job_state            : ''}
-
+${rateContext}
 INSTRUCTIONS:
 Generate a professional estimate in plain text. Use ===, ---, and spacing for formatting.
 
