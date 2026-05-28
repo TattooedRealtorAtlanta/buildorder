@@ -7,7 +7,8 @@ const TABLE_MAP = {
   'change-order':  'change_orders',
   'subcontractor': 'subcontractor_agreements',
   'lien-waiver':   'lien_waivers',
-  'takeoff':       'material_takeoffs'
+  'takeoff':       'material_takeoffs',
+  'proposal':      'proposals'
 };
 
 // Fields to strip before reinserting (system-managed)

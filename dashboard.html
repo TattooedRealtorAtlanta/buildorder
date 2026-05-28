@@ -102,6 +102,7 @@
     .pill-sub  { background: rgba(244,114,182,0.1); color: #F472B6; }
     .pill-lien { background: rgba(251,146,60,0.1); color: #FB923C; }
     .pill-tkof { background: rgba(56,189,248,0.1); color: #38BDF8; }
+    .pill-prop { background: rgba(52,211,153,0.1); color: var(--green); }
 
     .status-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 100px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
     .status-active   { background: rgba(52,211,153,0.12); color: var(--green); }
@@ -309,6 +310,12 @@
         <div class="tool-desc" data-i18n="tool.takeoff.desc">Quantities &amp; cost estimates</div>
         <div class="tool-count" id="tc-tkof">0 takeoffs</div>
       </a>
+      <a href="/new-proposal.html" class="tool-card" style="border-color:rgba(52,211,153,0.2);">
+        <div class="tool-icon">&#128203;</div>
+        <div class="tool-name" style="color:var(--green);">Proposal</div>
+        <div class="tool-desc">Estimate + contract in one document</div>
+        <div class="tool-count" id="tc-prop">0 proposals</div>
+      </a>
       <a href="/photos.html" class="tool-card">
         <div class="tool-icon">&#128247;</div>
         <div class="tool-name" data-i18n="tool.photos">Photo Log</div>
@@ -342,6 +349,7 @@
         <button class="filter-btn" onclick="filter('sub')" data-i18n="dash.filter.subcontractors">Subcontractors</button>
         <button class="filter-btn" onclick="filter('lien')" data-i18n="dash.filter.lien_waivers">Lien Waivers</button>
         <button class="filter-btn" onclick="filter('tkof')" data-i18n="dash.filter.takeoffs">Takeoffs</button>
+        <button class="filter-btn" onclick="filter('prop')">Proposals</button>
       </div>
     </div>
     <div class="doc-list" id="doc-list">
@@ -456,14 +464,15 @@
         planCta.innerHTML = '<a href="/settings.html" class="btn-manage">Manage Billing</a>';
       }
 
-      var [jR, eR, iR, cR, sR, lR, tR] = await Promise.all([
+      var [jR, eR, iR, cR, sR, lR, tR, pR] = await Promise.all([
         db.from('jobs').select('*').order('created_at', { ascending: false }),
         db.from('estimates').select('*').order('created_at', { ascending: false }),
         db.from('invoices').select('*').order('created_at', { ascending: false }),
         db.from('change_orders').select('*').order('created_at', { ascending: false }),
         db.from('subcontractor_agreements').select('*').order('created_at', { ascending: false }),
         db.from('lien_waivers').select('*').order('created_at', { ascending: false }),
-        db.from('material_takeoffs').select('*').order('created_at', { ascending: false })
+        db.from('material_takeoffs').select('*').order('created_at', { ascending: false }),
+        db.from('proposals').select('*').order('created_at', { ascending: false })
       ]);
 
       var jobs  = jR.data || [];
@@ -473,9 +482,10 @@
       var subs  = sR.data || [];
       var liens = lR.data || [];
       var tkofs = tR.data || [];
+      var props = pR.data || [];
 
       // Stats
-      var totalDocs = jobs.length + ests.length + invs.length + cos.length + subs.length + liens.length + tkofs.length;
+      var totalDocs = jobs.length + ests.length + invs.length + cos.length + subs.length + liens.length + tkofs.length + props.length;
       var nowMs = Date.now();
       var overdueInvs = invs.filter(function(i) {
         var dueDateMs = new Date(i.created_at).getTime() + (i.due_days || 30) * 86400 * 1000;
@@ -515,6 +525,7 @@
       document.getElementById('tc-sub').textContent  = subs.length + ' agreement' + (subs.length !== 1 ? 's' : '');
       document.getElementById('tc-lien').textContent = liens.length + ' waiver' + (liens.length !== 1 ? 's' : '');
       document.getElementById('tc-tkof').textContent = tkofs.length + ' takeoff' + (tkofs.length !== 1 ? 's' : '');
+      document.getElementById('tc-prop').textContent = props.length + ' proposal' + (props.length !== 1 ? 's' : '');
 
       // Build unified doc list
       var jDocs = jobs.map(function(d) { return Object.assign({}, d, { _type:'job', _icon:'&#128196;', _typeLabel:'Contract', _url:'/job.html?id='+d.id, _title:(d.job_address || 'No address') + (d.job_city ? ', ' + d.job_city : ''), _sub: d.homeowner_name || 'No client', _val: d.contract_price ? fmt(d.contract_price) : '' }); });
@@ -536,8 +547,9 @@
       var sDocs = subs.map(function(d) { return Object.assign({}, d, { _type:'sub', _icon:'&#129309;', _typeLabel:'Subcontractor', _url:'/subcontractor.html?id='+d.id, _title: d.sub_company || d.sub_name || 'No sub', _sub: d.work_type || '', _val: d.contract_amount ? fmt(d.contract_amount) : '' }); });
       var lDocs = liens.map(function(d) { return Object.assign({}, d, { _type:'lien', _icon:'&#9875;', _typeLabel:'Lien Waiver', _url:'/lien-waiver.html?id='+d.id, _title: d.customer_name || 'No customer', _sub: (d.job_city || '') + (d.job_state ? ', ' + d.job_state : ''), _val: d.amount ? fmt(d.amount) : '' }); });
       var tDocs = tkofs.map(function(d) { return Object.assign({}, d, { _type:'tkof', _icon:'&#128296;', _typeLabel:'Takeoff', _url:'/takeoff.html?id='+d.id, _title: d.project_name || d.project_type || 'Material Takeoff', _sub: d.job_address || '', _val: '' }); });
+      var pDocs = props.map(function(d) { return Object.assign({}, d, { _type:'prop', _icon:'&#128203;', _typeLabel:'Proposal', _url:'/proposal.html?id='+d.id, _title: d.homeowner_name || 'No client', _sub: (d.doc_number ? d.doc_number + (d.work_type ? ' · ' : '') : '') + (d.work_type || ''), _val: d.total ? fmt(d.total) : '' }); });
 
-      allDocs = jDocs.concat(eDocs, iDocs, cDocs, sDocs, lDocs, tDocs)
+      allDocs = jDocs.concat(eDocs, iDocs, cDocs, sDocs, lDocs, tDocs, pDocs)
         .sort(function(a, b) { return new Date(b.created_at) - new Date(a.created_at); });
 
       renderDocs();
@@ -606,11 +618,13 @@
     var SHARE_TYPE_LABELS = {
       'contract':'Contract','estimate':'Estimate','invoice':'Invoice',
       'change-order':'Change Order','subcontractor':'Subcontractor',
-      'lien-waiver':'Lien Waiver','takeoff':'Takeoff','document':'Document'
+      'lien-waiver':'Lien Waiver','takeoff':'Takeoff','document':'Document',
+      'proposal':'Proposal'
     };
     var SHARE_TYPE_PILL = {
       'contract':'job','estimate':'est','invoice':'inv','change-order':'co',
-      'subcontractor':'sub','lien-waiver':'lien','takeoff':'tkof','document':'est'
+      'subcontractor':'sub','lien-waiver':'lien','takeoff':'tkof','document':'est',
+      'proposal':'est'
     };
 
     function copyShareLink(token, btnId) {

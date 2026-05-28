@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BuildOrder.ai &mdash; Proposal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:    #090E1A;
+      --bg2:   #111827;
+      --bg3:   #1A2438;
+      --amber: #F59E0B;
+      --amber2:#FCD34D;
+      --white: #F8FAFC;
+      --muted: #94A3B8;
+      --dim:   #475569;
+      --border:rgba(255,255,255,0.07);
+      --green: #34D399;
+      --red:   #EF4444;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; }
+    .nav { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+    .logo { font-size: 1.2rem; font-weight: 900; letter-spacing: -0.03em; text-decoration: none; color: var(--white); }
+    .logo em { font-style: normal; color: var(--amber); }
+    .btn-back { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.9rem; font-size: 0.78rem; color: var(--dim); cursor: pointer; font-family: inherit; text-decoration: none; transition: color 0.2s, border-color 0.2s; }
+    .btn-back:hover { color: var(--white); border-color: var(--amber); }
+
+    .main { max-width: 900px; margin: 0 auto; padding: 2.5rem 2rem 4rem; }
+
+    .doc-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 2rem; gap: 1rem; flex-wrap: wrap; }
+    .doc-title { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.3rem; }
+    .doc-meta { font-size: 0.82rem; color: var(--muted); }
+    .status-badge { display: inline-block; padding: 0.25rem 0.7rem; border-radius: 100px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0; }
+    .status-draft    { background: rgba(148,163,184,0.12); color: var(--muted); }
+    .status-sent     { background: rgba(245,158,11,0.12); color: var(--amber); }
+    .status-accepted { background: rgba(52,211,153,0.12); color: var(--green); }
+
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
+    .info-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem 1.5rem; }
+    .info-card-title { font-size: 0.72rem; font-weight: 700; color: var(--dim); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.75rem; }
+    .info-row { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.4rem; }
+    .info-label { color: var(--muted); }
+    .info-value { font-weight: 600; text-align: right; max-width: 60%; overflow: hidden; text-overflow: ellipsis; }
+
+    .doc-section { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 1.5rem; }
+    .doc-section-header { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 0.75rem; }
+    .doc-section-title { font-size: 0.95rem; font-weight: 700; }
+    .doc-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+    .btn-action { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.4rem 0.9rem; font-size: 0.75rem; font-weight: 600; color: var(--muted); cursor: pointer; font-family: inherit; transition: color 0.2s, border-color 0.2s; white-space: nowrap; }
+    .btn-action:hover { color: var(--white); border-color: var(--amber); }
+    .btn-sign { background: none; border: 1px solid rgba(245,158,11,0.4); border-radius: 8px; padding: 0.4rem 0.9rem; font-size: 0.75rem; font-weight: 700; color: var(--amber); cursor: pointer; font-family: inherit; transition: background 0.15s; white-space: nowrap; }
+    .btn-sign:hover { background: rgba(245,158,11,0.1); }
+    .btn-accepted { background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.3); border-radius: 8px; padding: 0.4rem 0.9rem; font-size: 0.75rem; font-weight: 700; color: var(--green); font-family: inherit; white-space: nowrap; }
+    .btn-generate { background: var(--amber); color: #090E1A; border: none; border-radius: 8px; padding: 0.42rem 1.1rem; font-size: 0.8rem; font-weight: 800; cursor: pointer; font-family: inherit; transition: background 0.15s; white-space: nowrap; }
+    .btn-generate:hover { background: var(--amber2); }
+    .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .doc-body { padding: 2rem; }
+    .doc-text { font-family: 'Courier New', Courier, monospace; font-size: 0.8rem; line-height: 1.75; color: #CBD5E1; white-space: pre-wrap; word-break: break-word; }
+
+    .no-doc { padding: 3rem 2rem; text-align: center; color: var(--muted); }
+    .no-doc h3 { font-size: 1rem; font-weight: 700; color: var(--white); margin-bottom: 0.5rem; }
+    .no-doc p { font-size: 0.85rem; margin-bottom: 1.5rem; }
+    .generating { padding: 4rem 2rem; text-align: center; color: var(--muted); }
+    .generating-spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--amber); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1.5rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .generating h3 { font-size: 1rem; font-weight: 700; color: var(--white); margin-bottom: 0.5rem; }
+    .generating p { font-size: 0.85rem; }
+
+    .notes-section { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; }
+    .notes-header { font-size: 0.7rem; color: var(--dim); font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.75rem; }
+    .notes-textarea { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 0.7rem 0.9rem; font-size: 0.85rem; color: var(--white); font-family: inherit; outline: none; resize: vertical; min-height: 80px; line-height: 1.6; transition: border-color 0.15s; }
+    .notes-textarea:focus { border-color: var(--amber); }
+    .notes-hint { font-size: 0.7rem; color: var(--dim); margin-top: 0.4rem; }
+
+    .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1.25rem; font-size: 0.85rem; font-weight: 600; color: var(--green); opacity: 0; transform: translateY(10px); transition: opacity 0.2s, transform 0.2s; pointer-events: none; z-index: 100; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* Modals */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 1rem; }
+    .modal-overlay.hidden { display: none; }
+    .modal-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; max-width: 480px; width: 100%; }
+    .modal-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 0.5rem; }
+    .modal-sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 1.5rem; }
+    .modal-field { margin-bottom: 1rem; }
+    .modal-label { font-size: 0.78rem; font-weight: 600; color: var(--muted); display: block; margin-bottom: 0.35rem; }
+    .modal-input { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem 0.9rem; font-size: 0.85rem; color: var(--white); font-family: inherit; outline: none; }
+    .modal-input:focus { border-color: var(--amber); }
+    .modal-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; }
+    .btn-cancel { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 1.1rem; font-size: 0.82rem; font-weight: 600; color: var(--muted); cursor: pointer; font-family: inherit; }
+    .btn-send { background: var(--amber); color: #090E1A; border: none; border-radius: 8px; padding: 0.5rem 1.1rem; font-size: 0.82rem; font-weight: 800; cursor: pointer; font-family: inherit; }
+    .btn-send:disabled { opacity: 0.5; cursor: not-allowed; }
+    .share-url-row { display: flex; gap: 0.5rem; align-items: center; margin-top: 1rem; }
+    .share-url-input { flex: 1; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 0.55rem 0.9rem; font-size: 0.8rem; color: var(--muted); font-family: inherit; outline: none; }
+    .btn-copy-url { background: var(--amber); color: #090E1A; border: none; border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.78rem; font-weight: 800; cursor: pointer; font-family: inherit; white-space: nowrap; }
+    .upgrade-box { background: var(--bg2); border: 1px solid rgba(245,158,11,0.3); border-radius: 16px; padding: 2rem; max-width: 420px; width: 100%; text-align: center; }
+    .upgrade-title { font-size: 1.2rem; font-weight: 900; margin-bottom: 0.5rem; }
+    .upgrade-sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.5; }
+    .btn-upgrade { display: block; width: 100%; background: var(--amber); color: #090E1A; border: none; border-radius: 10px; padding: 0.75rem; font-size: 0.9rem; font-weight: 900; cursor: pointer; font-family: inherit; margin-bottom: 0.75rem; text-decoration: none; text-align: center; }
+    .btn-upgrade:hover { background: var(--amber2); }
+    .btn-dismiss { background: none; border: none; color: var(--dim); font-size: 0.82rem; cursor: pointer; font-family: inherit; }
+    .error-msg { padding: 1rem 1.5rem; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; color: var(--red); font-size: 0.85rem; margin: 1rem 1.5rem; }
+    .not-legal { text-align:center; padding:1.5rem 2rem 2.5rem; font-size:0.72rem; color:var(--dim); line-height:1.7; max-width:700px; margin:0 auto; }
+    .not-legal a { color:var(--dim); text-decoration:underline; }
+
+    @media (max-width: 640px) {
+      .info-grid { grid-template-columns: 1fr; }
+      .doc-header { flex-direction: column; }
+      .doc-actions { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="/dashboard.html" class="logo">Build<em>Order</em></a>
+    <a href="/dashboard.html" class="btn-back">&larr; Dashboard</a>
+  </nav>
+
+  <main class="main">
+    <div id="page-content"></div>
+  </main>
+
+  <div class="toast" id="toast">Copied!</div>
+
+  <!-- Email Modal -->
+  <div class="modal-overlay hidden" id="email-modal">
+    <div class="modal-box">
+      <div class="modal-title">&#9993; Email Proposal</div>
+      <div class="modal-sub">Send this proposal to your client. They can review, sign, and you collect payment.</div>
+      <div class="modal-field">
+        <label class="modal-label">To Email</label>
+        <input class="modal-input" id="email-to" type="email" placeholder="client@email.com">
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Client Name</label>
+        <input class="modal-input" id="email-name" type="text" placeholder="John Smith">
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Subject</label>
+        <input class="modal-input" id="email-subject" type="text">
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeEmail()">Cancel</button>
+        <button class="btn-send" id="send-btn" onclick="sendEmail()">Send Email</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Share / eSign Modal -->
+  <div class="modal-overlay hidden" id="share-modal">
+    <div class="modal-box">
+      <div class="modal-title">&#9997; Send for Signature</div>
+      <div class="modal-sub">Share this link with your client. They can read the full proposal, sign it, and submit payment — no account needed.</div>
+      <div id="share-loading" style="font-size:0.85rem;color:var(--muted);">Generating link&hellip;</div>
+      <div class="share-url-row" id="share-url-row" style="display:none;">
+        <input class="share-url-input" id="share-url-input" type="text" readonly onclick="this.select()">
+        <button class="btn-copy-url" onclick="copyShareUrl()">Copy Link</button>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeShare()">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upgrade Modal -->
+  <div class="modal-overlay hidden" id="upgrade-modal">
+    <div class="upgrade-box">
+      <div style="font-size:2.5rem;margin-bottom:1rem;">&#128274;</div>
+      <div class="upgrade-title">Pro Feature</div>
+      <div class="upgrade-sub">Email delivery and eSign are available on Pro and Business plans. Upgrade to send proposals directly to clients.</div>
+      <a href="/pricing.html" class="btn-upgrade">Upgrade to Pro</a>
+      <button class="btn-dismiss" onclick="closeUpgradeModal()">Maybe later</button>
+    </div>
+  </div>
+
+  <script>
+    var SUPABASE_URL = 'https://pxqwtesczfhfjwdhxiyl.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDI3MDcsImV4cCI6MjA5NTIxODcwN30.rNmcfsteMK_IdyWkGLrNA5ZOlRVHQYahDrnIWmPGCLM';
+    var db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, storageKey: 'bo-auth' } });
+
+    var params = new URLSearchParams(window.location.search);
+    var proposalId = params.get('id');
+    var autoGenerate = params.get('generate') === 'true';
+    var currentProposal = null;
+    var shareUrl = null;
+
+    db.auth.getSession().then(function(res) {
+      if (!res.data.session) { window.location.href = '/login.html'; return; }
+      if (!proposalId) { window.location.href = '/dashboard.html'; return; }
+      loadProposal();
+    });
+
+    function loadProposal() {
+      db.from('proposals').select('*').eq('id', proposalId).single().then(function(res) {
+        if (res.error || !res.data) {
+          document.getElementById('page-content').innerHTML =
+            '<div style="text-align:center;padding:4rem 2rem;color:var(--muted);">' +
+            '<div style="font-size:2rem;margin-bottom:1rem;">&#9888;&#65039;</div>' +
+            '<h3 style="color:var(--white);margin-bottom:0.5rem;">Proposal not found</h3>' +
+            '<a href="/dashboard.html" style="display:inline-block;margin-top:1.5rem;color:var(--amber);text-decoration:none;font-weight:700;">&larr; Back to Dashboard</a>' +
+            '</div>';
+          return;
+        }
+        currentProposal = res.data;
+        renderPage();
+        attachNotesListener();
+        if (autoGenerate && !currentProposal.content) {
+          generateProposal();
+        }
+      });
+    }
+
+    function fmtDate(d) {
+      if (!d) return '&mdash;';
+      return new Date(d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    }
+    function fmtMoney(n) {
+      if (!n) return '&mdash;';
+      return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    function escapeHtml(s) {
+      return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function renderPage() {
+      var p = currentProposal;
+      var statusClass = { draft:'status-draft', sent:'status-sent', accepted:'status-accepted' }[p.status] || 'status-draft';
+      var location = [p.job_city, p.job_state].filter(Boolean).join(', ') || 'No location';
+      var docTitle = (p.doc_number || 'Proposal') + (p.work_type ? ' &mdash; ' + p.work_type : '');
+
+      var actionBtns = '';
+      if (p.content) {
+        actionBtns =
+          '<button class="btn-action" onclick="copyDoc()">&#128203; Copy</button>' +
+          '<button class="btn-action" onclick="downloadDoc()">&#8659; TXT</button>' +
+          '<button class="btn-action" onclick="dlPdf()">&#128196; PDF</button>' +
+          '<button class="btn-action" onclick="openEmail()">&#9993; Email</button>' +
+          '<button class="btn-sign" onclick="openShare()">&#9997; eSign &amp; Send</button>' +
+          '<button class="btn-action" onclick="duplicateDoc()">Duplicate</button>' +
+          (p.status === 'accepted'
+            ? '<span class="btn-accepted">&#10003; Accepted</span>'
+            : '<button class="btn-action" style="color:var(--green);border-color:rgba(52,211,153,0.3);" onclick="markAccepted()">&#10003; Mark Accepted</button>') +
+          '<button class="btn-generate" onclick="generateProposal()">&#8635; Regenerate</button>';
+      } else {
+        actionBtns = '<button class="btn-generate" onclick="generateProposal()">&#9889; Generate Proposal</button>';
+      }
+
+      document.getElementById('page-content').innerHTML =
+        '<div class="doc-header">' +
+          '<div>' +
+            '<div class="doc-title">' + (p.homeowner_name || 'No client') + '</div>' +
+            '<div class="doc-meta">' + (p.work_type || 'Proposal') + ' &middot; ' + location + ' &middot; ' + fmtDate(p.created_at) + '</div>' +
+          '</div>' +
+          '<span class="status-badge ' + statusClass + '">' + p.status + '</span>' +
+        '</div>' +
+
+        '<div class="info-grid">' +
+          '<div class="info-card">' +
+            '<div class="info-card-title">Client</div>' +
+            '<div class="info-row"><span class="info-label">Name</span><span class="info-value">' + (p.homeowner_name || '&mdash;') + '</span></div>' +
+            '<div class="info-row"><span class="info-label">Phone</span><span class="info-value">' + (p.homeowner_phone || '&mdash;') + '</span></div>' +
+            '<div class="info-row"><span class="info-label">Email</span><span class="info-value">' + (p.homeowner_email || '&mdash;') + '</span></div>' +
+            '<div class="info-row"><span class="info-label">Location</span><span class="info-value">' + (location || '&mdash;') + '</span></div>' +
+          '</div>' +
+          '<div class="info-card">' +
+            '<div class="info-card-title">Details</div>' +
+            '<div class="info-row"><span class="info-label">Doc #</span><span class="info-value">' + (p.doc_number || '&mdash;') + '</span></div>' +
+            '<div class="info-row"><span class="info-label">Work Type</span><span class="info-value">' + (p.work_type || '&mdash;') + '</span></div>' +
+            '<div class="info-row"><span class="info-label">Total</span><span class="info-value" style="color:var(--amber);font-weight:800;">' + (p.total ? fmtMoney(p.total) : '&mdash;') + '</span></div>' +
+            '<div class="info-row"><span class="info-label">Deposit</span><span class="info-value">' + (p.deposit_pct || 50) + '%</span></div>' +
+          '</div>' +
+        '</div>' +
+
+        '<div class="doc-section">' +
+          '<div class="doc-section-header">' +
+            '<div class="doc-section-title">&#128203; Proposal &amp; Contract</div>' +
+            '<div class="doc-actions" id="doc-actions">' + actionBtns + '</div>' +
+          '</div>' +
+          '<div id="doc-body">' +
+            (p.content
+              ? '<div class="doc-body"><pre class="doc-text">' + escapeHtml(p.content) + '</pre></div>'
+              : '<div class="no-doc"><h3>No proposal generated yet</h3><p>Click Generate Proposal to create your itemized pricing and contract.</p></div>') +
+          '</div>' +
+        '</div>' +
+
+        '<div class="notes-section">' +
+          '<div class="notes-header">&#128274; Internal Notes <span style="font-weight:400;text-transform:none;color:var(--dim);letter-spacing:0;">&mdash; not visible to clients</span></div>' +
+          '<textarea class="notes-textarea" id="notes-input" placeholder="Private notes, cost breakdowns, reminders…">' + escapeHtml(p.notes || '') + '</textarea>' +
+          '<div class="notes-hint">Auto-saves when you click away</div>' +
+        '</div>' +
+
+        '<div class="not-legal">Documents generated by BuildOrder.ai are AI-produced starting points. Review before use. BuildOrder.ai is not a law firm and does not provide legal advice. &mdash; <a href="/terms.html">Terms</a> &middot; <a href="/privacy.html">Privacy</a></div>';
+    }
+
+    function generateProposal() {
+      document.getElementById('doc-body').innerHTML =
+        '<div class="generating">' +
+          '<div class="generating-spinner"></div>' +
+          '<h3>Building your proposal&hellip;</h3>' +
+          '<p>Generating scope, pricing, and contract terms for ' + escapeHtml(currentProposal.homeowner_name || 'your client') + '. About 20 seconds.</p>' +
+        '</div>';
+      var actions = document.getElementById('doc-actions');
+      if (actions) actions.innerHTML = '<button class="btn-generate" disabled>Generating&hellip;</button>';
+
+      db.auth.getSession().then(function(r) {
+        var token = r.data && r.data.session ? r.data.session.access_token : '';
+        return fetch('/api/generate-proposal', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ proposal_id: proposalId })
+        });
+      }).then(function(res) {
+        return res.json().then(function(d) { return { ok: res.ok, data: d }; });
+      }).then(function(result) {
+        if (!result.ok || !result.data.success) {
+          if (result.data.error === 'usage_limit') { showUpgradeModal(); return; }
+          showError(result.data.error || 'Generation failed. Please try again.');
+          return;
+        }
+        currentProposal.content = result.data.content;
+        currentProposal.total   = result.data.total;
+        currentProposal.status  = currentProposal.status === 'draft' ? 'draft' : currentProposal.status;
+        window.history.replaceState({}, '', '/proposal.html?id=' + proposalId);
+        shareUrl = null;
+        renderPage();
+        attachNotesListener();
+      }).catch(function() {
+        showError('Network error &mdash; please check your connection and try again.');
+      });
+    }
+
+    function showError(msg) {
+      document.getElementById('doc-body').innerHTML =
+        '<div class="error-msg">&#9888; ' + msg + '</div>' +
+        '<div class="no-doc"><p>Something went wrong.</p>' +
+        '<button class="btn-generate" onclick="generateProposal()">Try Again</button></div>';
+      var actions = document.getElementById('doc-actions');
+      if (actions) actions.innerHTML = '<button class="btn-generate" onclick="generateProposal()">&#9889; Generate Proposal</button>';
+    }
+
+    function copyDoc() {
+      if (!currentProposal || !currentProposal.content) return;
+      navigator.clipboard.writeText(currentProposal.content).then(function() { showToast('Copied to clipboard!'); });
+    }
+
+    function downloadDoc() {
+      if (!currentProposal || !currentProposal.content) return;
+      var fname = 'proposal-' + (currentProposal.homeowner_name || 'client').replace(/\s+/g, '-').toLowerCase() + '.txt';
+      var blob = new Blob([currentProposal.content], { type: 'text/plain' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a'); a.href = url; a.download = fname; a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function dlPdf() {
+      if (!currentProposal || !currentProposal.content) return;
+      var doc = new window.jspdf.jsPDF({ unit: 'pt', format: 'letter' });
+      doc.setFont('Courier'); doc.setFontSize(8);
+      var lines = doc.splitTextToSize(currentProposal.content, 512);
+      var y = 50;
+      for (var i = 0; i < lines.length; i++) {
+        if (y > 760) { doc.addPage(); y = 50; }
+        doc.text(lines[i], 50, y); y += 12;
+      }
+      doc.save('proposal-' + (currentProposal.homeowner_name || 'client').replace(/\s+/g,'-').toLowerCase() + '.pdf');
+    }
+
+    function openEmail() {
+      if (!currentProposal || !currentProposal.content) return;
+      document.getElementById('email-to').value = currentProposal.homeowner_email || '';
+      document.getElementById('email-name').value = currentProposal.homeowner_name || '';
+      document.getElementById('email-subject').value = 'Your Proposal from BuildOrder';
+      document.getElementById('email-modal').classList.remove('hidden');
+    }
+    function closeEmail() { document.getElementById('email-modal').classList.add('hidden'); }
+
+    function sendEmail() {
+      var toEmail = document.getElementById('email-to').value.trim();
+      var toName  = document.getElementById('email-name').value.trim();
+      var subject = document.getElementById('email-subject').value.trim() || 'Your Proposal from BuildOrder';
+      if (!toEmail) { alert('Please enter a recipient email.'); return; }
+      var btn = document.getElementById('send-btn');
+      btn.disabled = true; btn.textContent = 'Sending…';
+      db.auth.getSession().then(function(r) {
+        var token = r.data && r.data.session ? r.data.session.access_token : '';
+        return fetch('/api/send-document', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ to_email: toEmail, to_name: toName, subject: subject, content: currentProposal.content, document_type: 'proposal', reference_id: proposalId })
+        });
+      }).then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+      .then(function(result) {
+        btn.disabled = false; btn.textContent = 'Send Email';
+        if (!result.ok) {
+          if (result.data.error === 'upgrade_required') { closeEmail(); showUpgradeModal(); return; }
+          alert('Failed to send: ' + (result.data.message || result.data.error));
+          return;
+        }
+        db.from('proposals').update({ status: 'sent' }).eq('id', proposalId).then(function() {
+          currentProposal.status = 'sent';
+        });
+        closeEmail();
+        showToast('Email sent!');
+      }).catch(function() { btn.disabled = false; btn.textContent = 'Send Email'; alert('Network error.'); });
+    }
+
+    function openShare() {
+      if (!currentProposal || !currentProposal.content) return;
+      document.getElementById('share-modal').classList.remove('hidden');
+      if (shareUrl) {
+        document.getElementById('share-url-input').value = shareUrl;
+        document.getElementById('share-loading').style.display = 'none';
+        document.getElementById('share-url-row').style.display = 'flex';
+        return;
+      }
+      document.getElementById('share-loading').textContent = 'Generating link…';
+      document.getElementById('share-loading').style.display = '';
+      document.getElementById('share-url-row').style.display = 'none';
+      db.auth.getSession().then(function(r) {
+        var token = r.data && r.data.session ? r.data.session.access_token : '';
+        return fetch('/api/share', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ document_content: currentProposal.content, document_type: 'proposal', reference_id: proposalId, client_name: currentProposal.homeowner_name, client_email: currentProposal.homeowner_email })
+        });
+      }).then(function(res) { return res.json(); })
+      .then(function(d) {
+        document.getElementById('share-loading').style.display = 'none';
+        if (d.url) {
+          shareUrl = d.url;
+          document.getElementById('share-url-input').value = shareUrl;
+          document.getElementById('share-url-row').style.display = 'flex';
+          db.from('proposals').update({ status: 'sent' }).eq('id', proposalId).then(function() {
+            currentProposal.status = 'sent';
+          });
+        } else {
+          document.getElementById('share-loading').textContent = 'Error generating link. Please try again.';
+          document.getElementById('share-loading').style.display = '';
+        }
+      }).catch(function() {
+        document.getElementById('share-loading').textContent = 'Network error. Please try again.';
+        document.getElementById('share-loading').style.display = '';
+      });
+    }
+    function closeShare() { document.getElementById('share-modal').classList.add('hidden'); }
+
+    function copyShareUrl() {
+      var input = document.getElementById('share-url-input');
+      input.select(); navigator.clipboard.writeText(input.value).then(function() { showToast('Link copied!'); });
+    }
+
+    function showUpgradeModal() { document.getElementById('upgrade-modal').classList.remove('hidden'); }
+    function closeUpgradeModal() { document.getElementById('upgrade-modal').classList.add('hidden'); }
+
+    function markAccepted() {
+      db.from('proposals').update({ status: 'accepted' }).eq('id', proposalId).then(function(res) {
+        if (res.error) { alert('Error: ' + res.error.message); return; }
+        currentProposal.status = 'accepted';
+        renderPage(); attachNotesListener();
+        showToast('&#10003; Marked as accepted!');
+      });
+    }
+
+    function duplicateDoc() {
+      db.auth.getSession().then(function(r) {
+        var token = r.data && r.data.session ? r.data.session.access_token : '';
+        return fetch('/api/duplicate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ type: 'proposal', id: proposalId })
+        });
+      }).then(function(res) { return res.json(); })
+      .then(function(d) {
+        if (d.new_id) {
+          showToast('Duplicated! Opening copy…');
+          setTimeout(function() { window.location.href = '/proposal.html?id=' + d.new_id; }, 900);
+        } else { alert('Could not duplicate: ' + (d.error || 'Unknown error')); }
+      }).catch(function() { alert('Duplicate failed.'); });
+    }
+
+    function showToast(msg) {
+      var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+      setTimeout(function() { t.classList.remove('show'); }, 2500);
+    }
+
+    function attachNotesListener() {
+      var el = document.getElementById('notes-input');
+      if (!el) return;
+      el.addEventListener('blur', function() {
+        var notes = this.value;
+        if (notes === (currentProposal.notes || '')) return;
+        db.from('proposals').update({ notes: notes }).eq('id', proposalId).then(function() {
+          currentProposal.notes = notes;
+          showToast('Notes saved');
+        });
+      });
+    }
+  </script>
+
+</body>
+</html>
