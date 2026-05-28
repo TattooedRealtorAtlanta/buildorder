@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BuildOrder.ai &mdash; Accept Team Invite</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:    #090E1A;
+      --bg2:   #111827;
+      --bg3:   #1A2438;
+      --amber: #F59E0B;
+      --amber2:#FCD34D;
+      --white: #F8FAFC;
+      --muted: #94A3B8;
+      --dim:   #475569;
+      --border:rgba(255,255,255,0.07);
+      --green: #34D399;
+      --red:   #EF4444;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 3rem 1.5rem; }
+    .logo { font-size: 1.2rem; font-weight: 900; letter-spacing: -0.03em; text-decoration: none; color: var(--white); margin-bottom: 2.5rem; }
+    .logo em { font-style: normal; color: var(--amber); }
+    .card { background: var(--bg3); border: 1px solid var(--border); border-radius: 18px; padding: 2.5rem; width: 100%; max-width: 420px; }
+    .card-icon { font-size: 2rem; margin-bottom: 1rem; }
+    .card-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 0.4rem; letter-spacing: -0.02em; }
+    .card-sub { font-size: 0.85rem; color: var(--muted); line-height: 1.6; margin-bottom: 1.75rem; }
+    .employer-tag { display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.25); border-radius: 8px; padding: 0.45rem 0.85rem; font-size: 0.8rem; font-weight: 700; color: var(--amber); margin-bottom: 1.75rem; }
+    .tab-row { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+    .tab { flex: 1; background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.55rem; font-size: 0.8rem; font-weight: 700; color: var(--dim); cursor: pointer; font-family: inherit; transition: all 0.15s; }
+    .tab.active { background: var(--amber); color: #090E1A; border-color: var(--amber); }
+    .form-field { margin-bottom: 1rem; }
+    label { display: block; font-size: 0.72rem; font-weight: 600; color: var(--muted); margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    input { width: 100%; background: var(--bg2); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.9rem; color: var(--white); font-family: inherit; outline: none; transition: border-color 0.2s; }
+    input::placeholder { color: var(--dim); }
+    input:focus { border-color: var(--amber); }
+    .btn { width: 100%; background: var(--amber); color: #090E1A; border: none; border-radius: 10px; padding: 0.85rem; font-size: 0.9rem; font-weight: 900; cursor: pointer; font-family: inherit; transition: background 0.15s; margin-top: 0.25rem; }
+    .btn:hover { background: var(--amber2); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .msg { font-size: 0.8rem; color: var(--red); min-height: 1rem; margin-top: 0.75rem; }
+    .success-state { text-align: center; }
+    .success-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .success-title { font-size: 1.15rem; font-weight: 800; margin-bottom: 0.4rem; }
+    .success-sub { font-size: 0.85rem; color: var(--muted); line-height: 1.6; margin-bottom: 1.75rem; }
+    .btn-dash { display: block; background: var(--amber); color: #090E1A; border: none; border-radius: 10px; padding: 0.85rem; font-size: 0.9rem; font-weight: 900; text-decoration: none; text-align: center; }
+    .btn-dash:hover { background: var(--amber2); }
+    .note { font-size: 0.75rem; color: var(--dim); text-align: center; margin-top: 1rem; line-height: 1.6; }
+    .error-state { text-align: center; padding: 1rem 0; }
+    .error-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+    .error-title { font-size: 1rem; font-weight: 800; color: var(--red); margin-bottom: 0.4rem; }
+    .error-sub { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+  </style>
+</head>
+<body>
+
+  <a href="/" class="logo">Build<em>Order</em></a>
+
+  <div class="card" id="card">
+    <div style="text-align:center;color:var(--muted);font-size:0.85rem;">Loading invite&hellip;</div>
+  </div>
+
+  <script>
+    var SUPABASE_URL = 'https://pxqwtesczfhfjwdhxiyl.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDI3MDcsImV4cCI6MjA5NTIxODcwN30.rNmcfsteMK_IdyWkGLrNA5ZOlRVHQYahDrnIWmPGCLM';
+    var db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, storageKey: 'bo-auth' } });
+
+    var inviteToken = new URLSearchParams(window.location.search).get('token') || '';
+    var card = document.getElementById('card');
+    var currentTab = 'signup';
+
+    function renderError(msg) {
+      card.innerHTML = '<div class="error-state">' +
+        '<div class="error-icon">🔒</div>' +
+        '<div class="error-title">Invite Unavailable</div>' +
+        '<div class="error-sub">' + msg + '</div>' +
+      '</div>';
+    }
+
+    function renderSuccess(ownerName) {
+      card.innerHTML = '<div class="success-state">' +
+        '<div class="success-icon">✅</div>' +
+        '<div class="success-title">You\'re in!</div>' +
+        '<div class="success-sub">You\'ve joined <strong>' + (ownerName || 'the team') + '</strong> on BuildOrder. You can now generate and manage documents on their behalf.</div>' +
+        '<a href="/dashboard.html" class="btn-dash">Go to Dashboard &rarr;</a>' +
+        '<div class="note">Documents you create will appear under ' + (ownerName || 'the owner\'s account') + '\'s profile.</div>' +
+      '</div>';
+    }
+
+    function renderForm(ownerName) {
+      card.innerHTML =
+        '<div class="card-icon">🤝</div>' +
+        '<div class="card-title">Join ' + (ownerName || 'the team') + '</div>' +
+        '<div class="card-sub">Accept this invite to access BuildOrder under ' + (ownerName || "your employer's") + ' Business account. No charge to you &mdash; your access is covered by their plan.</div>' +
+        '<div class="employer-tag">&#128287; ' + (ownerName || 'Employer') + ' &middot; Business Plan</div>' +
+        '<div class="tab-row">' +
+          '<button class="tab active" id="tab-signup" onclick="switchTab(\'signup\')">Create Account</button>' +
+          '<button class="tab" id="tab-login" onclick="switchTab(\'login\')">I have an account</button>' +
+        '</div>' +
+        '<div id="form-area"></div>' +
+        '<div class="msg" id="msg"></div>';
+      renderTabForm();
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.getElementById('tab-signup').className = 'tab' + (tab === 'signup' ? ' active' : '');
+      document.getElementById('tab-login').className  = 'tab' + (tab === 'login'  ? ' active' : '');
+      renderTabForm();
+    }
+
+    function renderTabForm() {
+      var area = document.getElementById('form-area');
+      if (!area) return;
+      if (currentTab === 'signup') {
+        area.innerHTML =
+          '<div class="form-field"><label>Email</label><input type="email" id="f-email" placeholder="you@example.com"></div>' +
+          '<div class="form-field"><label>Password</label><input type="password" id="f-pass" placeholder="Choose a password" minlength="8"></div>' +
+          '<div class="form-field"><label>Your Name</label><input type="text" id="f-name" placeholder="John Smith"></div>' +
+          '<button class="btn" id="action-btn" onclick="doSignup()">Create Account &amp; Accept Invite &rarr;</button>';
+      } else {
+        area.innerHTML =
+          '<div class="form-field"><label>Email</label><input type="email" id="f-email" placeholder="you@example.com"></div>' +
+          '<div class="form-field"><label>Password</label><input type="password" id="f-pass" placeholder="Your password"></div>' +
+          '<button class="btn" id="action-btn" onclick="doLogin()">Sign In &amp; Accept Invite &rarr;</button>';
+      }
+    }
+
+    function setMsg(msg, isError) {
+      var el = document.getElementById('msg');
+      if (el) { el.textContent = msg; el.style.color = isError ? 'var(--red)' : 'var(--green)'; }
+    }
+
+    function setBusy(busy) {
+      var btn = document.getElementById('action-btn');
+      if (btn) { btn.disabled = busy; btn.textContent = busy ? 'Please wait…' : (currentTab === 'signup' ? 'Create Account & Accept Invite →' : 'Sign In & Accept Invite →'); }
+    }
+
+    async function acceptInvite(token) {
+      var sessionRes = await db.auth.getSession();
+      var jwt = sessionRes.data && sessionRes.data.session ? sessionRes.data.session.access_token : '';
+      if (!jwt) { setMsg('Session error. Please try again.', true); setBusy(false); return; }
+
+      var res = await fetch('/api/team', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + jwt },
+        body: JSON.stringify({ action: 'accept', token: token })
+      });
+      var data = await res.json();
+      if (res.ok && data.success) {
+        renderSuccess(window._ownerName);
+      } else {
+        setMsg(data.error || 'Failed to accept invite.', true);
+        setBusy(false);
+      }
+    }
+
+    async function doSignup() {
+      var email = document.getElementById('f-email').value.trim();
+      var pass  = document.getElementById('f-pass').value;
+      var name  = document.getElementById('f-name').value.trim();
+      if (!email || !pass || !name) { setMsg('Please fill in all fields.', true); return; }
+      if (pass.length < 8) { setMsg('Password must be at least 8 characters.', true); return; }
+      setBusy(true); setMsg('');
+
+      var { error: signupErr } = await db.auth.signUp({ email: email, password: pass });
+      if (signupErr) {
+        if (signupErr.message.includes('already registered')) {
+          setMsg('That email is already registered. Use "I have an account" to sign in.', true);
+        } else {
+          setMsg(signupErr.message, true);
+        }
+        setBusy(false);
+        return;
+      }
+
+      // Sign in immediately after signup
+      var { error: loginErr } = await db.auth.signInWithPassword({ email: email, password: pass });
+      if (loginErr) { setMsg(loginErr.message, true); setBusy(false); return; }
+
+      await acceptInvite(inviteToken);
+    }
+
+    async function doLogin() {
+      var email = document.getElementById('f-email').value.trim();
+      var pass  = document.getElementById('f-pass').value;
+      if (!email || !pass) { setMsg('Please enter your email and password.', true); return; }
+      setBusy(true); setMsg('');
+
+      var { error: loginErr } = await db.auth.signInWithPassword({ email: email, password: pass });
+      if (loginErr) { setMsg('Invalid email or password.', true); setBusy(false); return; }
+
+      await acceptInvite(inviteToken);
+    }
+
+    async function init() {
+      if (!inviteToken) { renderError('No invite token found in this URL. Make sure you used the full link from your email.'); return; }
+
+      // Check if already logged in
+      var sessionRes = await db.auth.getSession();
+      var session = sessionRes.data && sessionRes.data.session;
+
+      // If logged in, try to auto-accept
+      if (session) {
+        card.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:0.85rem;">Accepting invite&hellip;</div>';
+        var jwt = session.access_token;
+        var res = await fetch('/api/team', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + jwt },
+          body: JSON.stringify({ action: 'accept', token: inviteToken })
+        });
+        var data = await res.json();
+        if (res.ok && data.success) { renderSuccess(window._ownerName); return; }
+        // If wrong account, fall through to show the form
+      }
+
+      // Fetch owner name for display (public endpoint — just the token)
+      // We'll just show a generic message if we can't get it
+      window._ownerName = 'your employer';
+      renderForm(window._ownerName);
+    }
+
+    init();
+  </script>
+</body>
+</html>

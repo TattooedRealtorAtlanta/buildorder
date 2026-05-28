@@ -165,6 +165,7 @@
       if (window._stripeJustConnected) { showToast('Stripe account connected! ✓'); }
       if (window._stripeConnectRefresh) { showToast('Connection timed out — click Connect Stripe Account to try again.'); }
       await loadRateLibrary();
+      if (effectivePlan === 'business') await loadTeamMembers();
     }
 
     function renderPage(p, usageCount, effectivePlan, isFounder) {
@@ -272,7 +273,23 @@
             '<div class="form-field" style="flex:1;margin-bottom:0;"><label class="form-label">Unit Price ($)</label><input class="form-input" type="number" id="lib-price" placeholder="0.00" min="0" step="0.01"></div>' +
             '<button class="btn-save" onclick="addTemplate()" style="flex-shrink:0;margin-bottom:1px;">+ Add to Library</button>' +
           '</div>' +
-        '</div>';
+        '</div>' +
+
+        // ── Team Members (Business plan only) ──────────────────────────────
+        (effectivePlan === 'business' ?
+        '<div class="section" id="team-section">' +
+          '<div class="section-title">Team Members</div>' +
+          '<p style="font-size:0.78rem;color:var(--muted);margin-bottom:1.25rem;line-height:1.6;">Invite employees or subcontractors to generate documents under your account. They create their own login — no charge to them.</p>' +
+          '<div id="team-list"><div style="color:var(--muted);font-size:0.82rem;">Loading…</div></div>' +
+          '<div style="display:flex;gap:0.75rem;align-items:flex-end;margin-top:1.25rem;">' +
+            '<div class="form-field" style="flex:1;margin-bottom:0;"><label class="form-label">Invite by Email</label><input class="form-input" type="email" id="team-invite-email" placeholder="colleague@example.com"></div>' +
+            '<button class="btn-save" onclick="inviteTeamMember()" style="flex-shrink:0;margin-bottom:1px;">Send Invite</button>' +
+          '</div>' +
+          '<div class="msg" id="team-msg" style="color:var(--green);min-height:1rem;margin-top:0.5rem;font-size:0.8rem;"></div>' +
+        '</div>'
+        : '') +
+
+        '';
     }
 
     async function saveProfile() {
@@ -351,6 +368,65 @@
       if (!confirm('Remove this item from your rate library?')) return;
       await db.from('line_item_templates').delete().eq('id', id).eq('user_id', userId);
       await loadRateLibrary();
+    }
+
+    // ── Team Members ───────────────────────────────────────────────────────
+    async function loadTeamMembers() {
+      var container = document.getElementById('team-list');
+      if (!container) return;
+      var res = await fetch('/api/team', { headers: { 'Authorization': 'Bearer ' + sessionToken } });
+      if (!res.ok) { container.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;">Could not load team.</div>'; return; }
+      var data = await res.json();
+      var members = data.members || [];
+      if (!members.length) {
+        container.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:0.25rem 0;">No team members yet. Invite someone below.</div>';
+        return;
+      }
+      container.innerHTML =
+        '<div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;">' +
+        members.map(function(m) {
+          var statusColor = m.status === 'active' ? 'var(--green)' : 'var(--amber)';
+          var statusLabel = m.status === 'active' ? 'Active' : 'Pending invite';
+          return '<div style="display:flex;align-items:center;gap:0.85rem;padding:0.75rem 1rem;border-bottom:1px solid var(--border);">' +
+            '<div style="flex:1;min-width:0;">' +
+              '<div style="font-size:0.82rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + m.member_email + '</div>' +
+              '<div style="font-size:0.72rem;color:' + statusColor + ';margin-top:0.15rem;">' + statusLabel + '</div>' +
+            '</div>' +
+            '<button onclick="removeTeamMember(\'' + m.id + '\',\'' + m.member_email.replace(/'/g,"\\'") + '\')" style="background:none;border:1px solid transparent;border-radius:6px;padding:0.25rem 0.6rem;font-size:0.72rem;font-weight:600;color:var(--dim);cursor:pointer;font-family:inherit;transition:color 0.15s;" onmouseover="this.style.color=\'var(--red)\'" onmouseout="this.style.color=\'var(--dim)\'">Remove</button>' +
+          '</div>';
+        }).join('') +
+        '</div>';
+    }
+
+    async function inviteTeamMember() {
+      var email = (document.getElementById('team-invite-email').value || '').trim();
+      if (!email) { document.getElementById('team-invite-email').focus(); return; }
+      var msg = document.getElementById('team-msg');
+      msg.style.color = 'var(--muted)'; msg.textContent = 'Sending invite…';
+      var res = await fetch('/api/team', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionToken },
+        body: JSON.stringify({ email: email })
+      });
+      var data = await res.json();
+      if (res.ok && data.success) {
+        msg.style.color = 'var(--green)'; msg.textContent = 'Invite sent to ' + email + '!';
+        document.getElementById('team-invite-email').value = '';
+        await loadTeamMembers();
+      } else {
+        msg.style.color = 'var(--red)'; msg.textContent = data.error || 'Failed to send invite.';
+      }
+    }
+
+    async function removeTeamMember(id, email) {
+      if (!confirm('Remove ' + email + ' from your team?')) return;
+      var res = await fetch('/api/team', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionToken },
+        body: JSON.stringify({ member_id: id })
+      });
+      if (res.ok) { await loadTeamMembers(); showToast('Team member removed.'); }
+      else { alert('Failed to remove team member.'); }
     }
 
     async function openPortal() {
