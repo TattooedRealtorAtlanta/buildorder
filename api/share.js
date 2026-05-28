@@ -102,7 +102,18 @@ module.exports = async function handler(req, res) {
       }
     }
 
-    return res.status(200).json({ ...data, payment_available, contractor_logo, contractor_name });
+    // For proposals — fetch summary metadata so sign page can show a nice breakdown
+    let proposal_meta = null;
+    if (data.document_type === 'proposal' && data.reference_id) {
+      const { data: prop } = await db
+        .from('proposals')
+        .select('total, deposit_pct, net_days, work_type')
+        .eq('id', data.reference_id)
+        .single();
+      if (prop) proposal_meta = prop;
+    }
+
+    return res.status(200).json({ ...data, payment_available, contractor_logo, contractor_name, proposal_meta });
   }
 
   // ── POST ────────────────────────────────────────────────────────────────

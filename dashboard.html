@@ -346,6 +346,16 @@
       <div id="win-rate-content"></div>
     </div>
 
+    <!-- Expiry callout -->
+    <div id="expiry-callout" style="display:none;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem;align-items:flex-start;gap:1rem;flex-wrap:wrap;">
+      <div style="font-size:1.3rem;flex-shrink:0;margin-top:0.1rem;">&#9888;&#65039;</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:0.85rem;font-weight:700;color:var(--white);margin-bottom:0.35rem;" id="expiry-callout-title">Estimates expiring soon</div>
+        <div id="expiry-callout-list" style="font-size:0.78rem;color:var(--muted);line-height:1.8;"></div>
+      </div>
+      <button onclick="document.getElementById('expiry-callout').style.display='none'" style="flex-shrink:0;background:none;border:none;color:var(--dim);cursor:pointer;font-size:1.1rem;padding:0.1rem 0.3rem;line-height:1;" title="Dismiss">&times;</button>
+    </div>
+
     <!-- Recent Docs -->
     <div class="recent-header">
       <div class="section-label" style="margin-bottom:0;" data-i18n="dash.recent">Recent Documents</div>
@@ -501,6 +511,33 @@
       if (hasNoLaborRate && hasNoRateItems) {
         var banner = document.getElementById('rate-library-banner');
         if (banner) banner.style.display = 'flex';
+      }
+
+      // Expiry callout — estimates expiring within 3 days or already expired (not accepted)
+      var threeDaysMs = 3 * 24 * 60 * 60 * 1000;
+      var expiringEsts = ests.filter(function(e) {
+        if (e.status === 'accepted') return false;
+        var validDays = Number(e.valid_days || 30);
+        var expiresMs = new Date(e.created_at).getTime() + validDays * 24 * 60 * 60 * 1000;
+        return expiresMs < nowMs + threeDaysMs;
+      });
+      if (expiringEsts.length > 0) {
+        var callout = document.getElementById('expiry-callout');
+        var calloutTitle = document.getElementById('expiry-callout-title');
+        var calloutList = document.getElementById('expiry-callout-list');
+        var expiredCount = expiringEsts.filter(function(e) { return new Date(e.created_at).getTime() + Number(e.valid_days || 30) * 24 * 60 * 60 * 1000 < nowMs; }).length;
+        calloutTitle.textContent = expiredCount > 0
+          ? expiredCount + ' estimate' + (expiredCount !== 1 ? 's' : '') + ' expired — follow up or regenerate'
+          : expiringEsts.length + ' estimate' + (expiringEsts.length !== 1 ? 's' : '') + ' expiring within 3 days';
+        calloutList.innerHTML = expiringEsts.slice(0, 4).map(function(e) {
+          var expiresMs = new Date(e.created_at).getTime() + Number(e.valid_days || 30) * 24 * 60 * 60 * 1000;
+          var expired = expiresMs < nowMs;
+          var daysLeft = Math.ceil((expiresMs - nowMs) / 86400000);
+          var label = expired ? 'Expired' : (daysLeft <= 0 ? 'Today' : 'Expires in ' + daysLeft + ' day' + (daysLeft !== 1 ? 's' : ''));
+          return '<a href="/estimate.html?id=' + e.id + '" style="color:var(--white);text-decoration:none;display:inline-block;margin-right:1rem;">' +
+            (e.homeowner_name || 'No client') + ' &mdash; <span style="color:' + (expired ? 'var(--red)' : 'var(--amber)') + ';">' + label + '</span></a>';
+        }).join('<br>');
+        callout.style.display = 'flex';
       }
 
       // Stats

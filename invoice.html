@@ -289,6 +289,17 @@
         currentInvoice.status = 'paid';
         renderPage();
         showToast('Marked as paid!');
+        // Send receipt email (non-blocking)
+        db.auth.getSession().then(function(r) {
+          var token = r.data && r.data.session ? r.data.session.access_token : '';
+          if (token) {
+            fetch('/api/receipt', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+              body: JSON.stringify({ invoice_id: invoiceId })
+            }).catch(function() {});
+          }
+        });
       });
     }
 

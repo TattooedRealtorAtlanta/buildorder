@@ -313,6 +313,7 @@
       'contract':      'Home Improvement Contract',
       'estimate':      'Estimate',
       'invoice':       'Invoice',
+      'proposal':      'Proposal & Contract',
       'change-order':  'Change Order',
       'subcontractor': 'Subcontractor Agreement',
       'lien-waiver':   'Lien Waiver',
@@ -458,17 +459,38 @@
         html += '<div class="already-signed">&#10003;&nbsp; This document was signed on ' + fmtDate(data.signed_at) + (data.client_name ? ' by ' + data.client_name : '') + '</div>';
       }
 
+      // Proposal summary card — shown before the full document text
+      if (data.document_type === 'proposal' && data.proposal_meta) {
+        var pm = data.proposal_meta;
+        var fmtTotal = pm.total ? '$' + Number(pm.total).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : null;
+        var depositAmt = (pm.total && pm.deposit_pct) ? '$' + (Number(pm.total) * Number(pm.deposit_pct) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : null;
+        html +=
+          '<div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.25);border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;">' +
+            '<div style="font-size:0.68rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:var(--amber);margin-bottom:0.9rem;">Proposal Summary</div>' +
+            '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;">' +
+              (fmtTotal ? '<div><div style="font-size:0.68rem;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.25rem;">Total</div><div style="font-size:1.05rem;font-weight:800;color:var(--white);">' + fmtTotal + '</div></div>' : '') +
+              (pm.deposit_pct != null ? '<div><div style="font-size:0.68rem;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.25rem;">Deposit</div><div style="font-size:1.05rem;font-weight:800;color:var(--amber);">' + pm.deposit_pct + '%' + (depositAmt ? '<span style="font-size:0.75rem;font-weight:600;color:var(--muted);display:block;">' + depositAmt + '</span>' : '') + '</div></div>' : '') +
+              (pm.net_days != null ? '<div><div style="font-size:0.68rem;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.25rem;">Balance Due</div><div style="font-size:1.05rem;font-weight:800;color:var(--white);">Net ' + pm.net_days + '</div></div>' : '') +
+            '</div>' +
+          '</div>';
+      }
+
       html +=
         '<div class="doc-card">' +
           '<div class="doc-card-title">&#128196; Document</div>' +
           '<pre class="doc-text">' + escapeHtml(data.document_content) + '</pre>' +
         '</div>';
 
+      var sigTitle = data.document_type === 'proposal' ? 'Accept & Sign This Proposal' : 'Sign this Document';
+      var sigSub = data.document_type === 'proposal'
+        ? 'By signing below you accept the scope, pricing, and terms above. Your signature authorizes the contractor to begin work per the payment schedule.'
+        : 'Review the document above, then draw your signature below to sign it electronically.';
+
       if (!alreadySigned) {
         html +=
           '<div class="sig-section">' +
-            '<div class="sig-section-title">Sign this Document</div>' +
-            '<div class="sig-section-sub">Review the document above, then draw your signature below to sign it electronically.</div>' +
+            '<div class="sig-section-title">' + sigTitle + '</div>' +
+            '<div class="sig-section-sub">' + sigSub + '</div>' +
             '<div class="form-field">' +
               '<label class="form-label" for="sig-name">Your Name (optional)</label>' +
               '<input class="form-input" type="text" id="sig-name" placeholder="Your full name">' +
