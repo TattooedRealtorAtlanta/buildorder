@@ -94,7 +94,7 @@ INSTRUCTIONS:
 1. Generate a professional estimate in plain text with clear formatting using ===, ---, and spacing
 2. Include these sections in order:
    - HEADER: Contractor name, business name, address, phone, email, license number
-   - ESTIMATE label with estimate number (use EST-${Date.now().toString().slice(-6)}), date, valid until date
+   - ESTIMATE label with estimate number (use ${estimate.doc_number || ('EST-' + Date.now().toString().slice(-6))}), date, valid until date
    - CLIENT INFO: Homeowner name, job address
    - PROJECT SUMMARY: Brief description of work scope
    - LINE ITEMS TABLE: Itemized list with description, quantity, unit, unit price, and line total

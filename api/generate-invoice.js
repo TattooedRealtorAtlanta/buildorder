@@ -62,7 +62,7 @@ module.exports = async (req, res) => {
   var depositPaid = Number(invoice.deposit_paid || 0);
   var balanceDue = Number(invoice.balance_due || total);
 
-  var invoiceNum = 'INV-' + Date.now().toString().slice(-6);
+  var invoiceNum = invoice.doc_number || ('INV-' + Date.now().toString().slice(-6));
 
   // Build "How to Pay" section from contractor's saved payment info
   var paymentLines = [];

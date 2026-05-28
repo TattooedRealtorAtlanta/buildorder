@@ -243,6 +243,134 @@ module.exports = async (req, res) => {
     }
   }
 
+  // ── Unsigned document reminders ─────────────────────────────────────────
+  // Find share_links that: were sent to a client, not yet signed, no sig reminder
+  // sent yet, and are at least 3 days old. Nudge the client to sign.
+  var { data: unsignedLinks } = await supabase
+    .from('share_links')
+    .select('id, token, user_id, document_type, client_name, client_email, sent_at, created_at, payment_amount')
+    .is('signed_at', null)
+    .is('sig_reminder_sent_at', null)
+    .not('client_email', 'is', null);
+
+  if (unsignedLinks && unsignedLinks.length > 0) {
+    var sigUserIds = [...new Set(unsignedLinks.map(function(l) { return l.user_id; }))];
+    var { data: sigProfiles } = await supabase
+      .from('contractor_profiles')
+      .select('id, email, contractor_name, business_name, phone')
+      .in('id', sigUserIds);
+
+    var sigProfileMap = {};
+    (sigProfiles || []).forEach(function(p) { sigProfileMap[p.id] = p; });
+
+    var TYPE_LABELS = {
+      'contract':      'Home Improvement Contract',
+      'estimate':      'Estimate',
+      'invoice':       'Invoice',
+      'change-order':  'Change Order',
+      'subcontractor': 'Subcontractor Agreement',
+      'lien-waiver':   'Lien Waiver',
+      'takeoff':       'Material Takeoff',
+      'document':      'Document'
+    };
+
+    for (var ulink of unsignedLinks) {
+      // Only remind if at least 3 days have passed since sent/created
+      var refDate = ulink.sent_at || ulink.created_at;
+      if (!refDate) continue;
+      var ageMs = now - new Date(refDate).getTime();
+      if (ageMs < threeDaysMs) continue;
+
+      // Don't remind on expired links
+      if (ulink.expires_at && new Date(ulink.expires_at) < new Date()) continue;
+
+      var sigProfile = sigProfileMap[ulink.user_id];
+      if (!sigProfile || !ulink.client_email) continue;
+
+      var docLabel   = TYPE_LABELS[ulink.document_type] || 'Document';
+      var bizName    = sigProfile.business_name || sigProfile.contractor_name || 'Your contractor';
+      var clientFirst = (ulink.client_name || 'there').split(' ')[0];
+      var signUrl    = 'https://buildorder.ai/sign.html?token=' + ulink.token;
+
+      try {
+        // Email to client
+        await resend.emails.send({
+          from:     bizName + ' via BuildOrder <noreply@buildorder.ai>',
+          to:       [ulink.client_email],
+          reply_to: sigProfile.email,
+          subject:  'Reminder: your ' + docLabel + ' is waiting for your signature',
+          html: `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"></head>
+<body style="font-family:Inter,Arial,sans-serif;background:#F1F5F9;margin:0;padding:40px 16px;">
+  <div style="max-width:540px;margin:0 auto;">
+
+    <div style="background:#090E1A;border-radius:14px 14px 0 0;padding:28px 32px;">
+      <div style="font-size:20px;font-weight:900;letter-spacing:-0.03em;color:#F8FAFC;">
+        ${bizName}
+      </div>
+    </div>
+
+    <div style="background:#ffffff;border-radius:0 0 14px 14px;padding:32px;border:1px solid #e5e7eb;border-top:none;">
+      <h1 style="font-size:18px;font-weight:900;color:#111827;margin:0 0 10px;">
+        Hey ${clientFirst} — your ${docLabel} still needs a signature.
+      </h1>
+      <p style="font-size:14px;color:#6B7280;line-height:1.7;margin:0 0 24px;">
+        <strong style="color:#111827;">${bizName}</strong> sent you a document a few days ago
+        and it looks like it's still waiting on your signature. Takes about 30 seconds.
+      </p>
+
+      <a href="${signUrl}"
+         style="display:block;text-align:center;background:#F59E0B;color:#090E1A;padding:14px 24px;border-radius:10px;font-size:15px;font-weight:900;text-decoration:none;margin-bottom:24px;">
+        Review &amp; Sign &rarr;
+      </a>
+
+      <p style="font-size:12px;color:#9CA3AF;line-height:1.7;margin:0;">
+        Questions? Reply to this email or contact ${bizName}${sigProfile.phone ? ' at ' + sigProfile.phone : ''}.
+        <br>Powered by <a href="https://buildorder.ai" style="color:#F59E0B;text-decoration:none;">BuildOrder.ai</a>
+      </p>
+    </div>
+  </div>
+</body></html>`
+        });
+
+        // Notify contractor too
+        if (sigProfile.email) {
+          await resend.emails.send({
+            from:    'BuildOrder.ai <noreply@buildorder.ai>',
+            to:      [sigProfile.email],
+            subject: '📋 Reminder sent — ' + (ulink.client_name || ulink.client_email) + ' hasn\'t signed yet',
+            html: `<div style="font-family:Inter,sans-serif;max-width:520px;margin:40px auto;padding:0 16px;">
+              <div style="background:#090E1A;border-radius:12px 12px 0 0;padding:24px 28px;">
+                <div style="font-size:18px;font-weight:900;color:#F8FAFC;"><span style="color:#F59E0B;">Build</span>Order</div>
+              </div>
+              <div style="background:#fff;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 12px 12px;padding:28px;">
+                <h2 style="font-size:16px;font-weight:800;color:#111827;margin:0 0 8px;">Signature reminder sent</h2>
+                <p style="font-size:14px;color:#6B7280;line-height:1.7;margin:0 0 16px;">
+                  We just sent <strong style="color:#111827;">${ulink.client_name || ulink.client_email}</strong> a reminder
+                  to sign their <strong style="color:#111827;">${docLabel}</strong>. That's 3 days with no action — might be worth a call too.
+                </p>
+                <a href="https://buildorder.ai/dashboard.html"
+                   style="display:inline-block;background:#F59E0B;color:#090E1A;padding:10px 20px;border-radius:8px;font-weight:800;text-decoration:none;font-size:14px;">
+                  View Dashboard
+                </a>
+              </div>
+            </div>`
+          });
+        }
+
+        await supabase
+          .from('share_links')
+          .update({ sig_reminder_sent_at: new Date().toISOString() })
+          .eq('id', ulink.id);
+
+        sent++;
+      } catch (sigErr) {
+        console.error('Sig reminder failed for link', ulink.id, sigErr.message);
+        errs.push({ link_id: ulink.id, error: sigErr.message });
+      }
+    }
+  }
+
   return res.status(200).json({
     sent,
     checked: expiring.length,

@@ -47,7 +47,7 @@ module.exports = async (req, res) => {
   var changeAmt   = Number(co.change_amount || 0);
   var newTotal    = Number(co.new_total || (origPrice + changeAmt));
   var addDays     = Number(co.additional_days || 0);
-  var coNum       = 'CO-' + Date.now().toString().slice(-6);
+  var coNum       = co.doc_number || ('CO-' + Date.now().toString().slice(-6));
 
   var changeSign  = changeAmt >= 0 ? '+' : '';
   var timeImpact  = addDays > 0
