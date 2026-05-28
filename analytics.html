@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BuildOrder.ai &mdash; Analytics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:    #090E1A;
+      --bg2:   #111827;
+      --bg3:   #1A2438;
+      --amber: #F59E0B;
+      --amber2:#FCD34D;
+      --white: #F8FAFC;
+      --muted: #94A3B8;
+      --dim:   #475569;
+      --border:rgba(255,255,255,0.07);
+      --green: #34D399;
+      --red:   #EF4444;
+      --blue:  #60A5FA;
+      --purple:#A5B4FC;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; }
+    .nav { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+    .logo { font-size: 1.2rem; font-weight: 900; letter-spacing: -0.03em; text-decoration: none; color: var(--white); }
+    .logo em { font-style: normal; color: var(--amber); }
+    .nav-right { display: flex; align-items: center; gap: 0.75rem; }
+    .btn-back { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.9rem; font-size: 0.78rem; color: var(--dim); cursor: pointer; font-family: inherit; text-decoration: none; transition: color 0.2s, border-color 0.2s; }
+    .btn-back:hover { color: var(--white); border-color: var(--amber); }
+
+    .main { max-width: 1000px; margin: 0 auto; padding: 2rem 2rem 4rem; }
+    .page-title { font-size: 1.5rem; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 0.3rem; }
+    .page-title em { font-style: normal; color: var(--amber); }
+    .page-sub { font-size: 0.82rem; color: var(--muted); margin-bottom: 2rem; }
+
+    .section-label { font-size: 0.72rem; font-weight: 700; color: var(--dim); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.85rem; }
+
+    /* Stat grids */
+    .stats-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+    .stats-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
+    .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem 1.4rem; }
+    .stat-card.green-border { border-color: rgba(52,211,153,0.25); }
+    .stat-card.amber-border { border-color: rgba(245,158,11,0.25); }
+    .stat-card.red-border   { border-color: rgba(239,68,68,0.22); }
+    .stat-lbl { font-size: 0.67rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.4rem; }
+    .stat-val { font-size: 1.9rem; font-weight: 900; letter-spacing: -0.03em; line-height: 1; color: var(--white); }
+    .stat-val.green  { color: var(--green); }
+    .stat-val.amber  { color: var(--amber); }
+    .stat-val.red    { color: var(--red); }
+    .stat-sub { font-size: 0.72rem; color: var(--dim); margin-top: 0.35rem; }
+
+    /* Signature rate */
+    .sig-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; margin-bottom: 2rem; }
+    .sig-row { display: flex; align-items: center; gap: 1.25rem; margin-bottom: 0.9rem; }
+    .sig-pct { font-size: 3rem; font-weight: 900; letter-spacing: -0.04em; color: var(--green); line-height: 1; flex-shrink: 0; }
+    .sig-detail { flex: 1; }
+    .sig-detail h3 { font-size: 0.92rem; font-weight: 800; margin-bottom: 0.25rem; }
+    .sig-detail p  { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+    .sig-bar-wrap { display: flex; align-items: center; gap: 0.85rem; }
+    .sig-bar { flex: 1; height: 10px; background: rgba(255,255,255,0.06); border-radius: 100px; overflow: hidden; }
+    .sig-bar-fill { height: 100%; border-radius: 100px; background: var(--green); transition: width 0.7s ease; }
+    .sig-bar-lbl { font-size: 0.72rem; color: var(--muted); white-space: nowrap; }
+
+    /* Monthly trend chart */
+    .trend-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; margin-bottom: 2rem; }
+    .trend-chart { display: flex; align-items: flex-end; gap: 0.6rem; height: 100px; margin: 1.25rem 0 0.5rem; }
+    .trend-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.35rem; }
+    .trend-bar-wrap { flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
+    .trend-bar { width: 100%; max-width: 36px; border-radius: 5px 5px 0 0; background: rgba(245,158,11,0.35); transition: height 0.6s ease; min-height: 3px; }
+    .trend-bar:hover { background: var(--amber); }
+    .trend-month { font-size: 0.65rem; color: var(--dim); font-weight: 600; }
+    .trend-count { font-size: 0.68rem; color: var(--muted); font-weight: 700; }
+
+    /* Recent payments */
+    .pay-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 2rem; overflow: hidden; }
+    .pay-header { padding: 1.1rem 1.4rem; border-bottom: 1px solid var(--border); }
+    .pay-row { display: flex; align-items: center; gap: 1rem; padding: 0.85rem 1.4rem; border-bottom: 1px solid var(--border); font-size: 0.84rem; }
+    .pay-row:last-child { border-bottom: none; }
+    .pay-icon { font-size: 1rem; flex-shrink: 0; }
+    .pay-name { flex: 1; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+    .pay-type { font-size: 0.7rem; color: var(--muted); flex-shrink: 0; }
+    .pay-amount { font-weight: 900; color: var(--green); flex-shrink: 0; }
+    .pay-date { font-size: 0.72rem; color: var(--dim); flex-shrink: 0; }
+    .pay-empty { padding: 2rem; text-align: center; font-size: 0.82rem; color: var(--muted); }
+
+    /* Doc type breakdown */
+    .breakdown-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 2rem; }
+    .break-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.1rem; text-align: center; }
+    .break-icon { font-size: 1.3rem; margin-bottom: 0.35rem; }
+    .break-count { font-size: 1.4rem; font-weight: 900; letter-spacing: -0.03em; }
+    .break-label { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin-top: 0.2rem; }
+
+    .loading { text-align: center; padding: 5rem 1rem; color: var(--muted); font-size: 0.9rem; }
+
+    @media (max-width: 750px) {
+      .stats-4 { grid-template-columns: repeat(2, 1fr); }
+      .stats-3 { grid-template-columns: repeat(2, 1fr); }
+      .breakdown-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 480px) {
+      .nav { padding: 0 1rem; }
+      .main { padding: 1.5rem 1rem 3rem; }
+      .stats-4 { grid-template-columns: 1fr 1fr; }
+      .stats-3 { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="/dashboard.html" class="logo">Build<em>Order</em></a>
+    <div class="nav-right">
+      <a href="/dashboard.html" class="btn-back">&larr; Dashboard</a>
+    </div>
+  </nav>
+
+  <main class="main" id="main">
+    <div class="loading">Loading your analytics&hellip;</div>
+  </main>
+
+  <script>
+    var SUPABASE_URL = 'https://pxqwtesczfhfjwdhxiyl.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDI3MDcsImV4cCI6MjA5NTIxODcwN30.rNmcfsteMK_IdyWkGLrNA5ZOlRVHQYahDrnIWmPGCLM';
+    var db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, storageKey: 'bo-auth' } });
+
+    function fmt$(n) {
+      if (!n && n !== 0) return '$0';
+      return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    }
+    function fmtDate(iso) {
+      if (!iso) return '';
+      return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+    function monthKey(iso) {
+      var d = new Date(iso);
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    }
+    function shortMonth(key) {
+      var parts = key.split('-');
+      var d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, 1);
+      return d.toLocaleDateString('en-US', { month: 'short' });
+    }
+
+    async function init() {
+      var sess = await db.auth.getSession();
+      if (!sess.data.session) { window.location.href = '/login.html'; return; }
+
+      var now = new Date();
+      var monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+      var sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1).toISOString();
+
+      // Parallel queries
+      var [invoiceRes, shareRes, usageRes, jobsRes, estRes, coRes, subRes, lienRes, tkofRes] = await Promise.all([
+        db.from('invoices').select('id, total, deposit_paid, balance_due, status, created_at, homeowner_name, work_type'),
+        db.from('share_links').select('id, document_type, signed_at, paid_at, payment_amount, created_at, sent_at, client_name'),
+        db.from('usage_events').select('created_at, doc_type').gte('created_at', sixMonthsAgo),
+        db.from('jobs').select('id', { count: 'exact', head: true }),
+        db.from('estimates').select('id', { count: 'exact', head: true }),
+        db.from('change_orders').select('id', { count: 'exact', head: true }),
+        db.from('documents').select('id', { count: 'exact', head: true }).eq('doc_type', 'subcontractor'),
+        db.from('documents').select('id', { count: 'exact', head: true }).eq('doc_type', 'lien-waiver'),
+        db.from('documents').select('id', { count: 'exact', head: true }).eq('doc_type', 'takeoff')
+      ]);
+
+      var invoices   = invoiceRes.data  || [];
+      var shareLinks = shareRes.data    || [];
+      var usage      = usageRes.data    || [];
+
+      // --- Revenue calcs ---
+      var totalCollected = 0;
+      var totalOutstanding = 0;
+      var thisMonthRevenue = 0;
+      var paidCount = 0;
+
+      invoices.forEach(function(inv) {
+        var invMonth = inv.created_at ? inv.created_at.slice(0, 7) : '';
+        var currMonth = monthStart.slice(0, 7);
+        if (inv.status === 'paid') {
+          var amt = parseFloat(inv.total) || 0;
+          totalCollected += amt;
+          paidCount++;
+          if (invMonth === currMonth) thisMonthRevenue += amt;
+        } else if (inv.status === 'partial') {
+          var dep = parseFloat(inv.deposit_paid) || 0;
+          totalCollected += dep;
+          if (invMonth === currMonth) thisMonthRevenue += dep;
+          var bal = parseFloat(inv.balance_due) || 0;
+          totalOutstanding += bal;
+        } else if (inv.status === 'sent') {
+          var bal2 = parseFloat(inv.balance_due) || parseFloat(inv.total) || 0;
+          totalOutstanding += bal2;
+        }
+      });
+
+      // --- Share link calcs ---
+      var sentLinks = shareLinks.filter(function(s) { return s.sent_at; });
+      var signedLinks = shareLinks.filter(function(s) { return s.signed_at; });
+      var sentThisMonth = sentLinks.filter(function(s) { return s.sent_at && s.sent_at >= monthStart; });
+      var signedThisMonth = shareLinks.filter(function(s) { return s.signed_at && s.signed_at >= monthStart; });
+      var sigRate = sentLinks.length > 0 ? Math.round((signedLinks.length / sentLinks.length) * 100) : 0;
+
+      // Estimate-specific sig rate
+      var estSentLinks = sentLinks.filter(function(s) { return s.document_type === 'estimate'; });
+      var estSignedLinks = signedLinks.filter(function(s) { return s.document_type === 'estimate'; });
+      var estSigRate = estSentLinks.length > 0 ? Math.round((estSignedLinks.length / estSentLinks.length) * 100) : 0;
+
+      // --- Usage / docs generated ---
+      var usageThisMonth = usage.filter(function(u) { return u.created_at >= monthStart; });
+      var docsGeneratedThisMonth = usageThisMonth.length;
+
+      // Monthly trend (last 6 months)
+      var months = [];
+      for (var i = 5; i >= 0; i--) {
+        var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        months.push(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'));
+      }
+      var monthCounts = {};
+      months.forEach(function(m) { monthCounts[m] = 0; });
+      usage.forEach(function(u) {
+        var k = monthKey(u.created_at);
+        if (monthCounts[k] !== undefined) monthCounts[k]++;
+      });
+      var maxMonthCount = Math.max.apply(null, months.map(function(m) { return monthCounts[m]; })) || 1;
+
+      // Recent payments (share_links paid, most recent first)
+      var paidLinks = shareLinks
+        .filter(function(s) { return s.paid_at && s.payment_amount && parseFloat(s.payment_amount) > 0; })
+        .sort(function(a, b) { return new Date(b.paid_at) - new Date(a.paid_at); })
+        .slice(0, 8);
+
+      // --- Render ---
+      var main = document.getElementById('main');
+      main.innerHTML =
+
+        '<div class="page-title">&#128200; <em>Analytics</em></div>' +
+        '<p class="page-sub">Your business at a glance &mdash; ' + now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) + '</p>' +
+
+        // This Month
+        '<div class="section-label">This Month</div>' +
+        '<div class="stats-4" style="margin-bottom:2rem;">' +
+          statCard('Docs Generated', docsGeneratedThisMonth, null, 'white', 'AI documents created') +
+          statCard('Docs Sent', sentThisMonth.length, null, 'white', 'Sent to clients') +
+          statCard('Signatures', signedThisMonth.length, null, 'green', 'Docs signed') +
+          statCard('Revenue', fmt$(thisMonthRevenue), null, thisMonthRevenue > 0 ? 'green' : 'white', 'Payments collected') +
+        '</div>' +
+
+        // Revenue Overview
+        '<div class="section-label">Revenue Overview</div>' +
+        '<div class="stats-3" style="margin-bottom:2rem;">' +
+          statCardBorder('Total Collected', fmt$(totalCollected), 'Invoices paid (all time)', 'green', 'green-border') +
+          statCardBorder('Outstanding', fmt$(totalOutstanding), 'Unpaid invoice balances', totalOutstanding > 0 ? 'amber' : 'white', totalOutstanding > 0 ? 'amber-border' : '') +
+          statCardBorder('Invoices Paid', paidCount, 'Fully paid invoices', 'white', '') +
+        '</div>' +
+
+        // Signature rate
+        '<div class="section-label">Signature Rate</div>' +
+        '<div class="sig-card">' +
+          '<div class="sig-row">' +
+            '<div class="sig-pct" id="sig-pct">' + sigRate + '%</div>' +
+            '<div class="sig-detail">' +
+              '<h3>Overall signature rate &mdash; all sent documents</h3>' +
+              '<p>' + signedLinks.length + ' signed out of ' + sentLinks.length + ' sent &middot; Estimates: ' + estSigRate + '% (' + estSignedLinks.length + '/' + estSentLinks.length + ')</p>' +
+            '</div>' +
+          '</div>' +
+          '<div class="sig-bar-wrap">' +
+            '<div class="sig-bar"><div class="sig-bar-fill" style="width:' + sigRate + '%"></div></div>' +
+            '<div class="sig-bar-lbl">' + sigRate + '% signed</div>' +
+          '</div>' +
+        '</div>' +
+
+        // Monthly trend
+        '<div class="section-label">Monthly Activity (Last 6 Months)</div>' +
+        '<div class="trend-card">' +
+          '<div style="font-size:0.78rem;color:var(--muted);">Documents generated per month</div>' +
+          '<div class="trend-chart">' +
+            months.map(function(m) {
+              var count = monthCounts[m];
+              var h = Math.round((count / maxMonthCount) * 90);
+              if (count === 0) h = 3;
+              return '<div class="trend-col">' +
+                '<div class="trend-count">' + (count || '') + '</div>' +
+                '<div class="trend-bar-wrap"><div class="trend-bar" style="height:' + h + 'px;" title="' + count + ' docs in ' + shortMonth(m) + '"></div></div>' +
+                '<div class="trend-month">' + shortMonth(m) + '</div>' +
+              '</div>';
+            }).join('') +
+          '</div>' +
+        '</div>' +
+
+        // Doc type breakdown
+        '<div class="section-label">All-Time Document Counts</div>' +
+        '<div class="breakdown-grid" style="margin-bottom:2rem;">' +
+          breakCard('📄', (jobsRes.count || 0), 'Contracts') +
+          breakCard('📋', (estRes.count || 0), 'Estimates') +
+          breakCard('💰', invoices.length, 'Invoices') +
+          breakCard('📝', (coRes.count || 0), 'Change Orders') +
+          breakCard('🤝', (subRes.count || 0), 'Subcontractor') +
+          breakCard('⚓', (lienRes.count || 0), 'Lien Waivers') +
+          breakCard('🔨', (tkofRes.count || 0), 'Takeoffs') +
+          breakCard('📤', sentLinks.length, 'Docs Sent') +
+        '</div>' +
+
+        // Recent payments
+        '<div class="section-label">Recent Payments</div>' +
+        '<div class="pay-card">' +
+          (paidLinks.length === 0
+            ? '<div class="pay-empty">No payments collected yet. <a href="/new-invoice.html" style="color:var(--amber);">Create an invoice</a> to start collecting.</div>'
+            : paidLinks.map(function(s) {
+                var typeLabel = s.document_type === 'invoice' ? 'Invoice' : (s.document_type || 'Doc');
+                var name = s.client_name || 'Client';
+                return '<div class="pay-row">' +
+                  '<div class="pay-icon">✓</div>' +
+                  '<div class="pay-name">' + name + '</div>' +
+                  '<div class="pay-type">' + typeLabel + '</div>' +
+                  '<div class="pay-amount">+' + fmt$(s.payment_amount) + '</div>' +
+                  '<div class="pay-date">' + fmtDate(s.paid_at) + '</div>' +
+                '</div>';
+              }).join('')
+          ) +
+        '</div>';
+    }
+
+    function statCard(lbl, val, sub, color, subText) {
+      return '<div class="stat-card">' +
+        '<div class="stat-lbl">' + lbl + '</div>' +
+        '<div class="stat-val ' + (color || 'white') + '">' + val + '</div>' +
+        (subText ? '<div class="stat-sub">' + subText + '</div>' : '') +
+      '</div>';
+    }
+    function statCardBorder(lbl, val, subText, color, borderClass) {
+      return '<div class="stat-card ' + (borderClass || '') + '">' +
+        '<div class="stat-lbl">' + lbl + '</div>' +
+        '<div class="stat-val ' + (color || 'white') + '">' + val + '</div>' +
+        (subText ? '<div class="stat-sub">' + subText + '</div>' : '') +
+      '</div>';
+    }
+    function breakCard(icon, count, label) {
+      return '<div class="break-card">' +
+        '<div class="break-icon">' + icon + '</div>' +
+        '<div class="break-count">' + count + '</div>' +
+        '<div class="break-label">' + label + '</div>' +
+      '</div>';
+    }
+
+    init();
+  </script>
+
+</body>
+</html>
