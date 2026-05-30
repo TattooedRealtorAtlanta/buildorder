@@ -493,6 +493,7 @@
               }
             </div>
           </div>
+          <div id="doc-lang-container">${docLangBar()}</div>
           <div id="contract-body">
             ${currentContract
               ? `<div class="contract-body"><pre class="contract-text">${escapeHtml(currentContract.content)}</pre></div>`
@@ -521,7 +522,7 @@
         const res = await fetch('/api/generate-contract', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ job_id: jobId })
+          body: JSON.stringify({ job_id: jobId, lang: getDocLang() })
         });
 
         const data = await res.json();

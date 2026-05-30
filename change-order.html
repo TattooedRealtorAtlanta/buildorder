@@ -237,6 +237,7 @@
             '<div class="co-sec-title">&#128221; Change Order</div>' +
             '<div class="co-actions" id="co-actions">' + actionsHtml + '</div>' +
           '</div>' +
+          '<div id="doc-lang-container">' + docLangBar() + '</div>' +
           '<div id="co-body">' +
             (co.content
               ? '<div class="co-body"><pre class="co-text">' + escapeHtml(co.content) + '</pre></div>'
@@ -258,7 +259,7 @@
       fetch('/api/generate-change-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ change_order_id: coId, lang: getLang() })
+        body: JSON.stringify({ change_order_id: coId, lang: getDocLang() })
       }).then(function(res) {
         return res.json().then(function(data) { return { ok: res.ok, data: data }; });
       }).then(function(result) {

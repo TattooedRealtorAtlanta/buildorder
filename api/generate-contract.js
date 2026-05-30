@@ -57,7 +57,7 @@ function cancellationDeadline(contractDate) {
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { job_id } = req.body || {};
+  const { job_id, lang: langOverride } = req.body || {};
   if (!job_id) return res.status(400).json({ error: 'job_id required' });
 
   // Use service role key to load data server-side
@@ -110,7 +110,9 @@ module.exports = async (req, res) => {
 
   const contractorFullAddress = `${profile.address}, ${profile.city}, ${profile.state} ${profile.zip}`;
   const jobFullAddress = `${job.job_address}, ${job.job_city}, ${job.job_state} ${job.job_zip}`;
-  const lang = job.document_language || 'english';
+  // langOverride from request body takes precedence ('en'→'english', 'es'→'spanish', 'bilingual'→'bilingual')
+  const langMap = { en: 'english', es: 'spanish', bilingual: 'bilingual' };
+  const lang = (langOverride && langMap[langOverride]) || job.document_language || 'english';
 
   // Language instructions for the prompt
   const langInstructions = {

@@ -969,6 +969,47 @@
     location.reload();
   };
 
+  // ── Document language (per-page, not persisted) ────────────────────────────
+  // Separate from UI lang — controls what language the generated document is in.
+  // Options: 'en' | 'es' | 'bilingual'
+  window._docLang = window.getLang(); // default to UI lang
+
+  window.getDocLang = function () { return window._docLang; };
+
+  window.setDocLang = function (lang) {
+    window._docLang = lang;
+    ['en', 'es', 'bilingual'].forEach(function (l) {
+      var btn = document.getElementById('dlb-' + l);
+      if (btn) btn.classList.toggle('active', l === lang);
+    });
+  };
+
+  window.docLangBar = function () {
+    var cur = window.getDocLang();
+    return '<div class="doc-lang-bar">' +
+      '<span class="doc-lang-label">Document language:</span>' +
+      '<div class="doc-lang-toggle">' +
+        '<button id="dlb-en" class="doc-lang-btn' + (cur === 'en' ? ' active' : '') + '" onclick="setDocLang(\'en\')">&#127482;&#127480; English</button>' +
+        '<button id="dlb-es" class="doc-lang-btn' + (cur === 'es' ? ' active' : '') + '" onclick="setDocLang(\'es\')">&#127474;&#127485; Spanish</button>' +
+        '<button id="dlb-bilingual" class="doc-lang-btn' + (cur === 'bilingual' ? ' active' : '') + '" onclick="setDocLang(\'bilingual\')">&#x1F500; Bilingual</button>' +
+      '</div>' +
+    '</div>';
+  };
+
+  // Inject shared CSS for doc lang bar
+  (function () {
+    var style = document.createElement('style');
+    style.textContent = [
+      '.doc-lang-bar{display:flex;align-items:center;gap:.75rem;padding:.55rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.01);flex-wrap:wrap;}',
+      '.doc-lang-label{font-size:.72rem;color:#475569;font-weight:600;white-space:nowrap;}',
+      '.doc-lang-toggle{display:flex;align-items:center;gap:.2rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:.15rem .2rem;}',
+      '.doc-lang-btn{background:none;border:none;color:#94A3B8;font-size:.72rem;font-weight:700;cursor:pointer;font-family:inherit;padding:.25rem .65rem;border-radius:6px;transition:all .15s;white-space:nowrap;}',
+      '.doc-lang-btn:hover{color:#F8FAFC;background:rgba(255,255,255,.06);}',
+      '.doc-lang-btn.active{background:#F59E0B;color:#090E1A;}',
+    ].join('');
+    document.head.appendChild(style);
+  })();
+
   window.T = function (key) {
     var l = getLang();
     return (TR[l] && TR[l][key] !== undefined ? TR[l][key] : (TR.en[key] !== undefined ? TR.en[key] : key));

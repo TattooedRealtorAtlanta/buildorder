@@ -134,6 +134,7 @@
         '<div class="info-grid"><div class="info-card"><div class="info-card-title">' + T('lw.card.details') + '</div><div class="info-row"><span class="info-label">' + T('lw.lbl.amount2') + '</span><span class="info-value" style="font-size:1.1rem;font-weight:900;color:var(--amber);">' + fmt(d.amount) + '</span></div><div class="info-row"><span class="info-label">' + T('lw.lbl.through2') + '</span><span class="info-value">' + fmtDate(d.through_date) + '</span></div><div class="info-row"><span class="info-label">' + T('lw.lbl.payment2') + '</span><span class="info-value">' + fmtDate(d.payment_date) + '</span></div>' + (d.check_number ? '<div class="info-row"><span class="info-label">' + T('lw.lbl.check2') + '</span><span class="info-value">' + d.check_number + '</span></div>' : '') + '</div>' +
         '<div class="info-card"><div class="info-card-title">' + T('lw.card.parties') + '</div><div class="info-row"><span class="info-label">' + T('lw.lbl.claimant2') + '</span><span class="info-value">' + (d.claimant_company || d.claimant_name || '&mdash;') + '</span></div><div class="info-row"><span class="info-label">' + T('lw.lbl.customer2') + '</span><span class="info-value">' + (d.customer_company || d.customer_name || '&mdash;') + '</span></div><div class="info-row"><span class="info-label">' + T('lw.lbl.property') + '</span><span class="info-value">' + (d.job_address || '&mdash;') + '</span></div></div></div>' +
         '<div class="doc-section"><div class="doc-sec-header"><div class="doc-sec-title">&#128203; ' + T('tool.lien_waiver') + '</div><div class="doc-actions" id="doc-actions">' + actions + '</div></div>' +
+        '<div id="doc-lang-container">' + docLangBar() + '</div>' +
         '<div id="doc-body">' + (d.content ? '<div class="doc-body"><pre class="doc-text">' + escapeHtml(d.content) + '</pre></div>' : '<div class="no-doc"><h3>' + T('lw.no.h') + '</h3><p>' + T('lw.no.p') + '</p></div>') + '</div></div>';
     }
 
@@ -141,7 +142,7 @@
       document.getElementById('doc-body').innerHTML = '<div class="generating"><div class="generating-spinner"></div><h3>' + T('lw.generating.h') + '</h3><p>This will take about 10 seconds.</p></div>';
       var el = document.getElementById('doc-actions');
       if (el) el.innerHTML = '<button class="btn-generate" disabled>' + T('gen.generating') + '</button>';
-      fetch('/api/generate-lien-waiver', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ waiver_id: docId, lang: getLang() }) })
+      fetch('/api/generate-lien-waiver', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ waiver_id: docId, lang: getDocLang() }) })
         .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
         .then(function(result) {
           if (!result.ok || !result.data.success) {

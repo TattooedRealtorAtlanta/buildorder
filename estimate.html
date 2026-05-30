@@ -227,6 +227,7 @@
                 : '<button class="btn-generate" onclick="generateEstimate()">' + T('est.btn.gen') + '</button>') +
             '</div>' +
           '</div>' +
+          '<div id="doc-lang-container">' + docLangBar() + '</div>' +
           '<div id="estimate-body">' +
             (est.content
               ? '<div class="estimate-body"><pre class="estimate-text">' + escapeHtml(est.content) + '</pre></div>'
@@ -254,7 +255,7 @@
       fetch('/api/generate-estimate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ estimate_id: estimateId, lang: getLang() })
+        body: JSON.stringify({ estimate_id: estimateId, lang: getDocLang() })
       }).then(function(res) {
         return res.json().then(function(data) { return { ok: res.ok, data: data }; });
       }).then(function(result) {

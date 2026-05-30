@@ -133,6 +133,7 @@
         '<div class="info-grid"><div class="info-card"><div class="info-card-title">' + T('to.card.project') + '</div><div class="info-row"><span class="info-label">' + T('to.lbl.type2') + '</span><span class="info-value">' + (d.project_type || '&mdash;') + '</span></div><div class="info-row"><span class="info-label">' + T('to.lbl.location') + '</span><span class="info-value">' + (d.job_address || '&mdash;') + '</span></div><div class="info-row"><span class="info-label">' + T('to.lbl.created') + '</span><span class="info-value">' + fmtDate(d.created_at) + '</span></div></div>' +
         '<div class="info-card"><div class="info-card-title">' + T('to.card.dims') + '</div><div class="info-row"><span class="info-label">' + T('to.lbl.measurements') + '</span><span class="info-value">' + dimSummary(dims) + '</span></div><div class="info-row"><span class="info-label">' + T('to.lbl.waste2') + '</span><span class="info-value">' + (d.waste_factor || 10) + '%</span></div>' + (dims.rooms ? '<div class="info-row"><span class="info-label">' + T('to.lbl.rooms2') + '</span><span class="info-value">' + dims.rooms + '</span></div>' : '') + '</div></div>' +
         '<div class="doc-section"><div class="doc-sec-header"><div class="doc-sec-title">&#128296; ' + T('tool.takeoff') + '</div><div class="doc-actions" id="doc-actions">' + actions + '</div></div>' +
+        '<div id="doc-lang-container">' + docLangBar() + '</div>' +
         '<div id="doc-body">' + (d.content ? '<div class="doc-body"><pre class="doc-text">' + escapeHtml(d.content) + '</pre></div>' : '<div class="no-doc"><h3>' + T('to.no.h') + '</h3><p>' + T('to.no.p') + '</p></div>') + '</div></div>';
     }
 
@@ -140,7 +141,7 @@
       document.getElementById('doc-body').innerHTML = '<div class="generating"><div class="generating-spinner"></div><h3>' + T('to.generating.h') + '</h3><p>' + T('to.generating.p') + '</p></div>';
       var el = document.getElementById('doc-actions');
       if (el) el.innerHTML = '<button class="btn-generate" disabled>' + T('gen.calculating') + '</button>';
-      fetch('/api/generate-takeoff', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ takeoff_id: docId, lang: getLang() }) })
+      fetch('/api/generate-takeoff', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ takeoff_id: docId, lang: getDocLang() }) })
         .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
         .then(function(result) {
           if (!result.ok || !result.data.success) {

@@ -244,6 +244,7 @@
             '<div class="invoice-title">&#128203; Invoice</div>' +
             '<div class="invoice-actions" id="invoice-actions">' + actionsHtml + '</div>' +
           '</div>' +
+          '<div id="doc-lang-container">' + docLangBar() + '</div>' +
           '<div id="invoice-body">' +
             (inv.content
               ? '<div class="invoice-body"><pre class="invoice-text">' + escapeHtml(inv.content) + '</pre></div>'
@@ -335,7 +336,7 @@
       fetch('/api/generate-invoice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ invoice_id: invoiceId, lang: getLang() })
+        body: JSON.stringify({ invoice_id: invoiceId, lang: getDocLang() })
       }).then(function(res) {
         return res.json().then(function(data) { return { ok: res.ok, data: data }; });
       }).then(function(result) {

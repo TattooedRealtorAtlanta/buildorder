@@ -139,12 +139,14 @@ ${paymentSection}
 
   if (lang === 'es') {
     prompt += '\n\nIMPORTANT: Generate this entire document in Spanish. All headers, labels, legal language, and content must be in Spanish.';
+  } else if (lang === 'bilingual') {
+    prompt += '\n\nIMPORTANT: Generate this document in BOTH English and Spanish. Output the complete English version first, then add a divider line "========================================\nVERSIÓN EN ESPAÑOL / SPANISH VERSION\n========================================", then output the complete Spanish translation. The Spanish version must be a full, professional translation of the entire document — not abbreviated.';
   }
 
   try {
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-5',
-      max_tokens: 2000,
+      max_tokens: lang === 'bilingual' ? 4000 : 2000,
       messages: [{ role: 'user', content: prompt }]
     });
 

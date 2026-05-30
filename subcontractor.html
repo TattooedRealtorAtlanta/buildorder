@@ -127,6 +127,7 @@
         '<div class="info-grid"><div class="info-card"><div class="info-card-title">' + T('sub.card.sub') + '</div><div class="info-row"><span class="info-label">' + T('sub.lbl.name2') + '</span><span class="info-value">' + (d.sub_name || '&mdash;') + '</span></div><div class="info-row"><span class="info-label">' + T('sub.lbl.company2') + '</span><span class="info-value">' + (d.sub_company || '&mdash;') + '</span></div><div class="info-row"><span class="info-label">' + T('sub.lbl.phone2') + '</span><span class="info-value">' + (d.sub_phone || '&mdash;') + '</span></div><div class="info-row"><span class="info-label">' + T('sub.lbl.license2') + '</span><span class="info-value">' + (d.sub_license || '&mdash;') + '</span></div></div>' +
         '<div class="info-card"><div class="info-card-title">' + T('sub.card.contract') + '</div><div class="info-row"><span class="info-label">' + T('sub.lbl.amount2') + '</span><span class="info-value" style="font-size:1.1rem;font-weight:900;color:var(--amber);">$' + Number(d.contract_amount || 0).toLocaleString() + '</span></div><div class="info-row"><span class="info-label">' + T('sub.lbl.payment2') + '</span><span class="info-value">' + (d.payment_terms || '&mdash;') + '</span></div><div class="info-row"><span class="info-label">' + T('sub.lbl.start2') + '</span><span class="info-value">' + fmtDate(d.start_date) + '</span></div><div class="info-row"><span class="info-label">' + T('sub.lbl.end2') + '</span><span class="info-value">' + fmtDate(d.end_date) + '</span></div></div></div>' +
         '<div class="doc-section"><div class="doc-sec-header"><div class="doc-sec-title">&#128221; ' + T('tool.subcontractor') + '</div><div class="doc-actions" id="doc-actions">' + actions + '</div></div>' +
+        '<div id="doc-lang-container">' + docLangBar() + '</div>' +
         '<div id="doc-body">' + (d.content ? '<div class="doc-body"><pre class="doc-text">' + escapeHtml(d.content) + '</pre></div>' : '<div class="no-doc"><h3>' + T('sub.no.h') + '</h3><p>' + T('sub.no.p') + '</p></div>') + '</div></div>';
     }
 
@@ -134,7 +135,7 @@
       document.getElementById('doc-body').innerHTML = '<div class="generating"><div class="generating-spinner"></div><h3>' + T('sub.generating.h') + '</h3><p>BuildOrder is creating a subcontractor agreement for ' + (current.sub_company || current.sub_name || 'your sub') + '.</p></div>';
       var el = document.getElementById('doc-actions');
       if (el) el.innerHTML = '<button class="btn-generate" disabled>' + T('gen.generating') + '</button>';
-      fetch('/api/generate-subcontractor', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ agreement_id: docId, lang: getLang() }) })
+      fetch('/api/generate-subcontractor', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ agreement_id: docId, lang: getDocLang() }) })
         .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
         .then(function(result) {
           if (!result.ok || !result.data.success) {
