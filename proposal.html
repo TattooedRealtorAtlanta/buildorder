@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/lang.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -284,6 +285,7 @@
             '<div class="doc-section-title">&#128203; Proposal &amp; Contract</div>' +
             '<div class="doc-actions" id="doc-actions">' + actionBtns + '</div>' +
           '</div>' +
+          '<div id="doc-lang-container">' + docLangBar() + '</div>' +
           '<div id="doc-body">' +
             (p.content
               ? '<div class="doc-body"><pre class="doc-text">' + escapeHtml(p.content) + '</pre></div>'
@@ -315,7 +317,7 @@
         return fetch('/api/generate-proposal', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-          body: JSON.stringify({ proposal_id: proposalId })
+          body: JSON.stringify({ proposal_id: proposalId, lang: getDocLang() })
         });
       }).then(function(res) {
         return res.json().then(function(d) { return { ok: res.ok, data: d }; });

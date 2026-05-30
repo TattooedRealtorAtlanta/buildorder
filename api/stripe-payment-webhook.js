@@ -3,7 +3,7 @@ const { createClient } = require('@supabase/supabase-js');
 const { Resend } = require('resend');
 
 // Disable body parsing — Stripe needs the raw body to verify the signature
-export const config = { api: { bodyParser: false } };
+module.exports.config = { api: { bodyParser: false } };
 
 function getRawBody(req) {
   return new Promise((resolve, reject) => {

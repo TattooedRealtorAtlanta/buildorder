@@ -19,7 +19,7 @@ module.exports = async function handler(req, res) {
   const { data: { user }, error: authErr } = await db.auth.getUser(jwt);
   if (authErr || !user) return res.status(401).json({ error: 'Unauthorized' });
 
-  const { proposal_id } = req.body || {};
+  const { proposal_id, lang: langOverride } = req.body || {};
   if (!proposal_id) return res.status(400).json({ error: 'proposal_id required' });
 
   // Fetch proposal record
@@ -130,11 +130,19 @@ After the document add:
 estimated_total: [number only, no $ or commas]
 ---END META---`;
 
+  const langMap = { en: 'english', es: 'spanish', bilingual: 'bilingual' };
+  const lang = (langOverride && langMap[langOverride]) || 'english';
+  if (lang === 'spanish') {
+    prompt += '\n\nIMPORTANT: Generate this entire document in Spanish. All sections, headers, terms, and signature lines must be in professional Spanish.';
+  } else if (lang === 'bilingual') {
+    prompt += '\n\nIMPORTANT: Generate this document in BOTH English and Spanish. Output the complete English version first, then add a divider line "========================================\nVERSIÓN EN ESPAÑOL / SPANISH VERSION\n========================================", then output the complete Spanish translation. The Spanish version must be a full, professional translation of the entire document — not abbreviated.';
+  }
+
   let aiText = '';
   try {
     const msg = await anthropic.messages.create({
       model:      'claude-sonnet-4-5',
-      max_tokens: 4000,
+      max_tokens: lang === 'bilingual' ? 8000 : 4000,
       messages:   [{ role: 'user', content: prompt }]
     });
     aiText = msg.content[0]?.text || '';

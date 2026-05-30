@@ -442,7 +442,33 @@ module.exports = async (req, res) => {
           var bizName = (prof && (prof.business_name || prof.contractor_name)) || 'Your contractor';
           var clientFirst = (inv.homeowner_name || 'there').split(' ')[0];
           var fmtTotal = '$' + Number(inv.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-          var invoiceUrl = 'https://buildorder.ai/invoice.html?id=' + created.id;
+
+          // Create a share_link so the client can access the invoice without a BuildOrder account
+          var shareToken = null;
+          try {
+            var shareLinkPayload = {
+              user_id:          inv.user_id,
+              document_content: inv.content || '',
+              document_type:    'invoice',
+              reference_id:     created.id,
+              client_name:      inv.homeowner_name || null,
+              client_email:     inv.homeowner_email,
+              sent_at:          new Date().toISOString()
+            };
+            if (inv.total && Number(inv.total) > 0) shareLinkPayload.payment_amount = Number(inv.total);
+            var { data: sl, error: slErr } = await supabase
+              .from('share_links')
+              .insert(shareLinkPayload)
+              .select('token')
+              .single();
+            if (!slErr && sl) shareToken = sl.token;
+          } catch (slEx) {
+            console.error('share_link create failed for recurring invoice', created.id, slEx.message);
+          }
+
+          var invoiceUrl = shareToken
+            ? 'https://buildorder.ai/sign.html?token=' + shareToken
+            : 'https://buildorder.ai/sign.html';
 
           await resend.emails.send({
             from:     bizName + ' via BuildOrder <noreply@buildorder.ai>',
