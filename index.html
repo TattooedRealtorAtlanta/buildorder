@@ -39,9 +39,10 @@
     .btn-signin:hover { color: var(--white); border-color: rgba(255,255,255,0.2); }
     .btn-cta-sm { background: var(--amber); color: #090E1A; border: none; border-radius: 8px; padding: 0.45rem 1.1rem; font-size: 0.82rem; font-weight: 800; cursor: pointer; font-family: inherit; text-decoration: none; transition: background 0.15s; }
     .btn-cta-sm:hover { background: var(--amber2); }
-    .lang-toggle { display: flex; align-items: center; gap: 0.1rem; }
-    .lang-btn { background: none; border: none; color: var(--dim); font-size: 0.75rem; font-weight: 700; cursor: pointer; font-family: inherit; padding: 0.2rem 0.4rem; border-radius: 4px; transition: color 0.15s; }
-    .lang-btn.active { color: var(--amber); }
+    .lang-toggle { display: flex; align-items: center; gap: 0.25rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; padding: 0.2rem 0.25rem; }
+    .lang-btn { background: none; border: none; color: var(--muted); font-size: 0.78rem; font-weight: 700; cursor: pointer; font-family: inherit; padding: 0.25rem 0.55rem; border-radius: 6px; transition: all 0.15s; display: flex; align-items: center; gap: 0.3rem; }
+    .lang-btn:hover { color: var(--white); background: rgba(255,255,255,0.06); }
+    .lang-btn.active { background: var(--amber); color: #090E1A; }
     .lang-btn:hover { color: var(--white); }
     .lang-sep { color: var(--dim); font-size: 0.75rem; }
 
@@ -187,9 +188,8 @@
         <a href="#pricing" class="nav-link" id="nav-pricing">Pricing</a>
         <a href="/compare.html" class="nav-link">Compare</a>
         <div class="lang-toggle">
-          <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
-          <span class="lang-sep">|</span>
-          <button class="lang-btn" id="btn-es" onclick="setLang('es')">ES</button>
+          <button class="lang-btn active" id="btn-en" onclick="setLang('en')">🇺🇸 EN</button>
+          <button class="lang-btn" id="btn-es" onclick="setLang('es')">🇲🇽 ES</button>
         </div>
         <a href="/login.html" class="btn-signin" id="nav-signin">Sign In</a>
         <a href="/login.html?tab=signup" class="btn-cta-sm" id="nav-cta">Get Started Free</a>
@@ -758,7 +758,21 @@
       document.getElementById('btn-en').classList.toggle('active', lang === 'en');
       document.getElementById('btn-es').classList.toggle('active', lang === 'es');
       document.documentElement.lang = lang;
+      try { localStorage.setItem('bo-lang', lang); } catch(e) {}
     }
+
+    // 1. URL param: ?lang=es overrides everything
+    // 2. Saved preference from last visit
+    // 3. Browser language detection
+    // 4. Default: English
+    (function() {
+      var urlLang = new URLSearchParams(window.location.search).get('lang');
+      var savedLang = null;
+      try { savedLang = localStorage.getItem('bo-lang'); } catch(e) {}
+      var browserLang = (navigator.language || navigator.userLanguage || '').toLowerCase().startsWith('es') ? 'es' : null;
+      var lang = urlLang || savedLang || browserLang || 'en';
+      if (lang === 'es') setLang('es');
+    })();
   </script>
 
   <script>
