@@ -1,6 +1,9 @@
 (function () {
   if (document.getElementById('bo-chat-root')) return;
 
+  const isES = document.documentElement.lang === 'es' ||
+    new URLSearchParams(window.location.search).get('lang') === 'es';
+
   const AMBER = '#F59E0B';
   const AMBER_DARK = '#412402';
 
@@ -49,16 +52,16 @@
         <button id="bo-close" aria-label="Close chat">&#x2715;</button>
       </div>
       <div id="bo-msgs">
-        <div class="bo-msg bo-bot">Hey! I can help you generate documents, answer pricing questions, or explain how BuildOrder works. What do you need?</div>
+        <div class="bo-msg bo-bot">${isES ? '¡Hola! Puedo ayudarte a generar documentos, responder preguntas sobre precios, o explicar cómo funciona BuildOrder. ¿Qué necesitas?' : 'Hey! I can help you generate documents, answer pricing questions, or explain how BuildOrder works. What do you need?'}</div>
       </div>
       <div id="bo-chips">
-        <button class="bo-chip" data-q="What documents can I generate?">What docs can I make?</button>
-        <button class="bo-chip" data-q="What does BuildOrder cost?">Pricing</button>
-        <button class="bo-chip" data-q="Tell me about the founding member offer">Founding member deal</button>
-        <button class="bo-chip" data-q="Are documents state-compliant?">State compliance</button>
+        <button class="bo-chip" data-q="${isES ? '¿Qué documentos puedo generar?' : 'What documents can I generate?'}">${isES ? '¿Qué docs puedo hacer?' : 'What docs can I make?'}</button>
+        <button class="bo-chip" data-q="${isES ? '¿Cuánto cuesta BuildOrder?' : 'What does BuildOrder cost?'}">${isES ? 'Precios' : 'Pricing'}</button>
+        <button class="bo-chip" data-q="${isES ? 'Cuéntame sobre la oferta de miembro fundador' : 'Tell me about the founding member offer'}">${isES ? 'Oferta de miembro fundador' : 'Founding member deal'}</button>
+        <button class="bo-chip" data-q="${isES ? '¿Los documentos cumplen con las leyes estatales?' : 'Are documents state-compliant?'}">${isES ? 'Cumplimiento estatal' : 'State compliance'}</button>
       </div>
       <div id="bo-input-row">
-        <input id="bo-input" type="text" placeholder="Ask anything..." autocomplete="off" />
+        <input id="bo-input" type="text" placeholder="${isES ? 'Pregunta lo que quieras...' : 'Ask anything...'}" autocomplete="off" />
         <button id="bo-send" aria-label="Send">&#x27A4;</button>
       </div>
     </div>
@@ -85,7 +88,9 @@
   inputEl.addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
   sendBtn.addEventListener('click', send);
 
-  const SYSTEM = `You are the BuildOrder.ai support assistant. BuildOrder is an AI-powered document generation platform built for residential contractors. Be concise, friendly, and plain-spoken — contractors are busy people.
+  const SYSTEM = `If the user writes in Spanish or the page URL contains ?lang=es or the <html> tag has lang="es", respond entirely in Spanish. Otherwise respond in English.
+
+You are the BuildOrder.ai support assistant. BuildOrder is an AI-powered document generation platform built for residential contractors. Be concise, friendly, and plain-spoken — contractors are busy people.
 
 DOCUMENTS (7 types, available for all 52 US states):
 - Estimates: professional itemized quotes with labor and materials
