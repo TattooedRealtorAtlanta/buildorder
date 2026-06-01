@@ -114,6 +114,17 @@
     .status-signed   { background: rgba(52,211,153,0.12); color: var(--green); }
     .status-overdue  { background: rgba(239,68,68,0.12); color: var(--red); }
 
+    /* Three-dot action menu */
+    .doc-row-actions { flex-shrink: 0; opacity: 0; transition: opacity 0.15s; }
+    .doc-row:hover .doc-row-actions { opacity: 1; }
+    .doc-actions-btn { background: none; border: none; cursor: pointer; color: var(--dim); font-size: 1.2rem; padding: 0.2rem 0.55rem; border-radius: 6px; line-height: 1; font-family: inherit; transition: background 0.1s, color 0.1s; }
+    .doc-actions-btn:hover { background: rgba(255,255,255,0.07); color: var(--white); }
+    #doc-menu { position: fixed; background: var(--bg3); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.35); z-index: 10000; min-width: 130px; overflow: hidden; display: none; }
+    .doc-menu-item { display: block; width: 100%; text-align: left; padding: 0.65rem 1rem; font-size: 0.82rem; font-weight: 600; background: none; border: none; cursor: pointer; font-family: inherit; color: var(--white); transition: background 0.1s; }
+    .doc-menu-item:hover { background: rgba(255,255,255,0.06); }
+    .doc-menu-item.danger { color: var(--red); }
+    .doc-menu-item.danger:hover { background: rgba(239,68,68,0.07); }
+
     .empty-state { text-align: center; padding: 3rem 2rem; color: var(--muted); }
     .empty-state h3 { font-size: 0.95rem; font-weight: 700; color: var(--white); margin-bottom: 0.35rem; }
     .empty-state p { font-size: 0.82rem; }
@@ -423,6 +434,12 @@
 
   </main>
 
+  <!-- Global three-dot dropdown menu -->
+  <div id="doc-menu">
+    <button class="doc-menu-item" onclick="execDocEdit()">&#9998;&nbsp; Edit</button>
+    <button class="doc-menu-item danger" onclick="execDocDelete()">&#128465;&nbsp; Delete</button>
+  </div>
+
   <script>
     var SUPABASE_URL = 'https://pxqwtesczfhfjwdhxiyl.supabase.co';
     var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4cXd0ZXNjemZoZmp3ZGh4aXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDI3MDcsImV4cCI6MjA5NTIxODcwN30.rNmcfsteMK_IdyWkGLrNA5ZOlRVHQYahDrnIWmPGCLM';
@@ -503,6 +520,7 @@
           '<div style="flex-shrink:0;"><span class="type-pill pill-' + d._type + '">' + d._typeLabel + '</span></div>' +
           '<div class="doc-row-meta"><div class="doc-row-val" style="' + (d._overdue ? 'color:var(--red);' : '') + '">' + d._val + '</div><div class="doc-row-date">' + fmtDate(d.created_at) + '</div></div>' +
           '<div style="flex-shrink:0;"><span class="status-badge ' + statusClass + '">' + statusLabel + '</span></div>' +
+          '<div class="doc-row-actions"><button class="doc-actions-btn" onclick="openDocMenu(event,\'' + d._type + '\',\'' + d.id + '\')" title="Options">⋯</button></div>' +
           '</a>';
       }).join('');
     }
@@ -883,6 +901,76 @@
       await db.auth.signOut();
       window.location.href = '/login.html';
     }
+
+    // ── Three-dot document menu ─────────────────────────────────────────────
+    var _menuDoc = null;
+
+    var DOC_TABLES = {
+      job:  'jobs',
+      est:  'estimates',
+      inv:  'invoices',
+      co:   'change_orders',
+      sub:  'subcontractor_agreements',
+      lien: 'lien_waivers',
+      tkof: 'material_takeoffs',
+      prop: 'proposals'
+    };
+
+    function openDocMenu(e, type, id) {
+      e.preventDefault();
+      e.stopPropagation();
+      var doc = allDocs.find(function(d) { return d._type === type && String(d.id) === String(id); });
+      if (!doc) return;
+      _menuDoc = { type: type, id: id, url: doc._url, rowEl: e.currentTarget.closest('.doc-row') };
+      var menu = document.getElementById('doc-menu');
+      var rect = e.currentTarget.getBoundingClientRect();
+      menu.style.display = 'block';
+      var left = rect.right - 130;
+      var top  = rect.bottom + 4;
+      if (left < 8) left = 8;
+      if (top + 90 > window.innerHeight) top = rect.top - 90;
+      menu.style.left = left + 'px';
+      menu.style.top  = top  + 'px';
+    }
+
+    function closeDocMenu() {
+      document.getElementById('doc-menu').style.display = 'none';
+      _menuDoc = null;
+    }
+
+    function execDocEdit() {
+      if (!_menuDoc) return;
+      var url = _menuDoc.url;
+      closeDocMenu();
+      window.location.href = url;
+    }
+
+    async function execDocDelete() {
+      if (!_menuDoc) return;
+      var snap = _menuDoc;
+      closeDocMenu();
+      var confirmMsg = getLang() === 'es'
+        ? '¿Estás seguro de que quieres eliminar este documento? Esta acción no se puede deshacer.'
+        : 'Are you sure you want to delete this document? This cannot be undone.';
+      if (!confirm(confirmMsg)) return;
+      var table = DOC_TABLES[snap.type];
+      if (!table) return;
+      var result = await db.from(table).delete().eq('id', snap.id);
+      if (result.error) { alert('Delete failed: ' + result.error.message); return; }
+      allDocs = allDocs.filter(function(d) { return !(d._type === snap.type && String(d.id) === String(snap.id)); });
+      if (snap.rowEl && snap.rowEl.parentNode) {
+        snap.rowEl.remove();
+      } else {
+        renderDocs();
+      }
+    }
+
+    document.addEventListener('click', function(e) {
+      var menu = document.getElementById('doc-menu');
+      if (menu && menu.style.display !== 'none' && !menu.contains(e.target)) {
+        closeDocMenu();
+      }
+    });
 
     init();
 
