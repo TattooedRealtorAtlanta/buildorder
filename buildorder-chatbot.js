@@ -1,7 +1,8 @@
 (function () {
   if (document.getElementById('bo-chat-root')) return;
 
-  const isES = document.documentElement.lang === 'es' ||
+  const isES = localStorage.getItem('bo-lang') === 'es' ||
+    document.documentElement.lang === 'es' ||
     new URLSearchParams(window.location.search).get('lang') === 'es';
 
   const AMBER = '#F59E0B';
