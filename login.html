@@ -315,6 +315,13 @@
         btn.disabled = false;
         btn.textContent = isFoundingFlow ? 'Create Account — Get 60 Days Free' : 'Create Account';
       } else {
+        // Fire welcome email non-blocking — never delay the redirect
+        if (data.session) {
+          fetch('/api/welcome', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + data.session.access_token }
+          }).catch(function() {});
+        }
         if (isFoundingFlow && data.session) {
           await grantFoundingMember(data.session.access_token);
           setMsg('signup-msg', '✓ Founding member access claimed! Taking you to setup…', 'success');
