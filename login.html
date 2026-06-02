@@ -308,7 +308,11 @@
       btn.disabled = true;
       btn.textContent = isFoundingFlow ? 'Claiming your spot…' : 'Creating account…';
 
-      const { data, error } = await db.auth.signUp({ email, password });
+      const { data, error } = await db.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: 'https://buildorder.ai/login.html' }
+      });
 
       if (error) {
         setMsg('signup-msg', error.message, 'error');
