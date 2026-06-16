@@ -125,7 +125,7 @@ INSTRUCTIONS:
 
   try {
     const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-5',
+      model: 'claude-opus-4-8',
       max_tokens: lang === 'bilingual' ? 6000 : 3000,
       messages: [{ role: 'user', content: prompt }]
     });

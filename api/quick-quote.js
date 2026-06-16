@@ -130,7 +130,7 @@ job_address: [street address if mentioned, else blank]
   let aiText = '';
   try {
     const msg = await anthropic.messages.create({
-      model:      'claude-sonnet-4-5',
+      model:      'claude-opus-4-8',
       max_tokens: 4000,
       messages:   [{ role: 'user', content: prompt }]
     });

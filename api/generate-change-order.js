@@ -113,7 +113,7 @@ FORMAT:
 
   try {
     const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-5',
+      model: 'claude-opus-4-8',
       max_tokens: lang === 'bilingual' ? 4000 : 2000,
       messages: [{ role: 'user', content: prompt }]
     });

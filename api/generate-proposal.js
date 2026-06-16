@@ -141,7 +141,7 @@ estimated_total: [number only, no $ or commas]
   let aiText = '';
   try {
     const msg = await anthropic.messages.create({
-      model:      'claude-sonnet-4-5',
+      model:      'claude-opus-4-8',
       max_tokens: lang === 'bilingual' ? 8000 : 4000,
       messages:   [{ role: 'user', content: prompt }]
     });
