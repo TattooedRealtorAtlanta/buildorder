@@ -1,0 +1,86 @@
+{
+  "state": "Florida",
+  "code": "FL",
+  "risk_level": "MEDIUM",
+  "statute": "Florida Statutes \u00a7 489.126, \u00a7 489.147, \u00a7 520.72, \u00a7 713.015",
+  "requires_license_on_contract": true,
+  "license_label": "Florida Contractor License Number",
+  "written_contract_required_above": null,
+  "cancellation_days_standard": 3,
+  "cancellation_applies_to": "installment_contracts_over_90_days",
+  "mandatory_clauses": [
+    {
+      "id": "FL_LICENSE",
+      "label": "Contractor license disclosure",
+      "required": true,
+      "placement": "header",
+      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nFlorida License Number: {{license_number}}\nLicense Type: {{license_type}}"
+    },
+    {
+      "id": "FL_PERMIT_NOTICE",
+      "label": "Permit application requirement notice",
+      "required": true,
+      "placement": "general_provisions",
+      "text": "The contractor is required to apply for all necessary permits within 30 days of receiving payment and must begin work within 90 days of receiving payment, unless the parties agree in writing to different timelines. Failure to obtain required permits or begin work within these timeframes may subject the contractor to disciplinary action under Florida law.",
+      "statute_ref": "F.S. \u00a7 489.126"
+    },
+    {
+      "id": "FL_RECOVERY_FUND",
+      "label": "Construction Industries Recovery Fund notice",
+      "required": true,
+      "placement": "standalone_section",
+      "text": "RECOVERY FUND NOTICE\n\nPayment may be available from the Florida Homeowners' Construction Recovery Fund if you lose money on a project performed under contract, where the loss results from specified violations of Florida law by a licensed contractor. For information about the recovery fund and filing a claim, contact the Florida Department of Business and Professional Regulation at the Northwood Centre, 1940 North Monroe Street, Tallahassee, Florida 32399-0783, (850) 487-1395.",
+      "statute_ref": "F.S. \u00a7 489.140"
+    },
+    {
+      "id": "FL_LIEN_NOTICE",
+      "label": "Notice of potential lien rights",
+      "required": true,
+      "placement": "standalone_section",
+      "text": "NOTICE TO OWNER\n\nFlorida's Construction Lien Law allows unpaid contractors, subcontractors, and material suppliers to file liens against your property even if you have paid your contractor in full. Under Florida law, your failure to make sure that we are paid may result in a lien against your property and your paying twice. To avoid a lien and paying twice, you must obtain a written release of lien from each contractor, subcontractor, or material supplier who provides services or materials for construction, improvement, or repair of your real property before making final payment. Monies owed to subcontractors or material suppliers should be paid by your contractor with the funds you have provided, before you make the final payment to your contractor.",
+      "statute_ref": "F.S. \u00a7 713.015"
+    },
+    {
+      "id": "FL_CANCELLATION",
+      "label": "Right to cancel notice (installment contracts over 90 days)",
+      "required": true,
+      "applies_to": "installment_payment_period_over_90_days",
+      "placement": "near_signature",
+      "text": "NOTICE OF RIGHT TO RESCIND\n\nUnder Florida law, you have the right to cancel this home improvement contract within three business days after signing it. You may cancel by notifying the contractor in writing at the address listed on this contract. Either party may cancel the contract by the exercise of this right to rescind until midnight of the third business day following the execution of the contract by giving notice to the other party by certified mail or registered mail.",
+      "statute_ref": "F.S. \u00a7 520.72"
+    },
+    {
+      "id": "FEDERAL_3DAY",
+      "label": "Federal 3-day right to cancel (TILA)",
+      "required": true,
+      "placement": "near_signature",
+      "applies_to": "primary_residence_lien",
+      "text": "NOTICE OF RIGHT TO CANCEL\n\nYour right to cancel: You are entering into a transaction that will result in a lien on your home. You have a legal right under federal law to cancel this transaction, without cost, within three business days from the date of the transaction ({{contract_date}}).\n\nTo cancel this transaction, notify us in writing at:\n{{contractor_name}}, {{contractor_address}}"
+    },
+    {
+      "id": "FL_INSURANCE",
+      "label": "Insurance disclosure",
+      "required": true,
+      "placement": "header_or_attachment",
+      "text": "General Liability Insurance: {{gl_status}} \u2014 Provider: {{gl_provider}}, Policy: {{gl_policy}}\nWorkers' Compensation Insurance: {{wc_status}}"
+    }
+  ],
+  "required_contract_fields": [
+    "contractor_name",
+    "contractor_address",
+    "contractor_phone",
+    "license_number",
+    "license_type",
+    "homeowner_name",
+    "homeowner_address",
+    "job_address",
+    "contract_date",
+    "project_description",
+    "contract_price",
+    "payment_schedule",
+    "start_date",
+    "estimated_completion_date"
+  ],
+  "penalties_for_non_compliance": "Unlicensed contracting = first-degree misdemeanor (up to 1 year jail/probation). License discipline. Contract may be voidable.",
+  "notes": "Florida requires contractor license on all contracts. The 3-day cancellation right under F.S. \u00a7 520.72 applies specifically to installment contracts where payment is made over a period greater than 90 days. The Construction Lien Law notice (F.S. \u00a7 713.015) is required on all contracts for improvements to real property. Must apply for permits within 30 days and begin work within 90 days of receiving payment (F.S. \u00a7 489.126)."
+}

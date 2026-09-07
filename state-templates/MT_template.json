@@ -1,26 +1,19 @@
 {
-  "state": "Colorado",
-  "code": "CO",
+  "state": "Montana",
+  "code": "MT",
   "risk_level": "LOWER",
-  "statute": "No statewide GC license law; local municipalities govern. C.R.S. \u00a7 12-58 (plumbing/electrical licensing)",
+  "statute": "Montana Code Annotated \u00a7 39-9-101 et seq. (Construction Contractor Registration)",
   "requires_license_on_contract": false,
-  "license_label": null,
-  "license_notes": "Colorado has no statewide GC license requirement. Plumbing and electrical contractors must hold state licenses. Denver, Colorado Springs, and other municipalities have their own GC licensing requirements \u2014 check locally.",
-  "written_contract_required_above": null,
+  "license_label": "Montana Construction Contractor Registration Number",
+  "license_notes": "Montana requires contractor registration (not a full license) through the Department of Labor and Industry. Electrical and plumbing contractors require state licenses. $500 fine for non-registration.",
+  "written_contract_required_above": 2500,
   "mandatory_clauses": [
     {
-      "id": "CO_CONTRACTOR_INFO",
-      "label": "Contractor information",
+      "id": "MT_REGISTRATION",
+      "label": "Montana contractor registration disclosure",
       "required": true,
       "placement": "header",
-      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nTrade License (if applicable): {{license_number}}"
-    },
-    {
-      "id": "CO_LOCAL_NOTE",
-      "label": "Local licensing note",
-      "required": true,
-      "placement": "body",
-      "text": "IMPORTANT: Colorado does not require a statewide general contractor license, but local municipalities may have their own requirements. Contractor represents that they hold all required local licenses and permits for the jurisdiction where work is performed."
+      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nMontana Construction Contractor Registration Number: {{license_number}}\n\nRegistered with the Montana Department of Labor and Industry."
     },
     {
       "id": "LIEN_NOTICE",
@@ -59,6 +52,6 @@
     "start_date",
     "estimated_completion_date"
   ],
-  "penalties_for_non_compliance": "Plumbing/electrical unlicensed = Class 2 misdemeanor (first offense), Class 6 felony (subsequent). Municipal penalties vary.",
-  "notes": "No statewide GC license. Denver requires licensing through Community Planning and Development. All businesses must register with the state. Plumbing and electrical require state licenses. AI-generated contracts are explicitly recognized as valid in Colorado."
+  "penalties_for_non_compliance": "$500 fine for each non-registration violation. Electrical/plumbing unlicensed = misdemeanor ($250-$1,000 fine, 90 days-1 year jail).",
+  "notes": "Montana requires registration for all construction contractors (both Independent Contractor Registration for individuals and Construction Contractor Registration for those with employees). Electrical and plumbing require state licenses. Written contracts recommended for projects over $2,500."
 }

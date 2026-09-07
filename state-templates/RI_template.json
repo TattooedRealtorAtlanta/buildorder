@@ -1,42 +1,33 @@
 {
-  "state": "Illinois",
-  "code": "IL",
+  "state": "Rhode Island",
+  "code": "RI",
   "risk_level": "MEDIUM",
-  "statute": "Illinois Home Repair and Remodeling Act, 815 ILCS 513/1 et seq.",
-  "requires_license_on_contract": false,
-  "license_label": null,
-  "license_notes": "Illinois has no statewide contractor license for general contracting. Specific trades (electrical, plumbing) require state licenses. City of Chicago has local contractor requirements.",
-  "written_contract_required_above": 1000,
-  "cancellation_days_standard": 3,
+  "statute": "Rhode Island General Laws \u00a7 5-65 (Contractors' Registration and Licensing Board)",
+  "requires_license_on_contract": true,
+  "license_label": "Rhode Island CRLB Registration Number",
+  "license_notes": "RI requires all contractors to register with the Contractors Registration and Licensing Board (CRLB). Includes 5-hour pre-education courses. GL insurance required ($500,000 min \u2014 effective 2024). Unregistered contractors have no lien rights.",
+  "written_contract_required_above": 500,
   "mandatory_clauses": [
     {
-      "id": "IL_CONTRACTOR_INFO",
-      "label": "Contractor information disclosure",
+      "id": "RI_REGISTRATION",
+      "label": "RI CRLB registration disclosure",
       "required": true,
       "placement": "header",
-      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nEmail: {{contractor_email}}"
+      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nRI CRLB Registration Number: {{license_number}}\n\nRegistered with the Rhode Island Contractors Registration and Licensing Board. Verify at contractors.ri.gov."
     },
     {
-      "id": "IL_CONSUMER_RIGHTS",
-      "label": "Illinois Consumer Rights notice",
+      "id": "RI_INSURANCE",
+      "label": "Insurance disclosure (required)",
       "required": true,
-      "placement": "standalone_section",
-      "text": "CONSUMER RIGHTS UNDER ILLINOIS HOME REPAIR AND REMODELING ACT\n\nUnder the Illinois Home Repair and Remodeling Act (815 ILCS 513), you have the right to:\n\n1. A written contract before work begins for any job over $1,000\n2. An itemized description of the work to be performed\n3. Have any changes to the work agreed upon in writing before the changes are made\n4. Cancel this contract within three business days of signing if you did not initiate the contact that led to the contract\n\nFor complaints, contact the Illinois Attorney General's Consumer Fraud Hotline at 1-800-386-5438."
+      "placement": "header",
+      "text": "General Liability Insurance: {{gl_provider}} \u2014 Policy {{gl_policy}}\nMinimum required: $500,000 per occurrence (CRLB must be listed as certificate holder)\nWorkers Compensation: {{wc_status}}"
     },
     {
-      "id": "IL_CANCELLATION",
-      "label": "3-day cancellation notice (home solicitation)",
-      "required": true,
-      "applies_to": "contracts_solicited_at_homeowners_property",
-      "placement": "near_signature",
-      "text": "NOTICE OF RIGHT TO CANCEL\n\nThis is a home solicitation sale. If you did not initiate the contact leading to this sale, you have the right to cancel this sale within three business days from the date of this transaction. To cancel, send written notice to:\n{{contractor_name}}\n{{contractor_address}}"
-    },
-    {
-      "id": "IL_LIEN_NOTICE",
+      "id": "LIEN_NOTICE",
       "label": "Mechanics lien notice",
       "required": true,
       "placement": "standalone_section",
-      "text": "NOTICE OF LIEN RIGHTS\n\nUnder the Illinois Mechanics Lien Act (770 ILCS 60), contractors, subcontractors, and material suppliers who are not paid may be able to file a mechanics lien against your property. If you pay your contractor and the contractor fails to pay subcontractors or suppliers, those parties may still have a right to file a lien against your property. To protect yourself, you should verify that your contractor pays all subcontractors and suppliers and obtain written lien waivers before making final payment."
+      "text": "NOTICE OF LIEN RIGHTS\n\nUnder state law, contractors, subcontractors, and material suppliers who provide labor or materials for your property and are not paid may have the right to file a mechanic's lien against your property. Even if you pay your general contractor in full, you may still be subject to liens from unpaid subcontractors and suppliers. Protect yourself by obtaining written lien waivers from all parties before making final payment."
     },
     {
       "id": "FEDERAL_3DAY",
@@ -44,7 +35,14 @@
       "required": true,
       "placement": "near_signature",
       "applies_to": "primary_residence_lien",
-      "text": "FEDERAL NOTICE OF RIGHT TO CANCEL\n\nYou have the right under federal law to cancel this transaction within three business days. To cancel, notify us in writing at:\n{{contractor_name}}, {{contractor_address}}\n\nDate of transaction: {{contract_date}}"
+      "text": "NOTICE OF RIGHT TO CANCEL\n\nYou have the right under federal law to cancel this transaction within three business days of signing. To cancel, notify us in writing at:\n{{contractor_name}}, {{contractor_address}}\n\nDate of transaction: {{contract_date}}\n\nCANCELLATION DEADLINE: {{cancellation_deadline}} (third business day \u2014 Saturday counts as a business day under federal law)"
+    },
+    {
+      "id": "GENERAL_DISCLAIMER",
+      "label": "Not legal advice disclaimer",
+      "required": true,
+      "placement": "footer",
+      "text": "DISCLAIMER: This contract was generated by ContractorDesk as a starting point template. It does not constitute legal advice. Contractors are encouraged to have a licensed attorney review agreements for their specific situation and applicable state requirements."
     }
   ],
   "required_contract_fields": [
@@ -59,8 +57,9 @@
     "contract_price",
     "payment_schedule",
     "start_date",
-    "estimated_completion_date"
+    "estimated_completion_date",
+    "license_number"
   ],
-  "penalties_for_non_compliance": "Violation of the Home Repair and Remodeling Act = consumer fraud. AG enforcement, civil penalties, treble damages in some cases.",
-  "notes": "Illinois requires written contracts for jobs over $1,000 under the Home Repair and Remodeling Act. Federal 3-day notice satisfies state cancellation requirements. Chicago has additional local requirements. Specific trades (electrical work, plumbing) require state licenses. The Illinois Mechanics Lien Act (770 ILCS 60) governs lien rights."
+  "penalties_for_non_compliance": "1st violation up to $5,000; subsequent up to $10,000 each. Unregistered contractors have no lien rights.",
+  "notes": "Rhode Island requires registration with CRLB for all contractors. Includes 5-hour pre-registration education. GL insurance required: $500,000 minimum (new requirement effective 2024) with CRLB listed as certificate holder. Commercial roofing, well-drillers, and home inspectors require actual licenses (not just registration). Electrical requires DWS license. Unregistered contractors have no mechanics lien rights."
 }

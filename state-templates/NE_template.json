@@ -1,26 +1,19 @@
 {
-  "state": "Alaska",
-  "code": "AK",
+  "state": "Nebraska",
+  "code": "NE",
   "risk_level": "LOWER",
-  "statute": "Alaska Statutes Title 08, Chapter 18 (Contractors)",
-  "requires_license_on_contract": true,
-  "license_label": "Alaska Contractor License Number",
-  "license_notes": "General Contractors must be licensed with Alaska DCCED. Handyman license required for projects under $10,000. GC or Residential Contractor Endorsement required for new home construction or residential remodeling over 25% of home value.",
-  "written_contract_required_above": 10000,
+  "statute": "Nebraska Revised Statutes \u00a7 48-2101 et seq. (Contractor Registration); \u00a7 54-301 (Mechanics Lien)",
+  "requires_license_on_contract": false,
+  "license_label": "Nebraska Contractor Registration Number",
+  "license_notes": "Nebraska requires registration for contractors earning over $5,000 annually. Electrical contractors require state license from Nebraska State Electrical Division. Plumbing and HVAC may require local licenses.",
+  "written_contract_required_above": null,
   "mandatory_clauses": [
     {
-      "id": "AK_LICENSE",
-      "label": "Contractor license disclosure",
+      "id": "NE_REGISTRATION",
+      "label": "Nebraska contractor registration",
       "required": true,
       "placement": "header",
-      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nAlaska License Number: {{license_number}}\nEndorsement: {{license_type}}"
-    },
-    {
-      "id": "AK_INSURANCE",
-      "label": "Insurance disclosure",
-      "required": true,
-      "placement": "header",
-      "text": "General Liability Insurance: {{gl_status}} \u2014 Provider: {{gl_provider}}\nRequired bond: $10,000 (verify current requirement with Alaska DCCED)"
+      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nNebraska Contractor Registration Number: {{license_number}}\n\nRegistered with the Nebraska Department of Labor."
     },
     {
       "id": "LIEN_NOTICE",
@@ -57,9 +50,8 @@
     "contract_price",
     "payment_schedule",
     "start_date",
-    "estimated_completion_date",
-    "license_number"
+    "estimated_completion_date"
   ],
-  "penalties_for_non_compliance": "Civil fine $1,000 first offense, $1,500 each subsequent. Each day = separate violation.",
-  "notes": "Alaska requires contractor registration. General Contractor-Handyman License for projects under $10,000. Residential Contractor Endorsement needed for new home construction. Bond required ($10,000). Insurance: $50,000/$100,000 bodily injury, $20,000 property damage."
+  "penalties_for_non_compliance": "Citation up to $500 for non-registration; 60-day grace to register and waive penalty. Bond requirement: $1,000-$100,000 depending on project size.",
+  "notes": "Nebraska requires registration for contractors with over $5,000 in annual revenue. New contractors have 60 days to register after first citation (waives penalty). Electrical requires state license. Plumbing/HVAC check local (Omaha, Lincoln have specific requirements). $1,000-$100,000 bond depending on license class."
 }

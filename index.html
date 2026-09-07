@@ -70,6 +70,7 @@
     .hero h1 { font-size: clamp(2.2rem, 5vw, 3.2rem); font-weight: 900; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 1.25rem; }
     .hero h1 span { color: var(--amber); }
     .hero p { font-size: 1.05rem; color: var(--muted); max-width: 540px; margin: 0 auto 2.5rem; line-height: 1.7; }
+    .hero-note { font-size: 0.82rem; color: var(--muted); margin-top: 1.1rem; line-height: 1.6; }
     .hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
     .btn-hero { background: var(--amber); color: #090E1A; border: none; border-radius: 10px; padding: 0.85rem 2rem; font-size: 0.95rem; font-weight: 900; cursor: pointer; font-family: inherit; text-decoration: none; transition: background 0.15s; display: inline-block; }
     .btn-hero:hover { background: var(--amber2); }
@@ -191,7 +192,7 @@
 
   <!-- FOUNDING MEMBER BAR -->
   <div class="founder-bar" id="founder-bar">
-    ⚡ <strong>Founding Member Access</strong> &mdash; 60 days free, then $19/mo &middot; 50 spots total &middot;
+    ⚡ <strong>Founding Member Access</strong> &mdash; 60 days of full Pro, free &middot; no credit card &middot;
     <a href="#founding">Claim your spot &rarr;</a>
     <button class="founder-bar-close" onclick="document.getElementById('founder-bar').style.display='none'" aria-label="Close">&times;</button>
   </div>
@@ -224,13 +225,14 @@
       <a href="/login.html?tab=signup" class="btn-hero" id="hero-btn1">Start Free &mdash; No Credit Card</a>
       <a href="#tools" class="btn-hero-ghost" id="hero-btn2">See All Tools</a>
     </div>
+    <p class="hero-note" id="hero-note">Free plan: 5 documents a month, forever. Founding members get 60 days of full Pro &mdash; no card, no auto-charge.</p>
   </section>
 
   <!-- STATS -->
   <div class="stats-bar">
     <div class="stats-inner">
       <div class="stat-item"><div class="stat-num">8</div><div class="stat-lbl" id="stat-lbl-1">Document Types</div></div>
-      <div class="stat-item"><div class="stat-num">52</div><div class="stat-lbl" id="stat-lbl-2">States Covered</div></div>
+      <div class="stat-item"><div class="stat-num">50</div><div class="stat-lbl" id="stat-lbl-2">States + DC</div></div>
       <div class="stat-item"><div class="stat-num">&lt;30s</div><div class="stat-lbl" id="stat-lbl-3">Time to Generate</div></div>
       <div class="stat-item"><div class="stat-num">EN/ES</div><div class="stat-lbl" id="stat-lbl-4">English &amp; Spanish</div></div>
     </div>
@@ -258,7 +260,7 @@
       <div class="tool-card">
         <div class="tool-icon">&#128196;</div>
         <div class="tool-name" id="tool-name-1">Contract &amp; Scope of Work</div>
-        <div class="tool-desc" id="tool-desc-1">State-compliant contracts with all mandatory clauses, cancellation rights, and lien notices. Covers all 52 states.</div>
+        <div class="tool-desc" id="tool-desc-1">State-compliant contracts with all mandatory clauses, cancellation rights, and lien notices. Covers all 50 states, plus DC.</div>
         <div class="tool-tag">Live</div>
       </div>
       <div class="tool-card">
@@ -342,7 +344,7 @@
     <div class="section-title" style="text-align:center;font-size:1.6rem;" id="states-title">Built for every state &mdash; not just yours</div>
     <p style="font-size:0.85rem;color:var(--muted);max-width:480px;margin:0.5rem auto 0;line-height:1.7;" id="states-desc">Every contract includes that state&rsquo;s mandatory clauses, cancellation rights, lien notices, and penalty disclosures &mdash; automatically.</p>
     <div class="states-grid">
-      <span class="state-chip">AL</span><span class="state-chip">AK</span><span class="state-chip">AZ</span><span class="state-chip">AR</span><span class="state-chip">CA</span><span class="state-chip">CO</span><span class="state-chip">CT</span><span class="state-chip">DE</span><span class="state-chip">FL</span><span class="state-chip">GA</span><span class="state-chip">HI</span><span class="state-chip">ID</span><span class="state-chip">IL</span><span class="state-chip">IN</span><span class="state-chip">IA</span><span class="state-chip">KS</span><span class="state-chip">KY</span><span class="state-chip">LA</span><span class="state-chip">ME</span><span class="state-chip">MD</span><span class="state-chip">MA</span><span class="state-chip">MI</span><span class="state-chip">MN</span><span class="state-chip">MS</span><span class="state-chip">MO</span><span class="state-chip">MT</span><span class="state-chip">NE</span><span class="state-chip">NV</span><span class="state-chip">NH</span><span class="state-chip">NJ</span><span class="state-chip">NM</span><span class="state-chip">NY</span><span class="state-chip">NC</span><span class="state-chip">ND</span><span class="state-chip">OH</span><span class="state-chip">OK</span><span class="state-chip">OR</span><span class="state-chip">PA</span><span class="state-chip">RI</span><span class="state-chip">SC</span><span class="state-chip">SD</span><span class="state-chip">TN</span><span class="state-chip">TX</span><span class="state-chip">UT</span><span class="state-chip">VT</span><span class="state-chip">VA</span><span class="state-chip">WA</span><span class="state-chip">WV</span><span class="state-chip">WI</span><span class="state-chip">WY</span><span class="state-chip">DC</span><span class="state-chip">PR</span>
+      <span class="state-chip">AL</span><span class="state-chip">AK</span><span class="state-chip">AZ</span><span class="state-chip">AR</span><span class="state-chip">CA</span><span class="state-chip">CO</span><span class="state-chip">CT</span><span class="state-chip">DE</span><span class="state-chip">FL</span><span class="state-chip">GA</span><span class="state-chip">HI</span><span class="state-chip">ID</span><span class="state-chip">IL</span><span class="state-chip">IN</span><span class="state-chip">IA</span><span class="state-chip">KS</span><span class="state-chip">KY</span><span class="state-chip">LA</span><span class="state-chip">ME</span><span class="state-chip">MD</span><span class="state-chip">MA</span><span class="state-chip">MI</span><span class="state-chip">MN</span><span class="state-chip">MS</span><span class="state-chip">MO</span><span class="state-chip">MT</span><span class="state-chip">NE</span><span class="state-chip">NV</span><span class="state-chip">NH</span><span class="state-chip">NJ</span><span class="state-chip">NM</span><span class="state-chip">NY</span><span class="state-chip">NC</span><span class="state-chip">ND</span><span class="state-chip">OH</span><span class="state-chip">OK</span><span class="state-chip">OR</span><span class="state-chip">PA</span><span class="state-chip">RI</span><span class="state-chip">SC</span><span class="state-chip">SD</span><span class="state-chip">TN</span><span class="state-chip">TX</span><span class="state-chip">UT</span><span class="state-chip">VT</span><span class="state-chip">VA</span><span class="state-chip">WA</span><span class="state-chip">WV</span><span class="state-chip">WI</span><span class="state-chip">WY</span><span class="state-chip">DC</span>
     </div>
   </div>
 
@@ -413,13 +415,13 @@
           <div class="founding-detail-lbl">No Credit Card</div>
         </div>
         <div class="founding-detail">
-          <div class="founding-detail-val" id="spots-left">50</div>
-          <div class="founding-detail-lbl">Spots Left</div>
+          <div class="founding-detail-val">Pro</div>
+          <div class="founding-detail-lbl">Full Access</div>
         </div>
       </div>
       <a href="/login.html?founding=1" class="btn-founding">Claim Your Spot &mdash; Free for 60 Days</a>
       <div class="founding-note">No credit card &middot; Cancel anytime &middot; Full Pro access from day one</div>
-      <div class="founding-spots">Only <strong id="spots-left-2">50</strong> founding member spots available &mdash; when they&rsquo;re gone, they&rsquo;re gone.</div>
+      <div class="founding-spots">Founding member access is limited to the first 50 contractors.</div>
     </div>
   </div>
 
@@ -438,7 +440,7 @@
           <ul class="price-features" id="features-1">
             <li>5 documents per month</li>
             <li>All 8 document types</li>
-            <li>All 52 states</li>
+            <li>All 50 states, plus DC</li>
             <li>Copy, download &amp; PDF export</li>
             <li>BuildOrder branding</li>
           </ul>
@@ -607,19 +609,14 @@
   </footer>
 
   <script>
-    // Live founding member spot count
+    // Founding member availability.
+    // The remaining-spot count is deliberately NOT rendered: while uptake is
+    // low, a live counter advertises how few people have signed up. Only the
+    // sold-out state changes the UI.
     fetch('/api/founding-member').then(function(r){ return r.json(); }).then(function(d) {
-      if (typeof d.spots_left === 'number') {
-        var sl = d.spots_left;
-        var el1 = document.getElementById('spots-left');
-        var el2 = document.getElementById('spots-left-2');
-        if (el1) el1.textContent = sl;
-        if (el2) el2.textContent = sl;
-        // If full, swap CTA to "Sold Out"
-        if (d.full) {
-          var btn = document.querySelector('.btn-founding');
-          if (btn) { btn.textContent = 'All Spots Claimed'; btn.style.opacity = '0.5'; btn.style.pointerEvents = 'none'; }
-        }
+      if (d && d.full) {
+        var btn = document.querySelector('.btn-founding');
+        if (btn) { btn.textContent = 'All Spots Claimed'; btn.style.opacity = '0.5'; btn.style.pointerEvents = 'none'; }
       }
     }).catch(function(){});
   </script>
@@ -636,15 +633,16 @@
         'hero-p':          'BuildOrder generates state-compliant estimates, contracts, invoices, change orders, lien waivers, and more &mdash; from a job description. No templates. No forms. Just your job, done.',
         'hero-btn1':       'Start Free &mdash; No Credit Card',
         'hero-btn2':       'See All Tools',
+        'hero-note':       'Free plan: 5 documents a month, forever. Founding members get 60 days of full Pro &mdash; no card, no auto-charge.',
         'stat-lbl-1':      'Document Types',
-        'stat-lbl-2':      'States Covered',
+        'stat-lbl-2':      'States + DC',
         'stat-lbl-3':      'Time to Generate',
         'stat-lbl-4':      'English &amp; Spanish',
         'tools-eyebrow':   'The Full Suite',
         'tools-title':     'Every document you need on every job',
         'tools-sub':       'From first estimate to final lien waiver &mdash; BuildOrder has every document a residential contractor needs, generated by AI in seconds.',
         'tool-name-1':     'Contract &amp; Scope of Work',
-        'tool-desc-1':     'State-compliant contracts with all mandatory clauses, cancellation rights, and lien notices. Covers all 52 states.',
+        'tool-desc-1':     'State-compliant contracts with all mandatory clauses, cancellation rights, and lien notices. Covers all 50 states, plus DC.',
         'tool-name-2':     'Estimate Generator',
         'tool-desc-2':     'Itemized professional estimates with labor, materials, tax, payment terms, and homeowner acceptance block.',
         'tool-name-3':     'Invoice Generator',
@@ -679,7 +677,7 @@
         'price-badge':     'Most Popular',
         'tier-1':          'Starter',
         'tier-desc-1':     'For contractors getting started',
-        'features-1':      '<li>5 documents per month</li><li>All 8 document types</li><li>All 52 states</li><li>Copy, download &amp; PDF export</li><li>BuildOrder branding</li>',
+        'features-1':      '<li>5 documents per month</li><li>All 8 document types</li><li>All 50 states, plus DC</li><li>Copy, download &amp; PDF export</li><li>BuildOrder branding</li>',
         'price-btn-1':     'Get Started Free',
         'tier-2':          'Pro',
         'tier-desc-2':     'For active contractors',
@@ -705,6 +703,7 @@
         'hero-p':          'BuildOrder genera estimados, contratos, facturas, órdenes de cambio, renuncias de gravamen y más &mdash; a partir de una descripción del trabajo. Sin plantillas. Sin formularios. Solo tu trabajo, listo.',
         'hero-btn1':       'Comienza Gratis &mdash; Sin Tarjeta',
         'hero-btn2':       'Ver Herramientas',
+        'hero-note':       'Plan gratuito: 5 documentos al mes, para siempre. Los miembros fundadores reciben 60 d\u00edas de Pro completo &mdash; sin tarjeta, sin cargos autom\u00e1ticos.',
         'stat-lbl-1':      'Tipos de Documentos',
         'stat-lbl-2':      'Estados con Cobertura',
         'stat-lbl-3':      'Tiempo de Generación',
@@ -713,7 +712,7 @@
         'tools-title':     'Cada documento que necesitas en cada trabajo',
         'tools-sub':       'Desde el primer estimado hasta la renuncia final de gravamen &mdash; BuildOrder tiene cada documento que un contratista residencial necesita, generado por IA en segundos.',
         'tool-name-1':     'Contrato y Alcance de Trabajo',
-        'tool-desc-1':     'Contratos conformes a cada estado con todas las cláusulas obligatorias, derechos de cancelación y avisos de gravamen. Cubre los 52 estados.',
+        'tool-desc-1':     'Contratos conformes a cada estado con todas las cláusulas obligatorias, derechos de cancelación y avisos de gravamen. Cubre los 50 estados, más DC.',
         'tool-name-2':     'Generador de Estimados',
         'tool-desc-2':     'Estimados profesionales detallados con mano de obra, materiales, impuestos, términos de pago y bloque de aceptación del cliente.',
         'tool-name-3':     'Generador de Facturas',
@@ -748,7 +747,7 @@
         'price-badge':     'Más Popular',
         'tier-1':          'Básico',
         'tier-desc-1':     'Para contratistas que están comenzando',
-        'features-1':      '<li>5 documentos por mes</li><li>Los 8 tipos de documentos</li><li>Los 52 estados</li><li>Copiar, descargar y exportar PDF</li><li>Marca BuildOrder</li>',
+        'features-1':      '<li>5 documentos por mes</li><li>Los 8 tipos de documentos</li><li>Los 50 estados, más DC</li><li>Copiar, descargar y exportar PDF</li><li>Marca BuildOrder</li>',
         'price-btn-1':     'Comienza Gratis',
         'tier-2':          'Pro',
         'tier-desc-2':     'Para contratistas activos',

@@ -1,26 +1,26 @@
 {
-  "state": "Delaware",
-  "code": "DE",
+  "state": "Alaska",
+  "code": "AK",
   "risk_level": "LOWER",
-  "statute": "No statewide GC license. Specialty trades licensed under Delaware Code Title 24",
-  "requires_license_on_contract": false,
-  "license_label": null,
-  "license_notes": "Delaware has no statewide GC license requirement. All businesses must register with the Division of Revenue. Electrical, plumbing, and HVAC require state licenses through DPR. Check municipality for local requirements.",
-  "written_contract_required_above": 500,
+  "statute": "Alaska Statutes Title 08, Chapter 18 (Contractors)",
+  "requires_license_on_contract": true,
+  "license_label": "Alaska Contractor License Number",
+  "license_notes": "General Contractors must be licensed with Alaska DCCED. Handyman license required for projects under $10,000. GC or Residential Contractor Endorsement required for new home construction or residential remodeling over 25% of home value.",
+  "written_contract_required_above": 10000,
   "mandatory_clauses": [
     {
-      "id": "DE_CONTRACTOR_INFO",
-      "label": "Contractor information",
+      "id": "AK_LICENSE",
+      "label": "Contractor license disclosure",
       "required": true,
       "placement": "header",
-      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nDE Business Registration: {{license_number}}\nTrade License (if applicable): {{trade_license}}"
+      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nAlaska License Number: {{license_number}}\nEndorsement: {{license_type}}"
     },
     {
-      "id": "DE_LOCAL_NOTE",
-      "label": "Local licensing representation",
+      "id": "AK_INSURANCE",
+      "label": "Insurance disclosure",
       "required": true,
-      "placement": "body",
-      "text": "Contractor represents that they hold all required licenses and permits for the jurisdiction where work is performed, and that the business is registered with the Delaware Division of Revenue."
+      "placement": "header",
+      "text": "General Liability Insurance: {{gl_status}} \u2014 Provider: {{gl_provider}}\nRequired bond: $10,000 (verify current requirement with Alaska DCCED)"
     },
     {
       "id": "LIEN_NOTICE",
@@ -57,8 +57,9 @@
     "contract_price",
     "payment_schedule",
     "start_date",
-    "estimated_completion_date"
+    "estimated_completion_date",
+    "license_number"
   ],
-  "penalties_for_non_compliance": "Penalties vary by municipality. No specific lien license requirement under DE law.",
-  "notes": "Delaware has no statewide GC license. Contractors must register business with Division of Revenue. Electrical, plumbing, HVAC require DPR licenses. Penalties are locally determined. Lien rights do not require a license."
+  "penalties_for_non_compliance": "Civil fine $1,000 first offense, $1,500 each subsequent. Each day = separate violation.",
+  "notes": "Alaska requires contractor registration. General Contractor-Handyman License for projects under $10,000. Residential Contractor Endorsement needed for new home construction. Bond required ($10,000). Insurance: $50,000/$100,000 bodily injury, $20,000 property damage."
 }

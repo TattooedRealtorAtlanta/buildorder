@@ -1,40 +1,26 @@
 {
-  "state": "Texas",
-  "code": "TX",
+  "state": "Louisiana",
+  "code": "LA",
   "risk_level": "MEDIUM",
-  "statute": "Texas Property Code \u00a7 41.007, \u00a7 53.255; Texas Business & Commerce Code \u00a7 17.46 (DTPA)",
-  "requires_license_on_contract": false,
-  "license_label": null,
-  "license_notes": "Texas has no statewide contractor license. Some cities (Austin, San Antonio, Houston) require local registration. Check local municipality.",
+  "statute": "Louisiana Revised Statutes \u00a7 37:2150 et seq. (LSLBC); Home Improvement Contractors Act R.S. \u00a7 37:2167",
+  "requires_license_on_contract": true,
+  "license_label": "Louisiana State Licensing Board for Contractors (LSLBC) License Number",
+  "license_notes": "Commercial license required for projects over $50,000. Residential license for projects over $75,000. Home improvement contractors must register when project is $7,500-$75,000. Subcontractors need license for work over $7,500.",
   "written_contract_required_above": null,
-  "cancellation_days_standard": 3,
   "mandatory_clauses": [
     {
-      "id": "TX_IMPORTANT_NOTICE",
-      "label": "Texas Important Notice (TPC \u00a7 41.007)",
+      "id": "LA_LICENSE",
+      "label": "LSLBC license disclosure",
       "required": true,
-      "placement": "next_to_owner_signature",
-      "min_font_size": 10,
-      "bold": true,
-      "text": "IMPORTANT NOTICE: You and your contractor are responsible for meeting the terms and conditions of this contract. If you sign this contract and you fail to meet the terms and conditions of this contract, you may lose your legal ownership rights in your home. KNOW YOUR RIGHTS AND DUTIES UNDER THE LAW.",
-      "penalty": "Failure to provide this notice is actionable under the Texas Deceptive Trade Practices Act."
+      "placement": "header",
+      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nLSLBC License/Registration Number: {{license_number}}\nLicense Type: {{license_type}}\n\nAll contractors performing work over $7,500 must be licensed or registered with the Louisiana State Licensing Board for Contractors."
     },
     {
-      "id": "TX_RESIDENTIAL_DISCLOSURE",
-      "label": "Texas Residential Disclosure Statement (TPC \u00a7 53.255)",
+      "id": "LA_LIEN_NOTICE",
+      "label": "Louisiana lien notice",
       "required": true,
-      "applies_to": "residential_construction",
-      "placement": "standalone_section_or_attachment",
-      "text": "RESIDENTIAL CONSTRUCTION \u2014 HOMEOWNER'S RIGHTS\n\nUnder Texas law, you have certain rights on residential construction projects. You have the right to:\n\n1. Know and obtain references for your contractor and request the contractor's license number, if required by local law.\n2. Have a written agreement with the contractor that includes:\n   - A description of the work to be performed\n   - The required or estimated time for completion of the work\n   - The cost of the work or how it will be determined\n   - The procedure and method of payment\n3. Know if the contractor will use subcontractors and to obtain the names and contact information of those subcontractors.\n\nCONTRACTOR INFORMATION:\nContractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\n\nNote: Failure to provide this disclosure may subject the contractor to penalties under the Texas Property Code."
-    },
-    {
-      "id": "TX_HOME_SOLICITATION",
-      "label": "Texas Home Solicitation Notice (Bus. & Com. Code \u00a7 601)",
-      "required": true,
-      "applies_to": "contracts_signed_at_homeowners_property",
-      "placement": "near_signature",
-      "text": "NOTICE OF CANCELLATION\n\n{{contract_date}}\n\nYou may cancel this transaction, without penalty or obligation, within three business days from the above date.\n\nIf you cancel, any property traded in, any payments made by you under the contract or sale, and any negotiable instrument executed by you will be returned within 10 business days following receipt by the seller of your cancellation notice, and any security interest arising out of the transaction will be cancelled.\n\nTo cancel this transaction, mail or deliver a signed and dated copy of this cancellation notice or any other written notice to:\n{{contractor_name}}\n{{contractor_address}}\n\nI hereby cancel this transaction.\n\n_________________________ Date: __________\n(Buyer's signature)",
-      "note": "Texas requires BOTH this state notice AND the federal 3-day home improvement notice. Two separate notices are required."
+      "placement": "standalone_section",
+      "text": "NOTICE OF LIEN RIGHTS (STATEMENT OF CLAIM AND PRIVILEGE)\n\nUnder Louisiana law (R.S. \u00a7 9:4801 et seq.), contractors, subcontractors, and material suppliers who are not paid may file a claim and privilege (lien) against your property. To protect your interests, obtain lien waivers and releases from all contractors, subcontractors, and suppliers before making final payment."
     },
     {
       "id": "FEDERAL_3DAY",
@@ -42,7 +28,14 @@
       "required": true,
       "placement": "near_signature",
       "applies_to": "primary_residence_lien",
-      "text": "NOTICE OF RIGHT TO CANCEL\n\nYour right to cancel: You are entering into a transaction that will result in a lien on your home. You have a legal right under federal law to cancel this transaction, without cost, within three business days from the date of the transaction ({{contract_date}}).\n\nTo cancel this transaction, notify us in writing at:\n{{contractor_name}}, {{contractor_address}}\n\nYou may use any written statement signed and dated by you and stating your intention to cancel."
+      "text": "NOTICE OF RIGHT TO CANCEL\n\nYou have the right under federal law to cancel this transaction within three business days of signing. To cancel, notify us in writing at:\n{{contractor_name}}, {{contractor_address}}\n\nDate of transaction: {{contract_date}}\n\nCANCELLATION DEADLINE: {{cancellation_deadline}} (third business day \u2014 Saturday counts as a business day under federal law)"
+    },
+    {
+      "id": "GENERAL_DISCLAIMER",
+      "label": "Not legal advice disclaimer",
+      "required": true,
+      "placement": "footer",
+      "text": "DISCLAIMER: This contract was generated by ContractorDesk as a starting point template. It does not constitute legal advice. Contractors are encouraged to have a licensed attorney review agreements for their specific situation and applicable state requirements."
     }
   ],
   "required_contract_fields": [
@@ -54,10 +47,12 @@
     "job_address",
     "contract_date",
     "project_description",
-    "estimated_completion_date",
     "contract_price",
-    "payment_schedule"
+    "payment_schedule",
+    "start_date",
+    "estimated_completion_date",
+    "license_number"
   ],
-  "penalties_for_non_compliance": "Violation of TPC \u00a7 41.007 Important Notice is actionable under Texas DTPA. Missing home solicitation notice = contract may be cancelled beyond 3-day window.",
-  "notes": "Texas has no statewide contractor license requirement, but requires both the state home solicitation notice AND the federal TILA 3-day notice on residential jobs \u2014 two separate forms. Check local municipality for registration requirements (Austin, Houston, San Antonio all have local rules). The Residential Disclosure Statement under TPC \u00a7 53.255 is required on all residential projects."
+  "penalties_for_non_compliance": "Unlicensed = misdemeanor. Fine up to 10% of contract value. Contract becomes null and void. Unlicensed contractors can only recover minimum value of work under lien law.",
+  "notes": "Louisiana has tiered licensing: residential license for >$75,000; commercial for >$50,000; home improvement registration for $7,500-$75,000. Work under $7,500 exempt. Contractor must register with Secretary of State. Reciprocity with GA, TN, MS, NC. Louisiana lien law is unique \u2014 uses 'Statement of Claim and Privilege' rather than typical mechanics lien."
 }

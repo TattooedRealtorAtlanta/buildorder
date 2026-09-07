@@ -1,0 +1,549 @@
+{
+  "version": "2.0",
+  "created": "2026-05-24",
+  "description": "ContractorDesk state-specific home improvement contract templates \u2014 ALL 50 states + DC + Federal",
+  "total_templates": 52,
+  "states": {
+    "AK": {
+      "state": "Alaska",
+      "risk_level": "LOWER",
+      "file": "AK_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "Alaska Contractor License Number",
+      "mandatory_clause_count": 5,
+      "statute": "Alaska Statutes Title 08, Chapter 18 (Contractors)"
+    },
+    "AL": {
+      "state": "Alabama",
+      "risk_level": "LOWER",
+      "file": "AL_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "Alabama Contractor License Number",
+      "mandatory_clause_count": 4,
+      "statute": "Alabama Code Title 34, Chapter 8 (General Contractors); Ala. Code 34-14A (Home Builders Licensure Board)"
+    },
+    "AR": {
+      "state": "Arkansas",
+      "risk_level": "LOWER",
+      "file": "AR_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "Arkansas Contractor License Number",
+      "mandatory_clause_count": 4,
+      "statute": "Arkansas Code Title 17, Chapter 25 (Contractors Licensing Board)"
+    },
+    "AZ": {
+      "state": "Arizona",
+      "risk_level": "LOWER",
+      "file": "AZ_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "Arizona Registrar of Contractors (ROC) License Number",
+      "mandatory_clause_count": 5,
+      "statute": "Arizona Revised Statutes \u00a7 32-1101 et seq. (Registrar of Contractors); A.R.S. \u00a7 33-981 (Mechanics Lien Law)"
+    },
+    "CA": {
+      "state": "California",
+      "risk_level": "HIGH",
+      "file": "CA_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "CSLB License Number",
+      "mandatory_clause_count": 12,
+      "statute": "California Business and Professions Code \u00a7 7159"
+    },
+    "CO": {
+      "state": "Colorado",
+      "risk_level": "LOWER",
+      "file": "CO_template.json",
+      "requires_license_on_contract": false,
+      "license_label": null,
+      "mandatory_clause_count": 5,
+      "statute": "No statewide GC license law; local municipalities govern. C.R.S. \u00a7 12-58 (plumbing/electrical licensing)"
+    },
+    "CT": {
+      "state": "Connecticut",
+      "risk_level": "MEDIUM",
+      "file": "CT_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "CT Home Improvement Contractor Registration Number",
+      "mandatory_clause_count": 7,
+      "statute": "Connecticut General Statutes \u00a7 20-418 et seq. (Home Improvement Act); \u00a7 20-417a et seq. (New Home Construction)"
+    },
+    "DC": {
+      "state": "District of Columbia",
+      "risk_level": "MEDIUM",
+      "file": "DC_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "DC Basic Business License Number (General Contractor or Home Improvement)",
+      "mandatory_clause_count": 5,
+      "statute": "DC Code \u00a7 47-2881 et seq.; DC Municipal Regulations Title 16"
+    },
+    "DE": {
+      "state": "Delaware",
+      "risk_level": "LOWER",
+      "file": "DE_template.json",
+      "requires_license_on_contract": false,
+      "license_label": null,
+      "mandatory_clause_count": 5,
+      "statute": "No statewide GC license. Specialty trades licensed under Delaware Code Title 24"
+    },
+    "FEDERAL": {
+      "state": "Federal (All States)",
+      "risk_level": "UNIVERSAL",
+      "file": "FEDERAL_template.json",
+      "requires_license_on_contract": false,
+      "license_label": null,
+      "mandatory_clause_count": 3,
+      "statute": "Truth in Lending Act (TILA), 15 U.S.C. \u00a7 1635; Regulation Z; Electronic Signatures in Global and National Commerce Act ("
+    },
+    "FL": {
+      "state": "Florida",
+      "risk_level": "MEDIUM",
+      "file": "FL_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "Florida Contractor License Number",
+      "mandatory_clause_count": 7,
+      "statute": "Florida Statutes \u00a7 489.126, \u00a7 489.147, \u00a7 520.72, \u00a7 713.015"
+    },
+    "GA": {
+      "state": "Georgia",
+      "risk_level": "LOWER",
+      "file": "GA_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "Georgia Contractor License Number",
+      "mandatory_clause_count": 4,
+      "statute": "O.C.G.A. \u00a7 43-41-1 et seq.; Georgia Lien Law O.C.G.A. \u00a7 44-14-361"
+    },
+    "HI": {
+      "state": "Hawaii",
+      "risk_level": "MEDIUM",
+      "file": "HI_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "Hawaii Contractor License Number",
+      "mandatory_clause_count": 5,
+      "statute": "Hawaii Revised Statutes Chapter 444 (Contractors)"
+    },
+    "IA": {
+      "state": "Iowa",
+      "risk_level": "LOWER",
+      "file": "IA_template.json",
+      "requires_license_on_contract": false,
+      "license_label": "Iowa Contractor Registration Number",
+      "mandatory_clause_count": 4,
+      "statute": "Iowa Code \u00a7 91C (Contractor Registration); Iowa Code \u00a7 572 (Mechanics Liens)"
+    },
+    "ID": {
+      "state": "Idaho",
+      "risk_level": "LOWER",
+      "file": "ID_template.json",
+      "requires_license_on_contract": false,
+      "license_label": "Idaho Contractor Registration Number",
+      "mandatory_clause_count": 4,
+      "statute": "Idaho Code \u00a7 54-5201 et seq. (Contractors Board Registration)"
+    },
+    "IL": {
+      "state": "Illinois",
+      "risk_level": "MEDIUM",
+      "file": "IL_template.json",
+      "requires_license_on_contract": false,
+      "license_label": null,
+      "mandatory_clause_count": 5,
+      "statute": "Illinois Home Repair and Remodeling Act, 815 ILCS 513/1 et seq."
+    },
+    "IN": {
+      "state": "Indiana",
+      "risk_level": "LOWER",
+      "file": "IN_template.json",
+      "requires_license_on_contract": false,
+      "license_label": null,
+      "mandatory_clause_count": 5,
+      "statute": "Local municipal ordinances govern most licensing. Ind. Code \u00a7 25-28.5 (plumbing licensing)"
+    },
+    "KS": {
+      "state": "Kansas",
+      "risk_level": "LOWER",
+      "file": "KS_template.json",
+      "requires_license_on_contract": false,
+      "license_label": null,
+      "mandatory_clause_count": 5,
+      "statute": "No statewide license law. Local county/city ordinances govern."
+    },
+    "KY": {
+      "state": "Kentucky",
+      "risk_level": "LOWER",
+      "file": "KY_template.json",
+      "requires_license_on_contract": false,
+      "license_label": null,
+      "mandatory_clause_count": 4,
+      "statute": "KRS \u00a7 198B (electrical/plumbing/HVAC state licenses); Local municipal ordinances for GC"
+    },
+    "LA": {
+      "state": "Louisiana",
+      "risk_level": "MEDIUM",
+      "file": "LA_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "Louisiana State Licensing Board for Contractors (LSLBC) License Number",
+      "mandatory_clause_count": 4,
+      "statute": "Louisiana Revised Statutes \u00a7 37:2150 et seq. (LSLBC); Home Improvement Contractors Act R.S. \u00a7 37:2167"
+    },
+    "MA": {
+      "state": "Massachusetts",
+      "risk_level": "MEDIUM",
+      "file": "MA_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "MA Home Improvement Contractor (HIC) Registration Number / Construction Supervisor License (CSL) Number",
+      "mandatory_clause_count": 7,
+      "statute": "M.G.L. Chapter 142A (Home Improvement Contractor Registration); M.G.L. Chapter 149, \u00a7 44F (Construction Supervisor Licen"
+    },
+    "MD": {
+      "state": "Maryland",
+      "risk_level": "HIGH",
+      "file": "MD_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "MHIC License Number",
+      "mandatory_clause_count": 7,
+      "statute": "Maryland Code Business Regulation \u00a7 8-301 et seq. (Maryland Home Improvement Commission); MHIC"
+    },
+    "ME": {
+      "state": "Maine",
+      "risk_level": "LOWER",
+      "file": "ME_template.json",
+      "requires_license_on_contract": false,
+      "license_label": null,
+      "mandatory_clause_count": 5,
+      "statute": "Mostly local municipal licensing. Title 32, chapter 73 (electrical); Title 32, chapter 17 (plumbing). Written contract r"
+    },
+    "MI": {
+      "state": "Michigan",
+      "risk_level": "MEDIUM",
+      "file": "MI_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "Michigan Residential Builders or Maintenance and Alteration Contractors License Number",
+      "mandatory_clause_count": 6,
+      "statute": "Michigan Occupational Code MCL \u00a7 339.2401 et seq. (Residential Builders); MCL \u00a7 339.2601 (Maintenance and Alteration Con"
+    },
+    "MN": {
+      "state": "Minnesota",
+      "risk_level": "LOWER",
+      "file": "MN_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "Minnesota Residential Building Contractor License Number",
+      "mandatory_clause_count": 5,
+      "statute": "Minnesota Statutes \u00a7 326B (Residential Contractor Licensing); \u00a7 326B.802 (Contractor Registration)"
+    },
+    "MO": {
+      "state": "Missouri",
+      "risk_level": "LOWER",
+      "file": "MO_template.json",
+      "requires_license_on_contract": false,
+      "license_label": null,
+      "mandatory_clause_count": 5,
+      "statute": "No statewide GC license law. Local municipal ordinances govern. Mo. Rev. Stat. \u00a7 327.400 (electrical)"
+    },
+    "MS": {
+      "state": "Mississippi",
+      "risk_level": "LOWER",
+      "file": "MS_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "Mississippi State Board of Contractors License Number",
+      "mandatory_clause_count": 4,
+      "statute": "Mississippi Code \u00a7 31-3-1 et seq. (Mississippi State Board of Contractors)"
+    },
+    "MT": {
+      "state": "Montana",
+      "risk_level": "LOWER",
+      "file": "MT_template.json",
+      "requires_license_on_contract": false,
+      "license_label": "Montana Construction Contractor Registration Number",
+      "mandatory_clause_count": 4,
+      "statute": "Montana Code Annotated \u00a7 39-9-101 et seq. (Construction Contractor Registration)"
+    },
+    "NC": {
+      "state": "North Carolina",
+      "risk_level": "LOWER",
+      "file": "NC_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "NC General Contractor License Number",
+      "mandatory_clause_count": 4,
+      "statute": "N.C.G.S. \u00a7 87-1 et seq. (General Contractor Licensing); N.C.G.S. \u00a7 44A (Mechanics Lien Law)"
+    },
+    "ND": {
+      "state": "North Dakota",
+      "risk_level": "LOWER",
+      "file": "ND_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "North Dakota Contractor License Number",
+      "mandatory_clause_count": 4,
+      "statute": "North Dakota Century Code \u00a7 43-07 (Contractor Licensing)"
+    },
+    "NE": {
+      "state": "Nebraska",
+      "risk_level": "LOWER",
+      "file": "NE_template.json",
+      "requires_license_on_contract": false,
+      "license_label": "Nebraska Contractor Registration Number",
+      "mandatory_clause_count": 4,
+      "statute": "Nebraska Revised Statutes \u00a7 48-2101 et seq. (Contractor Registration); \u00a7 54-301 (Mechanics Lien)"
+    },
+    "NH": {
+      "state": "New Hampshire",
+      "risk_level": "LOWER",
+      "file": "NH_template.json",
+      "requires_license_on_contract": false,
+      "license_label": null,
+      "mandatory_clause_count": 4,
+      "statute": "RSA 319-C (electrical licensing); RSA 153:34 (plumbing licensing). Local ordinances govern GC."
+    },
+    "NJ": {
+      "state": "New Jersey",
+      "risk_level": "MEDIUM",
+      "file": "NJ_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "NJ Home Improvement Contractor Registration Number",
+      "mandatory_clause_count": 6,
+      "statute": "New Jersey Statutes \u00a7 56:8-136 et seq. (Contractors' Registration Act); N.J.A.C. 13:45A (Consumer Affairs)"
+    },
+    "NM": {
+      "state": "New Mexico",
+      "risk_level": "MEDIUM",
+      "file": "NM_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "New Mexico Construction Industries Division (CID) License Number",
+      "mandatory_clause_count": 4,
+      "statute": "NMSA \u00a7 60-13-1 et seq. (Construction Industries Licensing Act); NMAC Title 14, Chapter 6"
+    },
+    "NV": {
+      "state": "Nevada",
+      "risk_level": "MEDIUM",
+      "file": "NV_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "Nevada State Contractors Board License Number",
+      "mandatory_clause_count": 5,
+      "statute": "Nevada Revised Statutes Chapter 624 (Nevada State Contractors Board)"
+    },
+    "NY": {
+      "state": "New York",
+      "risk_level": "MEDIUM",
+      "file": "NY_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "NY Home Improvement Contractor License / Registration Number",
+      "mandatory_clause_count": 6,
+      "statute": "New York General Business Law \u00a7 771; NYC Administrative Code \u00a7 20-387 through \u00a7 20-394"
+    },
+    "OH": {
+      "state": "Ohio",
+      "risk_level": "LOWER",
+      "file": "OH_template.json",
+      "requires_license_on_contract": false,
+      "license_label": null,
+      "mandatory_clause_count": 4,
+      "statute": "Ohio Revised Code \u00a7 4722 (Home Construction Services Suppliers Act); Updated by HB50 (2024)"
+    },
+    "OK": {
+      "state": "Oklahoma",
+      "risk_level": "LOWER",
+      "file": "OK_template.json",
+      "requires_license_on_contract": false,
+      "license_label": null,
+      "mandatory_clause_count": 4,
+      "statute": "Oklahoma Statutes Title 59, \u00a7 1000 et seq. (Construction Industries Board)"
+    },
+    "OR": {
+      "state": "Oregon",
+      "risk_level": "MEDIUM",
+      "file": "OR_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "Oregon Construction Contractors Board (CCB) License Number",
+      "mandatory_clause_count": 6,
+      "statute": "Oregon Revised Statutes \u00a7 701.005 et seq. (Oregon Construction Contractors Board)"
+    },
+    "PA": {
+      "state": "Pennsylvania",
+      "risk_level": "HIGH",
+      "file": "PA_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "PA Home Improvement Contractor Registration Number (HIC#)",
+      "mandatory_clause_count": 7,
+      "statute": "Home Improvement Consumer Protection Act (HICPA), 73 P.S. \u00a7 517.1 et seq."
+    },
+    "RI": {
+      "state": "Rhode Island",
+      "risk_level": "MEDIUM",
+      "file": "RI_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "Rhode Island CRLB Registration Number",
+      "mandatory_clause_count": 5,
+      "statute": "Rhode Island General Laws \u00a7 5-65 (Contractors' Registration and Licensing Board)"
+    },
+    "SC": {
+      "state": "South Carolina",
+      "risk_level": "LOWER",
+      "file": "SC_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "SC General Contractor License Number / Residential Builder License Number",
+      "mandatory_clause_count": 4,
+      "statute": "SC Code \u00a7 40-11-5 et seq. (SC Contractors Licensing Board); \u00a7 40-59 (Residential Builders Commission)"
+    },
+    "SD": {
+      "state": "South Dakota",
+      "risk_level": "LOWER",
+      "file": "SD_template.json",
+      "requires_license_on_contract": false,
+      "license_label": "South Dakota Contractor's Excise Tax License Number",
+      "mandatory_clause_count": 4,
+      "statute": "SDCL \u00a7 10-46A (Contractors Excise Tax License); local municipal ordinances govern licensing"
+    },
+    "TN": {
+      "state": "Tennessee",
+      "risk_level": "MEDIUM",
+      "file": "TN_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "Tennessee Contractor License Number",
+      "mandatory_clause_count": 5,
+      "statute": "Tennessee Code \u00a7 62-6-101 et seq. (Board for Licensing Contractors); \u00a7 62-6-503 (Home Improvement Law)"
+    },
+    "TX": {
+      "state": "Texas",
+      "risk_level": "MEDIUM",
+      "file": "TX_template.json",
+      "requires_license_on_contract": false,
+      "license_label": null,
+      "mandatory_clause_count": 4,
+      "statute": "Texas Property Code \u00a7 41.007, \u00a7 53.255; Texas Business & Commerce Code \u00a7 17.46 (DTPA)"
+    },
+    "UT": {
+      "state": "Utah",
+      "risk_level": "LOWER",
+      "file": "UT_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "Utah Division of Occupational and Professional Licensing (DOPL) License Number",
+      "mandatory_clause_count": 4,
+      "statute": "Utah Code \u00a7 58-55-301 et seq. (Utah Construction Trades Licensing Act)"
+    },
+    "VA": {
+      "state": "Virginia",
+      "risk_level": "MEDIUM",
+      "file": "VA_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "Virginia DPOR Contractor License Number",
+      "mandatory_clause_count": 5,
+      "statute": "Virginia Code \u00a7 54.1-1100 et seq. (Board for Contractors); \u00a7 54.1-1115 (penalties)"
+    },
+    "VT": {
+      "state": "Vermont",
+      "risk_level": "LOWER",
+      "file": "VT_template.json",
+      "requires_license_on_contract": false,
+      "license_label": null,
+      "mandatory_clause_count": 4,
+      "statute": "No statewide GC license. VSA Title 26 (electrical/plumbing licensing). Local ordinances govern GC."
+    },
+    "WA": {
+      "state": "Washington",
+      "risk_level": "MEDIUM",
+      "file": "WA_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "Washington State UBI Number (Unified Business Identifier) / Contractor Registration Number",
+      "mandatory_clause_count": 5,
+      "statute": "RCW \u00a7 18.27 (Contractor Registration); RCW \u00a7 60.04 (Mechanics Liens)"
+    },
+    "WI": {
+      "state": "Wisconsin",
+      "risk_level": "LOWER",
+      "file": "WI_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "Wisconsin Dwelling Contractor Qualifier Certification Number",
+      "mandatory_clause_count": 4,
+      "statute": "Wisconsin Statutes \u00a7 101.654 (Dwelling Contractor Qualifier); \u00a7 101.655 (DSPS licensing)"
+    },
+    "WV": {
+      "state": "West Virginia",
+      "risk_level": "LOWER",
+      "file": "WV_template.json",
+      "requires_license_on_contract": true,
+      "license_label": "West Virginia Contractor License Number",
+      "mandatory_clause_count": 5,
+      "statute": "West Virginia Code \u00a7 21-11 (Contractor Licensing Board)"
+    },
+    "WY": {
+      "state": "Wyoming",
+      "risk_level": "LOWER",
+      "file": "WY_template.json",
+      "requires_license_on_contract": false,
+      "license_label": null,
+      "mandatory_clause_count": 4,
+      "statute": "Wyoming Statutes \u00a7 35-9-128 (electrical licensing). Local municipal ordinances govern GC licensing."
+    }
+  },
+  "usage_notes": [
+    "Load the contractor's state from their profile (set during onboarding)",
+    "ALWAYS also load FEDERAL_template.json \u2014 it applies in every state",
+    "Auto-inject contractor license number from profile into {{license_number}} placeholders",
+    "Render cancellation deadline date dynamically: contract_date + cancellation_days_standard (count Saturdays for federal notice)",
+    "For CA: check if buyer is senior citizen (65+) \u2192 use 5-day version. Check if post-disaster declared emergency \u2192 use 7-day version.",
+    "For TX: include BOTH TX_HOME_SOLICITATION and FEDERAL_3DAY \u2014 two separate notices are legally required",
+    "For NC: check if project >= $30,000 \u2014 if so, lien agent designation is required before work begins",
+    "For TN: check if job is in Bradley, Davidson, Hamilton, Haywood, Knox, Marion, Robertson, Rutherford, or Shelby county AND project is $3,000-$25,000 \u2014 if so, Home Improvement License is required",
+    "For VA: mechanics lien must include license number AND expiration date \u2014 missing either invalidates the lien",
+    "For WA: GCs that hire subs must register as 'general contractor' (specialty contractors cannot legally subcontract)",
+    "For RI: GL insurance must list the CRLB as certificate holder (new 2024 requirement)",
+    "The GENERAL_DISCLAIMER ('not legal advice') must appear on every generated contract",
+    "States with NO statewide GC license (local only): CO, DE, IN, KS, KY, ME, MO, NH, SD, VT, WY",
+    "States requiring license for lien rights: AZ, GA, ID, MI, MN, MS, NM, NV, OR, RI, SC, TN (residential), WA"
+  ],
+  "high_risk_states": [
+    "CA",
+    "MD",
+    "PA"
+  ],
+  "medium_risk_states": [
+    "CT",
+    "DC",
+    "FL",
+    "HI",
+    "IL",
+    "LA",
+    "MA",
+    "MI",
+    "MN",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OR",
+    "TN",
+    "TX",
+    "VA",
+    "WA"
+  ],
+  "lower_risk_states": [
+    "AK",
+    "AL",
+    "AR",
+    "AZ",
+    "CO",
+    "DE",
+    "GA",
+    "ID",
+    "IN",
+    "IA",
+    "KS",
+    "KY",
+    "ME",
+    "MS",
+    "MO",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "OH",
+    "OK",
+    "RI",
+    "SC",
+    "SD",
+    "UT",
+    "VT",
+    "WI",
+    "WV",
+    "WY"
+  ]
+}

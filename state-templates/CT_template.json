@@ -1,26 +1,41 @@
 {
-  "state": "Indiana",
-  "code": "IN",
-  "risk_level": "LOWER",
-  "statute": "Local municipal ordinances govern most licensing. Ind. Code \u00a7 25-28.5 (plumbing licensing)",
-  "requires_license_on_contract": false,
-  "license_label": null,
-  "license_notes": "Indiana only requires state license for plumbing contractors. All other licensing is at the local municipal level. Check Indianapolis, Fort Wayne, or other municipality for local requirements.",
-  "written_contract_required_above": null,
+  "state": "Connecticut",
+  "code": "CT",
+  "risk_level": "MEDIUM",
+  "statute": "Connecticut General Statutes \u00a7 20-418 et seq. (Home Improvement Act); \u00a7 20-417a et seq. (New Home Construction)",
+  "requires_license_on_contract": true,
+  "license_label": "CT Home Improvement Contractor Registration Number",
+  "license_notes": "Home improvement contractors must register with CT Department of Consumer Protection. GC must be registered as a major or minor (home improvement) contractor.",
+  "written_contract_required_above": 200,
+  "cancellation_days_standard": 3,
   "mandatory_clauses": [
     {
-      "id": "IN_CONTRACTOR_INFO",
-      "label": "Contractor information",
+      "id": "CT_REGISTRATION",
+      "label": "CT HIC registration disclosure",
       "required": true,
       "placement": "header",
-      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nLocal License/Registration (if applicable): {{license_number}}"
+      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nCT Home Improvement Contractor Registration Number: {{license_number}}\n\nContractors are required to be registered with the CT Department of Consumer Protection. Verify at elicense.ct.gov."
     },
     {
-      "id": "IN_LOCAL_NOTE",
-      "label": "Local licensing representation",
+      "id": "CT_CONTRACT_ELEMENTS",
+      "label": "Required contract elements",
       "required": true,
-      "placement": "body",
-      "text": "Contractor represents that they hold all licenses required by the municipality where work is performed."
+      "placement": "header",
+      "text": "This contract includes: contractor registration number, project description, timeline (start date, completion date, cancellation date), cost, payment method and schedule, and description of materials."
+    },
+    {
+      "id": "CT_CANCELLATION",
+      "label": "3-day right to cancel",
+      "required": true,
+      "placement": "near_signature",
+      "text": "RIGHT TO CANCEL: You have the right to cancel this contract within three business days of signing. To cancel, provide written notice to:\n{{contractor_name}}, {{contractor_address}}"
+    },
+    {
+      "id": "CT_GUARANTY_FUND",
+      "label": "Home Improvement Guaranty Fund notice",
+      "required": true,
+      "placement": "standalone_section",
+      "text": "HOME IMPROVEMENT GUARANTY FUND: Connecticut maintains a Home Improvement Guaranty Fund to compensate homeowners for losses due to contractor violations. Contact CT Department of Consumer Protection for information."
     },
     {
       "id": "LIEN_NOTICE",
@@ -57,8 +72,10 @@
     "contract_price",
     "payment_schedule",
     "start_date",
-    "estimated_completion_date"
+    "estimated_completion_date",
+    "license_number",
+    "materials_description"
   ],
-  "penalties_for_non_compliance": "Penalties at the discretion of local municipalities. Unlicensed contractors may still file mechanics liens in Indiana.",
-  "notes": "Indiana is almost entirely locally governed for contractor licensing. Only plumbing requires a state license. Indianapolis uses the Department of Business and Neighborhood Services. Fort Wayne uses the Allen County Building Department. Federal 3-day notice satisfies state cancellation (IN waives state notice for contracts at seller's office)."
+  "penalties_for_non_compliance": "1st violation $1,000, 2nd $1,500, 3rd $3,000 (DCP enforcement). Missing registration = contractor cannot enforce contract.",
+  "notes": "Connecticut requires all home improvement contractors to register with DCP. Written contract required for jobs over $200. Contract must include HIC registration number, project description, timeline, cost, and payment method. 3-day right to cancel. Specialty trades (electrical, plumbing) require state licenses."
 }

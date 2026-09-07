@@ -1,19 +1,19 @@
 {
-  "state": "South Dakota",
-  "code": "SD",
+  "state": "Arkansas",
+  "code": "AR",
   "risk_level": "LOWER",
-  "statute": "SDCL \u00a7 10-46A (Contractors Excise Tax License); local municipal ordinances govern licensing",
-  "requires_license_on_contract": false,
-  "license_label": "South Dakota Contractor's Excise Tax License Number",
-  "license_notes": "SD licensing is mostly local. ALL contractors must obtain a Contractor's Excise Tax License from SD Department of Revenue. Electrical and plumbing require state licenses through Dept. of Labor and Regulation. Missing excise tax license = Class 1 misdemeanor.",
+  "statute": "Arkansas Code Title 17, Chapter 25 (Contractors Licensing Board)",
+  "requires_license_on_contract": true,
+  "license_label": "Arkansas Contractor License Number",
+  "license_notes": "Commercial license required for projects over $2,000. Residential Builders License required for new single-family home construction. Residential Remodelers License for additions/structural changes.",
   "written_contract_required_above": null,
   "mandatory_clauses": [
     {
-      "id": "SD_TAX_LICENSE",
-      "label": "SD excise tax license disclosure",
+      "id": "AR_LICENSE",
+      "label": "Contractor license disclosure",
       "required": true,
       "placement": "header",
-      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nSD Contractor's Excise Tax License Number: {{license_number}}\nLocal License (if applicable): {{local_license}}"
+      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nArkansas License Number: {{license_number}}\nLicense Type: {{license_type}}"
     },
     {
       "id": "LIEN_NOTICE",
@@ -53,6 +53,6 @@
     "estimated_completion_date",
     "license_number"
   ],
-  "penalties_for_non_compliance": "Missing excise tax license = Class 1 misdemeanor ($1,000 fine/1 year jail). Continuing after notification = felony ($4,000 fine/2 years prison). Local penalties vary.",
-  "notes": "South Dakota requires ALL contractors to have a Contractor's Excise Tax License from the Department of Revenue. This is separate from (and in addition to) any local licensing. Electrical and plumbing require state licenses. Local licensing varies by city (Sioux Falls, Rapid City have their own requirements). Continuing to operate after notification of violation = felony."
+  "penalties_for_non_compliance": "Class A misdemeanor (as of July 2020). Fines $100-$200 per day unlicensed.",
+  "notes": "Arkansas requires state license for commercial work over $2,000. Residential Builders License for new construction. Residential Remodelers License for structural changes. Subcontractors working under licensed GC do not need their own license but must register."
 }

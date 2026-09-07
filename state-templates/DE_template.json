@@ -1,27 +1,26 @@
 {
-  "state": "Tennessee",
-  "code": "TN",
-  "risk_level": "MEDIUM",
-  "statute": "Tennessee Code \u00a7 62-6-101 et seq. (Board for Licensing Contractors); \u00a7 62-6-503 (Home Improvement Law)",
-  "requires_license_on_contract": true,
-  "license_label": "Tennessee Contractor License Number",
-  "license_notes": "GC license required for projects $25,000+. Home improvement license required in 9 specific counties (Bradley, Davidson, Hamilton, Haywood, Knox, Marion, Robertson, Rutherford, Shelby) for remodeling $3,000-$25,000. Six license classifications based on project type and size.",
-  "written_contract_required_above": 3000,
+  "state": "Delaware",
+  "code": "DE",
+  "risk_level": "LOWER",
+  "statute": "No statewide GC license. Specialty trades licensed under Delaware Code Title 24",
+  "requires_license_on_contract": false,
+  "license_label": null,
+  "license_notes": "Delaware has no statewide GC license requirement. All businesses must register with the Division of Revenue. Electrical, plumbing, and HVAC require state licenses through DPR. Check municipality for local requirements.",
+  "written_contract_required_above": 500,
   "mandatory_clauses": [
     {
-      "id": "TN_LICENSE",
-      "label": "Tennessee contractor license disclosure",
+      "id": "DE_CONTRACTOR_INFO",
+      "label": "Contractor information",
       "required": true,
       "placement": "header",
-      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nTennessee License Number: {{license_number}}\nLicense Classification: {{license_type}}\n\nLicensed by the Tennessee Board for Licensing Contractors."
+      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nDE Business Registration: {{license_number}}\nTrade License (if applicable): {{trade_license}}"
     },
     {
-      "id": "TN_HOME_IMPROVEMENT",
-      "label": "Home improvement notice (9-county area)",
+      "id": "DE_LOCAL_NOTE",
+      "label": "Local licensing representation",
       "required": true,
-      "applies_to": "projects_in_bradley_davidson_hamilton_haywood_knox_marion_robertson_rutherford_shelby",
-      "placement": "header",
-      "text": "NOTICE: This contract is for home improvement work in a county that requires a Home Improvement License for projects between $3,000 and $25,000. Contractor's Home Improvement License Number: {{home_improvement_license}}"
+      "placement": "body",
+      "text": "Contractor represents that they hold all required licenses and permits for the jurisdiction where work is performed, and that the business is registered with the Delaware Division of Revenue."
     },
     {
       "id": "LIEN_NOTICE",
@@ -58,9 +57,8 @@
     "contract_price",
     "payment_schedule",
     "start_date",
-    "estimated_completion_date",
-    "license_number"
+    "estimated_completion_date"
   ],
-  "penalties_for_non_compliance": "Class A misdemeanor (up to 1 year jail, $2,500 fine). Board can fine up to $5,000 per offense and revoke license. Persons hiring unlicensed contractors for >$25,000 also commit Class A misdemeanor. Unlicensed residential contractors lose lien rights.",
-  "notes": "Tennessee has 6 contractor license classifications based on project type and value. License required for projects $25,000+. Special home improvement license required for remodeling $3,000-$25,000 in 9 specific counties (Bradley, Davidson, Hamilton, Haywood, Knox, Marion, Robertson, Rutherford, Shelby). Both the contractor AND the person who hires an unlicensed contractor face criminal charges. Tennessee has extensive reciprocity with many states. Residential unlicensed contractors lose lien rights."
+  "penalties_for_non_compliance": "Penalties vary by municipality. No specific lien license requirement under DE law.",
+  "notes": "Delaware has no statewide GC license. Contractors must register business with Division of Revenue. Electrical, plumbing, HVAC require DPR licenses. Penalties are locally determined. Lien rights do not require a license."
 }

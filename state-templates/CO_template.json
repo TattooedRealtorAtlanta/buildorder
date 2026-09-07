@@ -1,41 +1,26 @@
 {
-  "state": "Connecticut",
-  "code": "CT",
-  "risk_level": "MEDIUM",
-  "statute": "Connecticut General Statutes \u00a7 20-418 et seq. (Home Improvement Act); \u00a7 20-417a et seq. (New Home Construction)",
-  "requires_license_on_contract": true,
-  "license_label": "CT Home Improvement Contractor Registration Number",
-  "license_notes": "Home improvement contractors must register with CT Department of Consumer Protection. GC must be registered as a major or minor (home improvement) contractor.",
-  "written_contract_required_above": 200,
-  "cancellation_days_standard": 3,
+  "state": "Colorado",
+  "code": "CO",
+  "risk_level": "LOWER",
+  "statute": "No statewide GC license law; local municipalities govern. C.R.S. \u00a7 12-58 (plumbing/electrical licensing)",
+  "requires_license_on_contract": false,
+  "license_label": null,
+  "license_notes": "Colorado has no statewide GC license requirement. Plumbing and electrical contractors must hold state licenses. Denver, Colorado Springs, and other municipalities have their own GC licensing requirements \u2014 check locally.",
+  "written_contract_required_above": null,
   "mandatory_clauses": [
     {
-      "id": "CT_REGISTRATION",
-      "label": "CT HIC registration disclosure",
+      "id": "CO_CONTRACTOR_INFO",
+      "label": "Contractor information",
       "required": true,
       "placement": "header",
-      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nCT Home Improvement Contractor Registration Number: {{license_number}}\n\nContractors are required to be registered with the CT Department of Consumer Protection. Verify at elicense.ct.gov."
+      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nTrade License (if applicable): {{license_number}}"
     },
     {
-      "id": "CT_CONTRACT_ELEMENTS",
-      "label": "Required contract elements",
+      "id": "CO_LOCAL_NOTE",
+      "label": "Local licensing note",
       "required": true,
-      "placement": "header",
-      "text": "This contract includes: contractor registration number, project description, timeline (start date, completion date, cancellation date), cost, payment method and schedule, and description of materials."
-    },
-    {
-      "id": "CT_CANCELLATION",
-      "label": "3-day right to cancel",
-      "required": true,
-      "placement": "near_signature",
-      "text": "RIGHT TO CANCEL: You have the right to cancel this contract within three business days of signing. To cancel, provide written notice to:\n{{contractor_name}}, {{contractor_address}}"
-    },
-    {
-      "id": "CT_GUARANTY_FUND",
-      "label": "Home Improvement Guaranty Fund notice",
-      "required": true,
-      "placement": "standalone_section",
-      "text": "HOME IMPROVEMENT GUARANTY FUND: Connecticut maintains a Home Improvement Guaranty Fund to compensate homeowners for losses due to contractor violations. Contact CT Department of Consumer Protection for information."
+      "placement": "body",
+      "text": "IMPORTANT: Colorado does not require a statewide general contractor license, but local municipalities may have their own requirements. Contractor represents that they hold all required local licenses and permits for the jurisdiction where work is performed."
     },
     {
       "id": "LIEN_NOTICE",
@@ -72,10 +57,8 @@
     "contract_price",
     "payment_schedule",
     "start_date",
-    "estimated_completion_date",
-    "license_number",
-    "materials_description"
+    "estimated_completion_date"
   ],
-  "penalties_for_non_compliance": "1st violation $1,000, 2nd $1,500, 3rd $3,000 (DCP enforcement). Missing registration = contractor cannot enforce contract.",
-  "notes": "Connecticut requires all home improvement contractors to register with DCP. Written contract required for jobs over $200. Contract must include HIC registration number, project description, timeline, cost, and payment method. 3-day right to cancel. Specialty trades (electrical, plumbing) require state licenses."
+  "penalties_for_non_compliance": "Plumbing/electrical unlicensed = Class 2 misdemeanor (first offense), Class 6 felony (subsequent). Municipal penalties vary.",
+  "notes": "No statewide GC license. Denver requires licensing through Community Planning and Development. All businesses must register with the state. Plumbing and electrical require state licenses. AI-generated contracts are explicitly recognized as valid in Colorado."
 }

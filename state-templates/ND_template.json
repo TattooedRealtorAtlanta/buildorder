@@ -1,19 +1,19 @@
 {
-  "state": "Nebraska",
-  "code": "NE",
+  "state": "North Dakota",
+  "code": "ND",
   "risk_level": "LOWER",
-  "statute": "Nebraska Revised Statutes \u00a7 48-2101 et seq. (Contractor Registration); \u00a7 54-301 (Mechanics Lien)",
-  "requires_license_on_contract": false,
-  "license_label": "Nebraska Contractor Registration Number",
-  "license_notes": "Nebraska requires registration for contractors earning over $5,000 annually. Electrical contractors require state license from Nebraska State Electrical Division. Plumbing and HVAC may require local licenses.",
-  "written_contract_required_above": null,
+  "statute": "North Dakota Century Code \u00a7 43-07 (Contractor Licensing)",
+  "requires_license_on_contract": true,
+  "license_label": "North Dakota Contractor License Number",
+  "license_notes": "ND requires license for projects over $4,000. Four classes: Class A (over $500,000), Class B (up to $500,000), Class C (up to $300,000), Class D (up to $100,000). Electrical, plumbing, asbestos require separate state licenses.",
+  "written_contract_required_above": 4000,
   "mandatory_clauses": [
     {
-      "id": "NE_REGISTRATION",
-      "label": "Nebraska contractor registration",
+      "id": "ND_LICENSE",
+      "label": "ND contractor license disclosure",
       "required": true,
       "placement": "header",
-      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nNebraska Contractor Registration Number: {{license_number}}\n\nRegistered with the Nebraska Department of Labor."
+      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nNorth Dakota License Number: {{license_number}}\nLicense Class: {{license_type}}\n\nLicensed by the North Dakota Secretary of State."
     },
     {
       "id": "LIEN_NOTICE",
@@ -50,8 +50,9 @@
     "contract_price",
     "payment_schedule",
     "start_date",
-    "estimated_completion_date"
+    "estimated_completion_date",
+    "license_number"
   ],
-  "penalties_for_non_compliance": "Citation up to $500 for non-registration; 60-day grace to register and waive penalty. Bond requirement: $1,000-$100,000 depending on project size.",
-  "notes": "Nebraska requires registration for contractors with over $5,000 in annual revenue. New contractors have 60 days to register after first citation (waives penalty). Electrical requires state license. Plumbing/HVAC check local (Omaha, Lincoln have specific requirements). $1,000-$100,000 bond depending on license class."
+  "penalties_for_non_compliance": "Class A misdemeanor. Steep fines, potential jail time.",
+  "notes": "North Dakota requires license for projects over $4,000. Four classes based on project size. All businesses must register with Secretary of State. Electrical, plumbing, asbestos require separate state licenses. Federal 3-day notice satisfies state cancellation requirements (ND waives state notice for contracts at seller's office)."
 }

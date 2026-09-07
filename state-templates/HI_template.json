@@ -1,71 +1,33 @@
 {
-  "state": "Maryland",
-  "code": "MD",
-  "risk_level": "HIGH",
-  "statute": "Maryland Code Business Regulation \u00a7 8-301 et seq. (Maryland Home Improvement Commission); MHIC",
+  "state": "Hawaii",
+  "code": "HI",
+  "risk_level": "MEDIUM",
+  "statute": "Hawaii Revised Statutes Chapter 444 (Contractors)",
   "requires_license_on_contract": true,
-  "license_label": "MHIC License Number",
-  "written_contract_required_above": 100,
-  "cancellation_days_standard": 3,
+  "license_label": "Hawaii Contractor License Number",
+  "license_notes": "Hawaii requires contractor license for work over $1,000 or any project requiring a building permit. Unlicensed contracting = misdemeanor. Bond required ($5,000-$15,000 depending on class).",
+  "written_contract_required_above": 1000,
   "mandatory_clauses": [
     {
-      "id": "MD_MHIC_LICENSE",
-      "label": "MHIC license disclosure",
+      "id": "HI_LICENSE",
+      "label": "Contractor license disclosure",
       "required": true,
       "placement": "header",
-      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nMaryland Home Improvement Commission (MHIC) License Number: {{license_number}}\n\nAll home improvement contractors in Maryland must be licensed by the Maryland Home Improvement Commission. If you have questions about this contractor's license, contact MHIC at (410) 230-6309 or visit www.dllr.state.md.us/license/mhic.",
-      "note": "MISSING MHIC LICENSE NUMBER MAKES CONTRACT VOIDABLE BY THE HOMEOWNER."
+      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nHawaii Contractor License Number: {{license_number}}\nLicense Type: {{license_type}}\n\nLicensed by the Hawaii Department of Commerce and Consumer Affairs (DCCA) Professional and Vocational Licensing Board."
     },
     {
-      "id": "MD_SALESPERSON",
-      "label": "Salesperson registration (if applicable)",
+      "id": "HI_INSURANCE",
+      "label": "Insurance disclosure",
       "required": true,
-      "applies_to": "contracts_solicited_by_salesperson",
       "placement": "header",
-      "text": "If a salesperson solicited or negotiated this contract, their name and MHIC Salesperson Registration Number must appear here:\n\nSalesperson Name: {{salesperson_name}}\nMHIC Salesperson Registration Number: {{salesperson_reg_number}}"
+      "text": "General Liability Insurance: $50,000 per occurrence / $100,000 aggregate (min. required)\nProperty Damage: $50,000 (min. required)\nWorkers Compensation: {{wc_status}}"
     },
     {
-      "id": "MD_REQUIRED_ELEMENTS",
-      "label": "MHIC required contract elements",
-      "required": true,
-      "placement": "throughout",
-      "fields_required": [
-        "contractor_name",
-        "contractor_address",
-        "contractor_phone",
-        "mhic_license_number",
-        "homeowner_name",
-        "homeowner_address",
-        "project_address",
-        "project_description",
-        "contract_price",
-        "payment_schedule",
-        "start_date",
-        "estimated_completion_date",
-        "materials_to_be_used",
-        "warranty_terms"
-      ]
-    },
-    {
-      "id": "MD_CANCELLATION",
-      "label": "Right to cancel notice",
-      "required": true,
-      "placement": "near_signature",
-      "text": "RIGHT TO CANCEL\n\nYou may cancel this contract within three business days after the date you sign it. To cancel, send written notice by certified mail or hand delivery to:\n\n{{contractor_name}}\n{{contractor_address}}\n\nIf you cancel within three business days, the contractor must return any deposit you paid within 15 days."
-    },
-    {
-      "id": "MD_LIEN_NOTICE",
+      "id": "LIEN_NOTICE",
       "label": "Mechanics lien notice",
       "required": true,
       "placement": "standalone_section",
-      "text": "NOTICE OF LIEN RIGHTS\n\nUnder Maryland law (Real Property Article \u00a7 9-101 et seq.), contractors, subcontractors, and materialmen who provide labor or materials to your property and are not paid may have the right to file a mechanic's lien against your property. Even if you pay your general contractor in full, you may still be subject to liens from unpaid subcontractors and suppliers. You should obtain lien waivers from all subcontractors and suppliers before making final payment."
-    },
-    {
-      "id": "MD_GUARANTY_FUND",
-      "label": "Maryland Guaranty Fund notice",
-      "required": true,
-      "placement": "standalone_section",
-      "text": "MARYLAND HOME IMPROVEMENT GUARANTY FUND\n\nIf you suffer a loss as the result of a home improvement transaction, you may be entitled to compensation from the Maryland Home Improvement Guaranty Fund. You must file a claim with the Maryland Home Improvement Commission. For information, contact MHIC at (410) 230-6309."
+      "text": "NOTICE OF LIEN RIGHTS\n\nUnder state law, contractors, subcontractors, and material suppliers who provide labor or materials for your property and are not paid may have the right to file a mechanic's lien against your property. Even if you pay your general contractor in full, you may still be subject to liens from unpaid subcontractors and suppliers. Protect yourself by obtaining written lien waivers from all parties before making final payment."
     },
     {
       "id": "FEDERAL_3DAY",
@@ -73,26 +35,31 @@
       "required": true,
       "placement": "near_signature",
       "applies_to": "primary_residence_lien",
-      "text": "FEDERAL NOTICE OF RIGHT TO CANCEL\n\nYou have the right under federal law to cancel this transaction within three business days of signing. To cancel, notify us in writing at:\n{{contractor_name}}, {{contractor_address}}\n\nDate of transaction: {{contract_date}}"
+      "text": "NOTICE OF RIGHT TO CANCEL\n\nYou have the right under federal law to cancel this transaction within three business days of signing. To cancel, notify us in writing at:\n{{contractor_name}}, {{contractor_address}}\n\nDate of transaction: {{contract_date}}\n\nCANCELLATION DEADLINE: {{cancellation_deadline}} (third business day \u2014 Saturday counts as a business day under federal law)"
+    },
+    {
+      "id": "GENERAL_DISCLAIMER",
+      "label": "Not legal advice disclaimer",
+      "required": true,
+      "placement": "footer",
+      "text": "DISCLAIMER: This contract was generated by ContractorDesk as a starting point template. It does not constitute legal advice. Contractors are encouraged to have a licensed attorney review agreements for their specific situation and applicable state requirements."
     }
   ],
   "required_contract_fields": [
     "contractor_name",
     "contractor_address",
     "contractor_phone",
-    "license_number",
     "homeowner_name",
     "homeowner_address",
     "job_address",
     "contract_date",
     "project_description",
-    "materials_description",
-    "warranty_terms",
     "contract_price",
     "payment_schedule",
     "start_date",
-    "estimated_completion_date"
+    "estimated_completion_date",
+    "license_number"
   ],
-  "penalties_for_non_compliance": "Missing MHIC license = contract VOIDABLE by homeowner. MHIC enforcement action. Guaranty Fund may compensate homeowners for contractor violations. Criminal penalties for unlicensed work.",
-  "notes": "Maryland's MHIC licensing is strictly enforced. A missing MHIC license number makes the contract voidable at the homeowner's option \u2014 the homeowner can walk away and the contractor has no recourse. All home improvement work over $100 requires a written contract. If a salesperson sold or solicited the contract, their MHIC salesperson registration number must also appear. Warranty terms must be included in the contract. Cancel notice must be by certified mail or hand delivery."
+  "penalties_for_non_compliance": "Misdemeanor. Fines and potential jail time. License revocation.",
+  "notes": "Hawaii requires GC license for projects over $1,000 or requiring a building permit. Three license types: General Engineering, General Building, Specialty Contractor. Minimum insurance: $50,000/$100,000 BI, $50,000 property damage. Bond required. Federal 3-day notice satisfies state cancellation in HI (HI waives state notice for contracts signed at contractor's place of business)."
 }

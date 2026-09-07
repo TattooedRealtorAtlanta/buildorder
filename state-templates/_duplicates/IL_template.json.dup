@@ -1,0 +1,66 @@
+{
+  "state": "Illinois",
+  "code": "IL",
+  "risk_level": "MEDIUM",
+  "statute": "Illinois Home Repair and Remodeling Act, 815 ILCS 513/1 et seq.",
+  "requires_license_on_contract": false,
+  "license_label": null,
+  "license_notes": "Illinois has no statewide contractor license for general contracting. Specific trades (electrical, plumbing) require state licenses. City of Chicago has local contractor requirements.",
+  "written_contract_required_above": 1000,
+  "cancellation_days_standard": 3,
+  "mandatory_clauses": [
+    {
+      "id": "IL_CONTRACTOR_INFO",
+      "label": "Contractor information disclosure",
+      "required": true,
+      "placement": "header",
+      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nEmail: {{contractor_email}}"
+    },
+    {
+      "id": "IL_CONSUMER_RIGHTS",
+      "label": "Illinois Consumer Rights notice",
+      "required": true,
+      "placement": "standalone_section",
+      "text": "CONSUMER RIGHTS UNDER ILLINOIS HOME REPAIR AND REMODELING ACT\n\nUnder the Illinois Home Repair and Remodeling Act (815 ILCS 513), you have the right to:\n\n1. A written contract before work begins for any job over $1,000\n2. An itemized description of the work to be performed\n3. Have any changes to the work agreed upon in writing before the changes are made\n4. Cancel this contract within three business days of signing if you did not initiate the contact that led to the contract\n\nFor complaints, contact the Illinois Attorney General's Consumer Fraud Hotline at 1-800-386-5438."
+    },
+    {
+      "id": "IL_CANCELLATION",
+      "label": "3-day cancellation notice (home solicitation)",
+      "required": true,
+      "applies_to": "contracts_solicited_at_homeowners_property",
+      "placement": "near_signature",
+      "text": "NOTICE OF RIGHT TO CANCEL\n\nThis is a home solicitation sale. If you did not initiate the contact leading to this sale, you have the right to cancel this sale within three business days from the date of this transaction. To cancel, send written notice to:\n{{contractor_name}}\n{{contractor_address}}"
+    },
+    {
+      "id": "IL_LIEN_NOTICE",
+      "label": "Mechanics lien notice",
+      "required": true,
+      "placement": "standalone_section",
+      "text": "NOTICE OF LIEN RIGHTS\n\nUnder the Illinois Mechanics Lien Act (770 ILCS 60), contractors, subcontractors, and material suppliers who are not paid may be able to file a mechanics lien against your property. If you pay your contractor and the contractor fails to pay subcontractors or suppliers, those parties may still have a right to file a lien against your property. To protect yourself, you should verify that your contractor pays all subcontractors and suppliers and obtain written lien waivers before making final payment."
+    },
+    {
+      "id": "FEDERAL_3DAY",
+      "label": "Federal 3-day right to cancel (TILA)",
+      "required": true,
+      "placement": "near_signature",
+      "applies_to": "primary_residence_lien",
+      "text": "FEDERAL NOTICE OF RIGHT TO CANCEL\n\nYou have the right under federal law to cancel this transaction within three business days. To cancel, notify us in writing at:\n{{contractor_name}}, {{contractor_address}}\n\nDate of transaction: {{contract_date}}"
+    }
+  ],
+  "required_contract_fields": [
+    "contractor_name",
+    "contractor_address",
+    "contractor_phone",
+    "homeowner_name",
+    "homeowner_address",
+    "job_address",
+    "contract_date",
+    "project_description",
+    "contract_price",
+    "payment_schedule",
+    "start_date",
+    "estimated_completion_date"
+  ],
+  "penalties_for_non_compliance": "Violation of the Home Repair and Remodeling Act = consumer fraud. AG enforcement, civil penalties, treble damages in some cases.",
+  "notes": "Illinois requires written contracts for jobs over $1,000 under the Home Repair and Remodeling Act. Federal 3-day notice satisfies state cancellation requirements. Chicago has additional local requirements. Specific trades (electrical work, plumbing) require state licenses. The Illinois Mechanics Lien Act (770 ILCS 60) governs lien rights."
+}

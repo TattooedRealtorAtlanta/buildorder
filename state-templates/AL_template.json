@@ -1,33 +1,26 @@
 {
-  "state": "Washington",
-  "code": "WA",
-  "risk_level": "MEDIUM",
-  "statute": "RCW \u00a7 18.27 (Contractor Registration); RCW \u00a7 60.04 (Mechanics Liens)",
+  "state": "Alabama",
+  "code": "AL",
+  "risk_level": "LOWER",
+  "statute": "Alabama Code Title 34, Chapter 8 (General Contractors); Ala. Code 34-14A (Home Builders Licensure Board)",
   "requires_license_on_contract": true,
-  "license_label": "Washington State UBI Number (Unified Business Identifier) / Contractor Registration Number",
-  "license_notes": "Washington requires ALL contractors to register with the Dept. of Labor and Industries and be bonded and insured. Electrical, plumbing, asbestos, elevators, construction cranes require separate state licenses. Unregistered = gross misdemeanor; no lien rights.",
-  "written_contract_required_above": 500,
+  "license_label": "Alabama Contractor License Number",
+  "license_notes": "Commercial GC license required for projects over $50,000 (Alabama Licensing Board for General Contractors). Residential builders require a separate Home Builders License. Unlicensed contracting = Class A Misdemeanor; no lien rights.",
+  "written_contract_required_above": null,
   "mandatory_clauses": [
     {
-      "id": "WA_REGISTRATION",
-      "label": "Washington contractor registration disclosure",
+      "id": "AL_LICENSE",
+      "label": "Contractor license disclosure",
       "required": true,
       "placement": "header",
-      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nWA UBI Number: {{ubi_number}}\nWA Contractor Registration Number: {{license_number}}\n\nRegistered with the Washington State Department of Labor and Industries."
+      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nAlabama License Number: {{license_number}}\nLicense Type: {{license_type}}"
     },
     {
-      "id": "WA_BOND_INSURANCE",
-      "label": "Bond and insurance disclosure",
-      "required": true,
-      "placement": "header",
-      "text": "Surety Bond: Washington law requires this contractor to be bonded.\nGeneral Liability Insurance: {{gl_provider}} \u2014 Policy {{gl_policy}}\nWorkers Compensation: {{wc_status}}"
-    },
-    {
-      "id": "WA_LIEN_NOTICE",
-      "label": "Washington lien notice",
+      "id": "LIEN_NOTICE",
+      "label": "Mechanics lien notice",
       "required": true,
       "placement": "standalone_section",
-      "text": "NOTICE TO CUSTOMER (RCW 18.27.114)\n\nUnder Washington state law (RCW 60.04), your contractor, subcontractors, and suppliers of materials may have a claim against your property if not paid. This claim is known as a construction lien. This lien claim could result in loss of your property. We encourage you to protect yourself by:\n1. Requiring your contractor to supply you with an 'Informational Notice to Customer' from each subcontractor and supplier;\n2. Not making a final payment until you are satisfied all people who have worked on or provided materials for your home have been paid."
+      "text": "NOTICE OF LIEN RIGHTS\n\nUnder state law, contractors, subcontractors, and material suppliers who provide labor or materials for your property and are not paid may have the right to file a mechanic's lien against your property. Even if you pay your general contractor in full, you may still be subject to liens from unpaid subcontractors and suppliers. Protect yourself by obtaining written lien waivers from all parties before making final payment."
     },
     {
       "id": "FEDERAL_3DAY",
@@ -60,6 +53,6 @@
     "estimated_completion_date",
     "license_number"
   ],
-  "penalties_for_non_compliance": "Gross misdemeanor for unregistered contractors. No lien rights for unregistered contractors. DLI regularly inspects job sites.",
-  "notes": "Washington requires registration (not just a license) from ALL contractors. Must be bonded and insured. GCs that hire subcontractors must register as a general contractor (specialty contractor designation cannot subcontract). Electrical, plumbing, asbestos, elevators, cranes require separate licenses. Seattle has no business license requirement for most contractors. Portland/Vancouver area has additional requirements. Unregistered = no lien rights AND gross misdemeanor."
+  "penalties_for_non_compliance": "Class A Misdemeanor. No lien rights for unlicensed contractors.",
+  "notes": "Alabama GC license required for commercial/public projects over $50,000 or swimming pools over $5,000. Residential builders need separate Home Builders license. Counties and cities may add additional licensing requirements."
 }

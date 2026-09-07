@@ -1,19 +1,19 @@
 {
-  "state": "Mississippi",
-  "code": "MS",
+  "state": "South Dakota",
+  "code": "SD",
   "risk_level": "LOWER",
-  "statute": "Mississippi Code \u00a7 31-3-1 et seq. (Mississippi State Board of Contractors)",
-  "requires_license_on_contract": true,
-  "license_label": "Mississippi State Board of Contractors License Number",
-  "license_notes": "Commercial projects over $50,000 require license. Residential new construction over $50,000 requires license. Residential remodeling/roofing over $10,000 requires license. Electrical/plumbing/HVAC under $10,000 on residential = no state license needed (local may apply).",
+  "statute": "SDCL \u00a7 10-46A (Contractors Excise Tax License); local municipal ordinances govern licensing",
+  "requires_license_on_contract": false,
+  "license_label": "South Dakota Contractor's Excise Tax License Number",
+  "license_notes": "SD licensing is mostly local. ALL contractors must obtain a Contractor's Excise Tax License from SD Department of Revenue. Electrical and plumbing require state licenses through Dept. of Labor and Regulation. Missing excise tax license = Class 1 misdemeanor.",
   "written_contract_required_above": null,
   "mandatory_clauses": [
     {
-      "id": "MS_LICENSE",
-      "label": "Mississippi contractor license disclosure",
+      "id": "SD_TAX_LICENSE",
+      "label": "SD excise tax license disclosure",
       "required": true,
       "placement": "header",
-      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nMississippi License Number: {{license_number}}\nLicense Classification: {{license_type}}\n\nLicensed by the Mississippi State Board of Contractors."
+      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nSD Contractor's Excise Tax License Number: {{license_number}}\nLocal License (if applicable): {{local_license}}"
     },
     {
       "id": "LIEN_NOTICE",
@@ -53,6 +53,6 @@
     "estimated_completion_date",
     "license_number"
   ],
-  "penalties_for_non_compliance": "Unlicensed contracting is illegal. No lien rights at all for unlicensed contractors.",
-  "notes": "Mississippi requires license for commercial projects over $50,000, residential new construction over $50,000, residential remodeling over $10,000, and roofing over $10,000. Electrical/plumbing/HVAC under $10,000 on residential exempt from state license. No lien rights for unlicensed contractors. Reciprocity with GA, TN, LA, NC."
+  "penalties_for_non_compliance": "Missing excise tax license = Class 1 misdemeanor ($1,000 fine/1 year jail). Continuing after notification = felony ($4,000 fine/2 years prison). Local penalties vary.",
+  "notes": "South Dakota requires ALL contractors to have a Contractor's Excise Tax License from the Department of Revenue. This is separate from (and in addition to) any local licensing. Electrical and plumbing require state licenses. Local licensing varies by city (Sioux Falls, Rapid City have their own requirements). Continuing to operate after notification of violation = felony."
 }

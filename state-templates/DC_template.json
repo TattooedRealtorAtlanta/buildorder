@@ -1,26 +1,26 @@
 {
-  "state": "Minnesota",
-  "code": "MN",
-  "risk_level": "LOWER",
-  "statute": "Minnesota Statutes \u00a7 326B (Residential Contractor Licensing); \u00a7 326B.802 (Contractor Registration)",
+  "state": "District of Columbia",
+  "code": "DC",
+  "risk_level": "MEDIUM",
+  "statute": "DC Code \u00a7 47-2881 et seq.; DC Municipal Regulations Title 16",
   "requires_license_on_contract": true,
-  "license_label": "Minnesota Residential Building Contractor License Number",
-  "license_notes": "Residential contractors need Residential Building Contracting license from MN Dept. of Labor and Industry. Exemption for contractors with under $15,000 gross annual receipts (with certificate of exemption). Commercial contractors need to register only.",
+  "license_label": "DC Basic Business License Number (General Contractor or Home Improvement)",
+  "license_notes": "ALL contractors in DC must hold a Basic Business License. Home Improvement Contractors need HI-specific BBL. Unlicensed contractors and those who hire unlicensed subs both face $2,000 minimum fines. No lien rights for unlicensed contractors.",
   "written_contract_required_above": null,
   "mandatory_clauses": [
     {
-      "id": "MN_LICENSE",
-      "label": "Minnesota contractor license disclosure",
+      "id": "DC_LICENSE",
+      "label": "DC BBL license disclosure",
       "required": true,
       "placement": "header",
-      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nMN Residential Building Contractor License Number: {{license_number}}\n\nLicensed by the Minnesota Department of Labor and Industry."
+      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nDC Basic Business License Number: {{license_number}}\nLicense Type: {{license_type}}\n\nAll contractors in the District of Columbia must hold a Basic Business License. Licensed by the DC Department of Licensing and Consumer Protection (DLCP)."
     },
     {
-      "id": "MN_INSURANCE",
-      "label": "Insurance requirements",
+      "id": "DC_TAX_REG",
+      "label": "DC tax registration",
       "required": true,
       "placement": "header",
-      "text": "General Liability Insurance: $100,000 per occurrence minimum required\nWorkers Compensation: {{wc_status}}\nSurety Bond: $5,000-$15,000 (depending on license class)"
+      "text": "DC Office of Tax and Revenue Registration Number: {{tax_reg_number}}"
     },
     {
       "id": "LIEN_NOTICE",
@@ -60,6 +60,6 @@
     "estimated_completion_date",
     "license_number"
   ],
-  "penalties_for_non_compliance": "Misdemeanor for unlicensed work. No lien rights or lawsuit rights for unlicensed residential contractors.",
-  "notes": "Minnesota requires Residential Building Contracting license for residential GC and remodeling work. Commercial contractors register only. Exempt if under $15,000 annual gross receipts. Bond: $5,000 (Class A), $15,000 (Class B). Insurance: $100,000 GL minimum required. Unlicensed residential contractors have no lien rights or lawsuit rights. Federal 3-day notice satisfies state cancellation (MN waives state notice for contracts at seller's office)."
+  "penalties_for_non_compliance": "Class 1 infraction \u2014 minimum $2,000 per offense. Both GC and unlicensed sub penalized. No lien rights for unlicensed contractors.",
+  "notes": "DC requires BBL for ALL contractors. Home Improvement Salesperson BBL for residential work. Businesses must register with Office of Tax and Revenue. Electrical, plumbing, HVAC require additional trade licenses. $10,000 bond required. Both the GC and any unlicensed subcontractor they hire receive fines."
 }

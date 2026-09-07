@@ -113,11 +113,11 @@ module.exports = async (req, res) => {
       <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:18px 20px;margin-bottom:24px;">
         <div style="font-size:12px;font-weight:700;color:#F59E0B;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px;">Your Pro Access</div>
         <div style="font-size:14px;color:#D4A017;line-height:1.8;">
-          ✓ Unlimited documents — all 7 types<br>
+          ✓ Unlimited documents — all 8 types<br>
           ✓ PDF export<br>
           ✓ Email documents directly to clients<br>
           ✓ E-signature with full audit trail<br>
-          ✓ State compliance checks — all 50 states<br>
+          ✓ State compliance checks — all 50 states, plus DC<br>
           ✓ Bilingual (English + Spanish)
         </div>
         <div style="margin-top:12px;font-size:13px;color:#64748B;">

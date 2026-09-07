@@ -1,41 +1,41 @@
 {
-  "state": "Arizona",
-  "code": "AZ",
-  "risk_level": "LOWER",
-  "statute": "Arizona Revised Statutes \u00a7 32-1101 et seq. (Registrar of Contractors); A.R.S. \u00a7 33-981 (Mechanics Lien Law)",
+  "state": "Oregon",
+  "code": "OR",
+  "risk_level": "MEDIUM",
+  "statute": "Oregon Revised Statutes \u00a7 701.005 et seq. (Oregon Construction Contractors Board)",
   "requires_license_on_contract": true,
-  "license_label": "Arizona Registrar of Contractors (ROC) License Number",
-  "license_notes": "All contractors must be licensed with the Arizona Registrar of Contractors (ROC). Both residential and commercial work requires ROC licensing.",
-  "written_contract_required_above": 1000,
+  "license_label": "Oregon Construction Contractors Board (CCB) License Number",
+  "license_notes": "Oregon requires ALL construction contractors to hold a CCB license, including handyman services and home inspectors. No lien rights for unlicensed contractors. 16-hour RMI training required before licensing.",
+  "written_contract_required_above": 500,
   "cancellation_days_standard": 3,
   "mandatory_clauses": [
     {
-      "id": "AZ_ROC_LICENSE",
-      "label": "ROC license disclosure",
+      "id": "OR_CCB_LICENSE",
+      "label": "Oregon CCB license disclosure",
       "required": true,
       "placement": "header",
-      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nArizona ROC License Number: {{license_number}}\nLicense Classification: {{license_type}}\n\nThe Arizona Registrar of Contractors requires all contractors to be licensed. You may verify this contractor's license at www.azroc.gov or by calling (602) 542-1525."
+      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nOregon CCB License Number: {{license_number}}\nLicense Type: {{license_type}}\n\nLicensed by the Oregon Construction Contractors Board. Verify at ccb.oregon.gov."
     },
     {
-      "id": "AZ_WORKMANSHIP",
-      "label": "Workmanship standard",
+      "id": "OR_CANCELLATION",
+      "label": "3-day right to cancel (home solicitation)",
       "required": true,
-      "placement": "general_provisions",
-      "text": "WORKMANSHIP STANDARD\n\nAll work shall be performed in a workmanlike manner and in accordance with applicable building codes and the Arizona Registrar of Contractors standards. Any defective workmanship shall be corrected at no additional cost to the homeowner."
+      "placement": "near_signature",
+      "text": "RIGHT TO CANCEL: If this contract was solicited at your home, you have three business days to cancel without penalty. Send written notice to:\n{{contractor_name}}, {{contractor_address}}"
     },
     {
-      "id": "AZ_LIEN_NOTICE",
-      "label": "Preliminary notice / mechanics lien disclosure",
+      "id": "OR_BOND_NOTE",
+      "label": "Bond and insurance notice",
+      "required": true,
+      "placement": "header",
+      "text": "Bond: Oregon law requires this contractor to maintain a bond through the Oregon Construction Contractors Board.\nGeneral Liability Insurance: {{gl_status}} \u2014 Provider: {{gl_provider}}"
+    },
+    {
+      "id": "LIEN_NOTICE",
+      "label": "Mechanics lien notice",
       "required": true,
       "placement": "standalone_section",
-      "text": "NOTICE OF LIEN RIGHTS (PRELIMINARY TWENTY-DAY NOTICE)\n\nUnder Arizona law (A.R.S. \u00a7 33-992.01), persons who furnish labor, professional services, materials, machinery, fixtures, or tools to your project may have a right to file a mechanics lien against your property if they are not paid, provided they have given you a preliminary 20-day notice. Even if you pay your general contractor, unpaid subcontractors and suppliers who provided a preliminary 20-day notice may still have lien rights.\n\nTo protect yourself:\n1. Request a list of all subcontractors and suppliers from your contractor\n2. Obtain lien waivers from all parties before making final payment\n3. Make checks jointly payable to the contractor and any known lien claimants"
-    },
-    {
-      "id": "AZ_ROC_COMPLAINT",
-      "label": "ROC complaint rights notice",
-      "required": true,
-      "placement": "footer_or_attachment",
-      "text": "CONTRACTOR COMPLAINT NOTICE\n\nIf you have a complaint about the work performed under this contract, you may file a complaint with the Arizona Registrar of Contractors at:\n\nArizona Registrar of Contractors\n1700 W. Washington Street, Suite 105\nPhoenix, AZ 85007\nPhone: (602) 542-1525\nWebsite: www.azroc.gov\n\nComplaints must generally be filed within two years of the project completion date."
+      "text": "NOTICE OF LIEN RIGHTS\n\nUnder state law, contractors, subcontractors, and material suppliers who provide labor or materials for your property and are not paid may have the right to file a mechanic's lien against your property. Even if you pay your general contractor in full, you may still be subject to liens from unpaid subcontractors and suppliers. Protect yourself by obtaining written lien waivers from all parties before making final payment."
     },
     {
       "id": "FEDERAL_3DAY",
@@ -43,15 +43,20 @@
       "required": true,
       "placement": "near_signature",
       "applies_to": "primary_residence_lien",
-      "text": "NOTICE OF RIGHT TO CANCEL\n\nYou have the right under federal law to cancel this transaction within three business days of signing. To cancel, notify us in writing at:\n{{contractor_name}}, {{contractor_address}}\n\nDate of transaction: {{contract_date}}"
+      "text": "NOTICE OF RIGHT TO CANCEL\n\nYou have the right under federal law to cancel this transaction within three business days of signing. To cancel, notify us in writing at:\n{{contractor_name}}, {{contractor_address}}\n\nDate of transaction: {{contract_date}}\n\nCANCELLATION DEADLINE: {{cancellation_deadline}} (third business day \u2014 Saturday counts as a business day under federal law)"
+    },
+    {
+      "id": "GENERAL_DISCLAIMER",
+      "label": "Not legal advice disclaimer",
+      "required": true,
+      "placement": "footer",
+      "text": "DISCLAIMER: This contract was generated by ContractorDesk as a starting point template. It does not constitute legal advice. Contractors are encouraged to have a licensed attorney review agreements for their specific situation and applicable state requirements."
     }
   ],
   "required_contract_fields": [
     "contractor_name",
     "contractor_address",
     "contractor_phone",
-    "license_number",
-    "license_type",
     "homeowner_name",
     "homeowner_address",
     "job_address",
@@ -60,8 +65,9 @@
     "contract_price",
     "payment_schedule",
     "start_date",
-    "estimated_completion_date"
+    "estimated_completion_date",
+    "license_number"
   ],
-  "penalties_for_non_compliance": "Contracting without ROC license = criminal offense. ROC can revoke license. Consumer may file complaint with ROC, which can mandate corrective work.",
-  "notes": "Arizona requires ROC licensing for all contractor work. Written contracts required for jobs over $1,000. The preliminary 20-day lien notice system is critical \u2014 subcontractors and suppliers must provide this notice within 20 days of first furnishing services/materials to preserve lien rights. Federal 3-day notice satisfies state cancellation requirements. Arizona's ROC has active enforcement and a Consumer Recovery Fund for homeowner claims."
+  "penalties_for_non_compliance": "1st offense $1,000 fine; property owner complaint = $5,000. Repeat offenses = $5,000. Just bidding without license = $500 fine. No lien rights for unlicensed contractors.",
+  "notes": "Oregon requires ALL contractors to have a CCB license. Includes residential, commercial, residential+commercial combinations. Endorsements for specialty trades. 16-hour RMI law and business training required. Bond amounts vary by license type. Inspectors regularly visit job sites to verify licensing. No lien rights for unlicensed contractors. Portland area has additional Metro registration and income tax requirements."
 }

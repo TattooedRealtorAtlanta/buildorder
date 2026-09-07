@@ -1,0 +1,63 @@
+{
+  "state": "Texas",
+  "code": "TX",
+  "risk_level": "MEDIUM",
+  "statute": "Texas Property Code \u00a7 41.007, \u00a7 53.255; Texas Business & Commerce Code \u00a7 17.46 (DTPA)",
+  "requires_license_on_contract": false,
+  "license_label": null,
+  "license_notes": "Texas has no statewide contractor license. Some cities (Austin, San Antonio, Houston) require local registration. Check local municipality.",
+  "written_contract_required_above": null,
+  "cancellation_days_standard": 3,
+  "mandatory_clauses": [
+    {
+      "id": "TX_IMPORTANT_NOTICE",
+      "label": "Texas Important Notice (TPC \u00a7 41.007)",
+      "required": true,
+      "placement": "next_to_owner_signature",
+      "min_font_size": 10,
+      "bold": true,
+      "text": "IMPORTANT NOTICE: You and your contractor are responsible for meeting the terms and conditions of this contract. If you sign this contract and you fail to meet the terms and conditions of this contract, you may lose your legal ownership rights in your home. KNOW YOUR RIGHTS AND DUTIES UNDER THE LAW.",
+      "penalty": "Failure to provide this notice is actionable under the Texas Deceptive Trade Practices Act."
+    },
+    {
+      "id": "TX_RESIDENTIAL_DISCLOSURE",
+      "label": "Texas Residential Disclosure Statement (TPC \u00a7 53.255)",
+      "required": true,
+      "applies_to": "residential_construction",
+      "placement": "standalone_section_or_attachment",
+      "text": "RESIDENTIAL CONSTRUCTION \u2014 HOMEOWNER'S RIGHTS\n\nUnder Texas law, you have certain rights on residential construction projects. You have the right to:\n\n1. Know and obtain references for your contractor and request the contractor's license number, if required by local law.\n2. Have a written agreement with the contractor that includes:\n   - A description of the work to be performed\n   - The required or estimated time for completion of the work\n   - The cost of the work or how it will be determined\n   - The procedure and method of payment\n3. Know if the contractor will use subcontractors and to obtain the names and contact information of those subcontractors.\n\nCONTRACTOR INFORMATION:\nContractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\n\nNote: Failure to provide this disclosure may subject the contractor to penalties under the Texas Property Code."
+    },
+    {
+      "id": "TX_HOME_SOLICITATION",
+      "label": "Texas Home Solicitation Notice (Bus. & Com. Code \u00a7 601)",
+      "required": true,
+      "applies_to": "contracts_signed_at_homeowners_property",
+      "placement": "near_signature",
+      "text": "NOTICE OF CANCELLATION\n\n{{contract_date}}\n\nYou may cancel this transaction, without penalty or obligation, within three business days from the above date.\n\nIf you cancel, any property traded in, any payments made by you under the contract or sale, and any negotiable instrument executed by you will be returned within 10 business days following receipt by the seller of your cancellation notice, and any security interest arising out of the transaction will be cancelled.\n\nTo cancel this transaction, mail or deliver a signed and dated copy of this cancellation notice or any other written notice to:\n{{contractor_name}}\n{{contractor_address}}\n\nI hereby cancel this transaction.\n\n_________________________ Date: __________\n(Buyer's signature)",
+      "note": "Texas requires BOTH this state notice AND the federal 3-day home improvement notice. Two separate notices are required."
+    },
+    {
+      "id": "FEDERAL_3DAY",
+      "label": "Federal 3-day right to cancel (TILA)",
+      "required": true,
+      "placement": "near_signature",
+      "applies_to": "primary_residence_lien",
+      "text": "NOTICE OF RIGHT TO CANCEL\n\nYour right to cancel: You are entering into a transaction that will result in a lien on your home. You have a legal right under federal law to cancel this transaction, without cost, within three business days from the date of the transaction ({{contract_date}}).\n\nTo cancel this transaction, notify us in writing at:\n{{contractor_name}}, {{contractor_address}}\n\nYou may use any written statement signed and dated by you and stating your intention to cancel."
+    }
+  ],
+  "required_contract_fields": [
+    "contractor_name",
+    "contractor_address",
+    "contractor_phone",
+    "homeowner_name",
+    "homeowner_address",
+    "job_address",
+    "contract_date",
+    "project_description",
+    "estimated_completion_date",
+    "contract_price",
+    "payment_schedule"
+  ],
+  "penalties_for_non_compliance": "Violation of TPC \u00a7 41.007 Important Notice is actionable under Texas DTPA. Missing home solicitation notice = contract may be cancelled beyond 3-day window.",
+  "notes": "Texas has no statewide contractor license requirement, but requires both the state home solicitation notice AND the federal TILA 3-day notice on residential jobs \u2014 two separate forms. Check local municipality for registration requirements (Austin, Houston, San Antonio all have local rules). The Residential Disclosure Statement under TPC \u00a7 53.255 is required on all residential projects."
+}

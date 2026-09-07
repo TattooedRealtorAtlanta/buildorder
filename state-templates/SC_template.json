@@ -1,55 +1,43 @@
 {
-  "state": "Pennsylvania",
-  "code": "PA",
-  "risk_level": "HIGH",
-  "statute": "Home Improvement Consumer Protection Act (HICPA), 73 P.S. \u00a7 517.1 et seq.",
+  "state": "South Carolina",
+  "code": "SC",
+  "risk_level": "LOWER",
+  "statute": "S.C. Code Ann. \u00a7 40-59-10 et seq. (Residential Builders); S.C. Code Ann. \u00a7 29-5-10 et seq. (Mechanics' Liens)",
   "requires_license_on_contract": true,
-  "license_label": "PA Home Improvement Contractor Registration Number (HIC#)",
-  "written_contract_required_above": 500,
+  "license_label": "South Carolina Residential Builder License / Specialty Contractor Registration Number",
+  "license_threshold": 5000,
+  "license_notes": "A South Carolina residential builder license is required when the cost of the undertaking exceeds $5,000 (S.C. Code Ann. \u00a7 40-59-20). A residential specialty contractor license or registration is required when the undertaking exceeds $500. A specialty contractor may not construct residential additions without supervision by a licensed residential builder or other appropriately licensed person.",
+  "written_contract_required_above": null,
   "cancellation_days_standard": 3,
   "mandatory_clauses": [
     {
-      "id": "PA_REGISTRATION",
-      "label": "PA HIC registration disclosure",
+      "id": "SC_LICENSE",
+      "label": "Contractor license disclosure",
       "required": true,
+      "applies_to": "contracts_over_5000",
       "placement": "header",
-      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nPA Home Improvement Contractor Registration Number: {{license_number}}\n\nContractors are required to be registered with the Pennsylvania Office of the Attorney General under the Home Improvement Consumer Protection Act.",
-      "note": "HIC registration is MANDATORY. Unregistered contractors cannot enforce the contract and may be subject to criminal penalties."
+      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nSouth Carolina License / Registration Number: {{license_number}}\nLicense Type: {{license_type}}",
+      "statute_ref": "S.C. Code Ann. \u00a7 40-59-20"
     },
     {
-      "id": "PA_CANCELLATION",
-      "label": "3-day right to cancel notice",
-      "required": true,
-      "placement": "near_signature",
-      "text": "NOTICE OF RIGHT TO CANCEL\n\nYou, the buyer, may cancel this transaction at any time prior to midnight of the third business day after the date of this transaction. See the attached notice of cancellation form for an explanation of this right.\n\nTo cancel, send written notice to:\n{{contractor_name}}\n{{contractor_address}}"
-    },
-    {
-      "id": "PA_SPECIFICATIONS",
-      "label": "Work description and specifications",
-      "required": true,
-      "placement": "body",
-      "text": "DESCRIPTION OF WORK AND MATERIALS\n\nWork to be performed: {{project_description}}\n\nMaterials to be used: {{materials_description}}\n\nSpecifications: {{specifications}}\n\nNote: These specifications cannot be changed without a written change order signed by both the homeowner and the contractor."
-    },
-    {
-      "id": "PA_SUBCONTRACTORS",
-      "label": "Subcontractor disclosure",
-      "required": true,
-      "placement": "body",
-      "text": "SUBCONTRACTORS\n\nThe following subcontractors are known at the date of signing this agreement and will be used on this project:\n\n{{subcontractor_list}}\n\n(If no subcontractors are known at time of signing, state: 'No subcontractors are known at this time. If subcontractors are used, their names, addresses, and telephone numbers will be provided upon request.')"
-    },
-    {
-      "id": "PA_LIEN_NOTICE",
+      "id": "SC_LIEN_NOTICE",
       "label": "Mechanics lien notice",
       "required": true,
       "placement": "standalone_section",
-      "text": "NOTICE REGARDING MECHANICS' LIENS\n\nUnder Pennsylvania law, persons who perform labor or furnish materials for the improvement of your property may be entitled to file a mechanic's lien claim against your property. A mechanic's lien claim is a claim against your property. If such a claim is established and not paid, the lien claimant may be entitled to a court order directing the sale of your property to pay the claim. To protect yourself, you should obtain written lien waivers from all contractors, subcontractors, and material suppliers before making final payment."
+      "text": "NOTICE REGARDING MECHANICS' LIENS\n\nUnder South Carolina law, any person who furnishes labor or materials for the improvement of your real estate may be entitled to a mechanics' lien against that property if they are not paid. Where labor or material is furnished by someone employed by a contractor rather than by you directly, that person must notify you in writing of the labor or material furnished and its amount or value before the lien attaches. In no event may the aggregate amount of such liens exceed the amount you still owe under the contract price for the improvement. To protect yourself, obtain a lien waiver or release from each contractor, subcontractor, and material supplier before making final payment.",
+      "statute_ref": "S.C. Code Ann. \u00a7\u00a7 29-5-20, 29-5-40"
     },
     {
-      "id": "PA_GUARANTY_FUND",
-      "label": "Home Improvement Guaranty Fund notice",
+      "id": "SC_PROJECT_DETAILS",
+      "label": "Project description and timeline",
       "required": true,
-      "placement": "standalone_section",
-      "text": "HOME IMPROVEMENT GUARANTY FUND NOTICE\n\nPayment may be available from the Pennsylvania Home Improvement Guaranty Fund if you lose money on a project performed under contract, where the loss results from specified violations of the Home Improvement Consumer Protection Act by a registered contractor. For information about the fund and filing a claim, contact the Pennsylvania Office of the Attorney General, Bureau of Consumer Protection, 16th Floor, Strawberry Square, Harrisburg, PA 17120, (717) 787-9707."
+      "placement": "body",
+      "fields": [
+        "project_description",
+        "start_date",
+        "estimated_completion_date",
+        "contract_price"
+      ]
     },
     {
       "id": "FEDERAL_3DAY",
@@ -57,7 +45,7 @@
       "required": true,
       "placement": "near_signature",
       "applies_to": "primary_residence_lien",
-      "text": "FEDERAL NOTICE OF RIGHT TO CANCEL\n\nYou have the right under federal law to cancel this transaction within three business days. To cancel, notify us in writing at:\n{{contractor_name}}, {{contractor_address}}\n\nDate of transaction: {{contract_date}}"
+      "text": "NOTICE OF RIGHT TO CANCEL\n\nYou have the right to cancel this contract within three business days of signing. To cancel, notify us in writing at:\n{{contractor_name}}, {{contractor_address}}\n\nDate: {{contract_date}}"
     }
   ],
   "required_contract_fields": [
@@ -70,19 +58,11 @@
     "job_address",
     "contract_date",
     "project_description",
-    "materials_description",
-    "specifications",
-    "subcontractor_list",
     "contract_price",
     "payment_schedule",
     "start_date",
     "estimated_completion_date"
   ],
-  "prohibited_clauses": [
-    "Any clause requiring homeowner to waive right to cancel",
-    "Any clause that makes the contract take effect before the 3-day cancellation period expires",
-    "Any clause requiring arbitration that waives homeowner's right to jury trial (these void the entire contract in PA)"
-  ],
-  "penalties_for_non_compliance": "HICPA violation = criminal offense (misdemeanor). Contract voidable by homeowner. AG can bring enforcement action. Certain prohibited clauses void the ENTIRE contract.",
-  "notes": "Pennsylvania's HICPA is one of the most contractor-hostile statutes in the US. Registration is mandatory for all residential home improvement work over $500. Certain prohibited clauses (like pre-dispute arbitration waivers of jury trial) can void the ENTIRE contract, not just the clause. The Guaranty Fund provides consumer compensation for losses from HICPA violations. Subcontractor list must be included at time of signing if known."
+  "penalties_for_non_compliance": "A person or firm required to be licensed or registered who has not done so may not file a mechanics' lien or bring an action at law or in equity to enforce the contract (S.C. Code Ann. \u00a7 40-59-30). Engaging in residential building or specialty contracting without the required license or registration is a misdemeanor punishable by a fine of not less than $500 nor more than $10,000, imprisonment of not less than 30 days, or both.",
+  "notes": "South Carolina requires a residential builder license above $5,000 and specialty contractor registration above $500. The unlicensed-contractor bar in \u00a7 40-59-30 is severe: it removes both lien rights and the right to sue on the contract, so license status should be confirmed before work begins. Section 29-5-40 conditions a lien by an indirectly-employed party on written notice to the owner. Federal 3-day TILA notice is used where the contract creates a lien on the buyer's primary residence. DRAFT - generated from statutory research on 2026-09-07; review by South Carolina counsel is recommended before production use."
 }

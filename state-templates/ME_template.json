@@ -1,19 +1,26 @@
 {
-  "state": "Idaho",
-  "code": "ID",
+  "state": "Maine",
+  "code": "ME",
   "risk_level": "LOWER",
-  "statute": "Idaho Code \u00a7 54-5201 et seq. (Contractors Board Registration)",
+  "statute": "Mostly local municipal licensing. Title 32, chapter 73 (electrical); Title 32, chapter 17 (plumbing). Written contract required by custom for projects over $3,000.",
   "requires_license_on_contract": false,
-  "license_label": "Idaho Contractor Registration Number",
-  "license_notes": "Idaho requires contractor registration (not a license) for projects over $2,000. Electrical, HVAC, and plumbing require state licenses through Division of Building Safety. Public works projects over $10,000 require a license.",
-  "written_contract_required_above": 2000,
+  "license_label": null,
+  "license_notes": "Maine licensing is primarily local. Electrical and plumbing contractors require state licenses. Written contract required (by industry practice and local ordinances) for projects over $3,000.",
+  "written_contract_required_above": 3000,
   "mandatory_clauses": [
     {
-      "id": "ID_REGISTRATION",
-      "label": "Contractor registration disclosure",
+      "id": "ME_CONTRACTOR_INFO",
+      "label": "Contractor information",
       "required": true,
       "placement": "header",
-      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nIdaho Contractor Registration Number: {{license_number}}"
+      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nTrade License (electrical/plumbing if applicable): {{license_number}}"
+    },
+    {
+      "id": "ME_WRITTEN_CONTRACT_NOTE",
+      "label": "Written contract requirement",
+      "required": true,
+      "placement": "body",
+      "text": "Under Maine law and industry practice, this written contract is provided for any project valued at $3,000 or more."
     },
     {
       "id": "LIEN_NOTICE",
@@ -50,9 +57,8 @@
     "contract_price",
     "payment_schedule",
     "start_date",
-    "estimated_completion_date",
-    "license_number"
+    "estimated_completion_date"
   ],
-  "penalties_for_non_compliance": "Civil penalties for unregistered contractors. Lien rights only apply to licensed/registered contractors for work done AFTER registration.",
-  "notes": "Idaho requires registration (not full license) for projects over $2,000. Electrical, HVAC, plumbing require state licenses. Important lien rule: if contractor gets registered mid-project, only work done AFTER registration is protected by lien rights. Subcontractors knowingly working under unlicensed GC may lose lien rights."
+  "penalties_for_non_compliance": "Local penalties. Electrical/plumbing unlicensed = state penalties. No license required for Maine lien rights.",
+  "notes": "Maine licensing is primarily local. State licenses required for electricians and plumbers. Written contracts are standard practice for jobs over $3,000. No license required to exercise lien rights. Check local municipality for GC licensing requirements."
 }

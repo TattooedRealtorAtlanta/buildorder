@@ -1,0 +1,63 @@
+{
+  "state": "North Carolina",
+  "code": "NC",
+  "risk_level": "LOWER",
+  "statute": "N.C.G.S. \u00a7 87-1 et seq. (General Contractor Licensing); N.C.G.S. \u00a7 44A (Mechanics Lien Law)",
+  "requires_license_on_contract": true,
+  "license_label": "NC General Contractor License Number",
+  "license_threshold": 40000,
+  "license_notes": "NC General Contractor license required for projects of $40,000 or more. Residential Contractor specialty license covers projects under $40,000 for residential work.",
+  "written_contract_required_above": null,
+  "cancellation_days_standard": 3,
+  "mandatory_clauses": [
+    {
+      "id": "NC_LICENSE",
+      "label": "Contractor license disclosure",
+      "required": true,
+      "applies_to": "licensed_projects",
+      "placement": "header",
+      "text": "Contractor: {{contractor_name}}\nAddress: {{contractor_address}}\nPhone: {{contractor_phone}}\nNC General Contractor License Number: {{license_number}}\nLicense Classification: {{license_type}}"
+    },
+    {
+      "id": "NC_LIEN_AGENT",
+      "label": "Lien agent notice",
+      "required": true,
+      "applies_to": "projects_over_30000",
+      "placement": "standalone_section",
+      "text": "LIEN AGENT NOTICE\n\nFor any improvements costing $30,000 or more to real property, the property owner must designate a lien agent before work begins. The lien agent is:\n\nLien Agent Name: {{lien_agent_name}}\nLien Agent Address: {{lien_agent_address}}\nLien Agent Contact: {{lien_agent_contact}}\n\nSubcontractors and suppliers must notify the lien agent of their involvement in the project to preserve their lien rights. As the property owner, you should obtain written lien waivers from all parties before making final payment.",
+      "statute_ref": "N.C.G.S. \u00a7 44A-11.1"
+    },
+    {
+      "id": "NC_LIEN_NOTICE",
+      "label": "Mechanics lien notice",
+      "required": true,
+      "placement": "standalone_section",
+      "text": "NOTICE OF LIEN RIGHTS\n\nUnder North Carolina law (N.C.G.S. \u00a7 44A), contractors, subcontractors, and material suppliers who provide labor or materials for your property improvement may file a lien against your property if they are not paid. Even if you pay your contractor in full, unpaid subcontractors and suppliers may still have lien rights if they timely notified the lien agent (for projects of $30,000 or more). Protect yourself by verifying all parties are paid and obtaining written lien waivers."
+    },
+    {
+      "id": "FEDERAL_3DAY",
+      "label": "Federal 3-day right to cancel (TILA)",
+      "required": true,
+      "placement": "near_signature",
+      "applies_to": "primary_residence_lien",
+      "text": "NOTICE OF RIGHT TO CANCEL\n\nYou have the right under federal law to cancel this transaction within three business days of signing. To cancel, notify us in writing at:\n{{contractor_name}}, {{contractor_address}}\n\nDate of transaction: {{contract_date}}"
+    }
+  ],
+  "required_contract_fields": [
+    "contractor_name",
+    "contractor_address",
+    "contractor_phone",
+    "license_number",
+    "homeowner_name",
+    "homeowner_address",
+    "job_address",
+    "contract_date",
+    "project_description",
+    "contract_price",
+    "payment_schedule",
+    "start_date",
+    "estimated_completion_date"
+  ],
+  "penalties_for_non_compliance": "Contracting without license over threshold = criminal offense (misdemeanor). Contract may be unenforceable. License board disciplinary action.",
+  "notes": "North Carolina requires a General Contractor license for projects of $40,000 or more. Residential projects under $40,000 may use a Residential Contractor specialty license. CRITICAL: For projects $30,000 or more, the property owner must designate a lien agent before work begins (N.C.G.S. \u00a7 44A-11.1). Failure to designate a lien agent can affect lien rights. Federal 3-day notice satisfies state cancellation requirements. NC has contractor license reciprocity with Georgia, Louisiana, Mississippi, and Tennessee."
+}
