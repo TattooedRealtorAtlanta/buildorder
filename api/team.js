@@ -132,6 +132,28 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'You cannot invite yourself.' });
     }
 
+    // Business plan required, capped at 5 members (see pricing.html)
+    if (getEffectivePlan(profile) !== 'business') {
+      return res.status(402).json({
+        error:   'plan_required',
+        plan:    'business',
+        message: 'Team members are included with the Business plan. Upgrade to invite your crew.'
+      });
+    }
+
+    const { count: memberCount } = await db
+      .from('team_members')
+      .select('id', { count: 'exact', head: true })
+      .eq('owner_user_id', user.id)
+      .in('status', ['active', 'pending']);
+
+    if (memberCount !== null && memberCount >= 5) {
+      return res.status(409).json({
+        error:   'team_limit',
+        message: 'The Business plan includes up to 5 team members. Remove someone before inviting another.'
+      });
+    }
+
     // Check if already invited/active
     const { data: existing } = await db
       .from('team_members')

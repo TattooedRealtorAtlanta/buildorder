@@ -1,6 +1,6 @@
 const Anthropic = require('@anthropic-ai/sdk');
 const { createClient } = require('@supabase/supabase-js');
-const { getEffectivePlan } = require('./_effectivePlan');
+const { getEffectivePlan, isBusinessPlan } = require('./_effectivePlan');
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -19,6 +19,15 @@ module.exports = async (req, res) => {
   const { data: profile, error: profErr } = await supabase
     .from('contractor_profiles').select('*').eq('id', takeoff.user_id).single();
   if (profErr || !profile) return res.status(404).json({ error: 'Profile not found' });
+
+  // Material Takeoff is a Business-tier feature (see pricing.html)
+  if (!isBusinessPlan(profile)) {
+    return res.status(402).json({
+      error:   'plan_required',
+      plan:    'business',
+      message: 'Material Takeoff is included with the Business plan. Upgrade to unlock it.'
+    });
+  }
 
   // Usage limit check (free plan: 5 docs/month)
   if (getEffectivePlan(profile) === 'free') {

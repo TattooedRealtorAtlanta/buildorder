@@ -1,5 +1,6 @@
 const Anthropic = require('@anthropic-ai/sdk');
 const { createClient } = require('@supabase/supabase-js');
+const { isBusinessPlan } = require('./_effectivePlan');
 
 const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
@@ -15,6 +16,21 @@ module.exports = async function handler(req, res) {
   if (!jwt) return res.status(401).json({ error: 'Unauthorized' });
   const { data: { user }, error: authErr } = await db.auth.getUser(jwt);
   if (authErr || !user) return res.status(401).json({ error: 'Unauthorized' });
+
+  // Job Photo Log is a Business-tier feature (see pricing.html)
+  const { data: photoProfile } = await db
+    .from('contractor_profiles')
+    .select('plan, founding_member, pro_expires_at')
+    .eq('id', user.id)
+    .single();
+
+  if (!photoProfile || !isBusinessPlan(photoProfile)) {
+    return res.status(402).json({
+      error:   'plan_required',
+      plan:    'business',
+      message: 'The Job Photo Log is included with the Business plan. Upgrade to unlock it.'
+    });
+  }
 
   const { image_base64, media_type } = req.body || {};
   if (!image_base64) return res.status(400).json({ error: 'Missing image_base64' });
