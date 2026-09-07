@@ -23,7 +23,7 @@ module.exports = async function handler(req, res) {
 
   try {
     await resend.emails.send({
-      from:    'BuildOrder.ai <noreply@buildorder.ai>',
+      from:    'BuildOrder <support@buildorder.ai>',
       to:      toEmail,
       subject: 'Welcome to BuildOrder — your contractor documents are ready',
       html: `<!DOCTYPE html>
@@ -133,7 +133,7 @@ module.exports = async function handler(req, res) {
     try {
       if (process.env.ADMIN_EMAIL) {
         await resend.emails.send({
-          from:    'BuildOrder.ai <noreply@buildorder.ai>',
+          from:    'BuildOrder <support@buildorder.ai>',
           to:      process.env.ADMIN_EMAIL,
           subject: `New BuildOrder signup — ${toEmail}`,
           html:    `<p>New account created: <strong>${toEmail}</strong></p>`

@@ -40,9 +40,14 @@ module.exports = async (req, res) => {
     return expiresAt >= now && expiresAt <= now + threeDaysMs;
   });
 
-  if (expiring.length === 0) {
-    return res.status(200).json({ sent: 0, message: 'No estimates expiring in the next 3 days' });
-  }
+  var sent = 0;
+  var errs = [];
+
+  // ── Estimate expiry reminders ────────────────────────────────────────────
+  // Guarded, NOT an early return. Everything below this section (payment
+  // reminders, signature reminders, and the founding member sequence) has to
+  // run every day whether or not an estimate happens to be expiring today.
+  if (expiring.length > 0) {
 
   // Load profiles for all affected contractors
   var userIds = [...new Set(expiring.map(function(e) { return e.user_id; }))];
@@ -53,9 +58,6 @@ module.exports = async (req, res) => {
 
   var profileMap = {};
   (profiles || []).forEach(function(p) { profileMap[p.id] = p; });
-
-  var sent = 0;
-  var errs = [];
 
   for (var est of expiring) {
     var profile = profileMap[est.user_id];
@@ -154,6 +156,8 @@ module.exports = async (req, res) => {
       errs.push({ estimate_id: est.id, error: err.message });
     }
   }
+
+  } // end estimate expiry reminders
 
   // ── Payment reminders ────────────────────────────────────────────────────
   var sevenDaysMs   = 7  * 24 * 60 * 60 * 1000;
@@ -503,6 +507,736 @@ module.exports = async (req, res) => {
         console.error('Recurring invoice failed for', inv.id, recurErr.message);
         errs.push({ source_id: inv.id, error: recurErr.message });
       }
+    }
+  }
+
+  // ── Founding member Day 3 nudge (first document) ────────────────────────────
+  // Window: pro_expires_at is 56–58 days from now (user is ~3 days in).
+  var fm3After  = new Date(now + 56 * 24 * 60 * 60 * 1000).toISOString();
+  var fm3Before = new Date(now + 58 * 24 * 60 * 60 * 1000).toISOString();
+
+  var { data: warn3List } = await supabase
+    .from('contractor_profiles')
+    .select('id, email, contractor_name, business_name, pro_expires_at')
+    .eq('founding_member', true)
+    .eq('founding_warn3_sent', false)
+    .gte('pro_expires_at', fm3After)
+    .lte('pro_expires_at', fm3Before);
+
+  for (var w3 of (warn3List || [])) {
+    if (!w3.email) continue;
+    var w3Name = w3.contractor_name || w3.business_name || w3.email.split('@')[0];
+    try {
+      await resend.emails.send({
+        from:    'BuildOrder <support@buildorder.ai>',
+        to:      w3.email,
+        subject: 'Have you generated your first document yet?',
+        html: `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="font-family:Inter,Arial,sans-serif;background:#0F172A;margin:0;padding:40px 16px;">
+  <div style="max-width:560px;margin:0 auto;">
+    <div style="background:#090E1A;border-radius:14px 14px 0 0;padding:28px 32px;border:1px solid rgba(245,158,11,0.2);border-bottom:none;">
+      <div style="font-size:24px;font-weight:900;letter-spacing:-0.03em;color:#F8FAFC;">
+        <span style="color:#F59E0B;">Build</span>Order<span style="font-size:13px;font-weight:400;color:#94A3B8;">.ai</span>
+      </div>
+    </div>
+    <div style="background:#111827;border-radius:0 0 14px 14px;padding:32px;border:1px solid rgba(245,158,11,0.2);border-top:none;">
+      <h1 style="font-size:22px;font-weight:900;color:#F8FAFC;margin:0 0 10px;letter-spacing:-0.02em;">
+        ${w3Name}, have you tried it yet?
+      </h1>
+      <p style="font-size:15px;color:#94A3B8;line-height:1.7;margin:0 0 24px;">
+        You signed up three days ago and your Pro access is fully active. If you haven't generated your first document yet, it takes about 60 seconds. Here's where most contractors start:
+      </p>
+
+      <div style="background:#1A2438;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:18px 20px;margin-bottom:24px;">
+        <div style="font-size:13px;color:#F8FAFC;font-weight:700;margin-bottom:6px;">Start with an Estimate</div>
+        <div style="font-size:13px;color:#64748B;line-height:1.6;">Enter the job address, scope of work, and your line items. BuildOrder generates a professional, itemized estimate in seconds — ready to send for e-signature.</div>
+      </div>
+
+      <a href="https://buildorder.ai/new-estimate.html"
+         style="display:block;text-align:center;background:#F59E0B;color:#090E1A;padding:16px 24px;border-radius:10px;font-size:16px;font-weight:900;text-decoration:none;margin-bottom:16px;letter-spacing:-0.01em;">
+        Generate Your First Estimate &rarr;
+      </a>
+      <a href="https://buildorder.ai/dashboard.html"
+         style="display:block;text-align:center;background:transparent;color:#94A3B8;padding:10px 24px;border-radius:10px;font-size:14px;font-weight:600;text-decoration:none;margin-bottom:24px;border:1px solid rgba(255,255,255,0.07);">
+        Go to Dashboard
+      </a>
+
+      <div style="padding-top:20px;border-top:1px solid rgba(255,255,255,0.06);font-size:12px;color:#334155;line-height:1.7;">
+        Questions? Reply to this email — we read every one.
+        <br>BuildOrder.ai &mdash; Contractor documents in seconds.
+      </div>
+    </div>
+  </div>
+</body></html>`
+      });
+      await supabase.from('contractor_profiles')
+        .update({ founding_warn3_sent: true })
+        .eq('id', w3.id);
+      sent++;
+    } catch (e) {
+      console.error('founding warn3 email failed for', w3.id, e.message);
+      errs.push({ type: 'founding_warn3', user_id: w3.id, error: e.message });
+    }
+  }
+
+  // ── Founding member Day 7 tips (3 use cases) ─────────────────────────────────
+  // Window: pro_expires_at is 52–54 days from now (user is ~7 days in).
+  var fm7After  = new Date(now + 52 * 24 * 60 * 60 * 1000).toISOString();
+  var fm7Before = new Date(now + 54 * 24 * 60 * 60 * 1000).toISOString();
+
+  var { data: warn7List } = await supabase
+    .from('contractor_profiles')
+    .select('id, email, contractor_name, business_name, pro_expires_at')
+    .eq('founding_member', true)
+    .eq('founding_warn7_sent', false)
+    .gte('pro_expires_at', fm7After)
+    .lte('pro_expires_at', fm7Before);
+
+  for (var w7 of (warn7List || [])) {
+    if (!w7.email) continue;
+    var w7Name = w7.contractor_name || w7.business_name || w7.email.split('@')[0];
+    try {
+      await resend.emails.send({
+        from:    'BuildOrder <support@buildorder.ai>',
+        to:      w7.email,
+        subject: '3 documents that protect you on every job',
+        html: `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="font-family:Inter,Arial,sans-serif;background:#0F172A;margin:0;padding:40px 16px;">
+  <div style="max-width:560px;margin:0 auto;">
+    <div style="background:#090E1A;border-radius:14px 14px 0 0;padding:28px 32px;border:1px solid rgba(245,158,11,0.2);border-bottom:none;">
+      <div style="font-size:24px;font-weight:900;letter-spacing:-0.03em;color:#F8FAFC;">
+        <span style="color:#F59E0B;">Build</span>Order<span style="font-size:13px;font-weight:400;color:#94A3B8;">.ai</span>
+      </div>
+    </div>
+    <div style="background:#111827;border-radius:0 0 14px 14px;padding:32px;border:1px solid rgba(245,158,11,0.2);border-top:none;">
+      <h1 style="font-size:22px;font-weight:900;color:#F8FAFC;margin:0 0 10px;letter-spacing:-0.02em;">
+        Most contractors only use one of these.
+      </h1>
+      <p style="font-size:15px;color:#94A3B8;line-height:1.7;margin:0 0 24px;">
+        Your Pro access includes all 7 document types. Here are three that don't get used enough — and all three can save you real money.
+      </p>
+
+      <div style="background:#1A2438;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:18px 20px;margin-bottom:14px;">
+        <div style="font-size:13px;font-weight:800;color:#F59E0B;margin-bottom:5px;">Proposal &amp; Contract — combined</div>
+        <div style="font-size:13px;color:#64748B;line-height:1.6;">One document. Scope, pricing, payment schedule, and legally binding signature all in a single send. Clients sign it, you're protected before you touch a tool.</div>
+      </div>
+
+      <div style="background:#1A2438;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:18px 20px;margin-bottom:14px;">
+        <div style="font-size:13px;font-weight:800;color:#F59E0B;margin-bottom:5px;">Change Order</div>
+        <div style="font-size:13px;color:#64748B;line-height:1.6;">Scope creep kills margins. Any time the job changes — added work, deleted work, price adjustment — generate a change order and get it signed. No more "I thought that was included."</div>
+      </div>
+
+      <div style="background:#1A2438;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:18px 20px;margin-bottom:24px;">
+        <div style="font-size:13px;font-weight:800;color:#F59E0B;margin-bottom:5px;">Lien Waiver</div>
+        <div style="font-size:13px;color:#64748B;line-height:1.6;">Required at final payment on most jobs. BuildOrder generates all four types — conditional, unconditional, partial, final — with state-specific language. Takes 30 seconds.</div>
+      </div>
+
+      <a href="https://buildorder.ai/dashboard.html"
+         style="display:block;text-align:center;background:#F59E0B;color:#090E1A;padding:16px 24px;border-radius:10px;font-size:16px;font-weight:900;text-decoration:none;margin-bottom:24px;letter-spacing:-0.01em;">
+        Try One Now &rarr;
+      </a>
+
+      <div style="padding-top:20px;border-top:1px solid rgba(255,255,255,0.06);font-size:12px;color:#334155;line-height:1.7;">
+        Questions? Reply to this email or reach us at
+        <a href="mailto:support@buildorder.ai" style="color:#F59E0B;text-decoration:none;">support@buildorder.ai</a>.
+        <br>BuildOrder.ai &mdash; Contractor documents in seconds.
+      </div>
+    </div>
+  </div>
+</body></html>`
+      });
+      await supabase.from('contractor_profiles')
+        .update({ founding_warn7_sent: true })
+        .eq('id', w7.id);
+      sent++;
+    } catch (e) {
+      console.error('founding warn7 email failed for', w7.id, e.message);
+      errs.push({ type: 'founding_warn7', user_id: w7.id, error: e.message });
+    }
+  }
+
+  // ── Founding member Day 14 check-in ──────────────────────────────────────────
+  // Window: pro_expires_at is 44–46 days from now (user is ~14 days in).
+  var fm14After  = new Date(now + 44 * 24 * 60 * 60 * 1000).toISOString();
+  var fm14Before = new Date(now + 46 * 24 * 60 * 60 * 1000).toISOString();
+
+  var { data: warn14List } = await supabase
+    .from('contractor_profiles')
+    .select('id, email, contractor_name, business_name, pro_expires_at')
+    .eq('founding_member', true)
+    .eq('founding_warn14_sent', false)
+    .gte('pro_expires_at', fm14After)
+    .lte('pro_expires_at', fm14Before);
+
+  for (var w14 of (warn14List || [])) {
+    if (!w14.email) continue;
+    var w14Name = w14.contractor_name || w14.business_name || w14.email.split('@')[0];
+    try {
+      await resend.emails.send({
+        from:    'BuildOrder <support@buildorder.ai>',
+        to:      w14.email,
+        subject: 'Checking in — everything good?',
+        html: `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="font-family:Inter,Arial,sans-serif;background:#0F172A;margin:0;padding:40px 16px;">
+  <div style="max-width:560px;margin:0 auto;">
+    <div style="background:#090E1A;border-radius:14px 14px 0 0;padding:28px 32px;border:1px solid rgba(245,158,11,0.2);border-bottom:none;">
+      <div style="font-size:24px;font-weight:900;letter-spacing:-0.03em;color:#F8FAFC;">
+        <span style="color:#F59E0B;">Build</span>Order<span style="font-size:13px;font-weight:400;color:#94A3B8;">.ai</span>
+      </div>
+    </div>
+    <div style="background:#111827;border-radius:0 0 14px 14px;padding:32px;border:1px solid rgba(245,158,11,0.2);border-top:none;">
+      <h1 style="font-size:22px;font-weight:900;color:#F8FAFC;margin:0 0 10px;letter-spacing:-0.02em;">
+        ${w14Name} — just checking in.
+      </h1>
+      <p style="font-size:15px;color:#94A3B8;line-height:1.7;margin:0 0 24px;">
+        Two weeks in. You still have 46 days of Pro access left. If you've been busy on jobs and haven't had time to dig in, that's fine — the tool will be here when you need it.
+      </p>
+      <p style="font-size:15px;color:#94A3B8;line-height:1.7;margin:0 0 28px;">
+        If something felt confusing or didn't work the way you expected, reply to this email and tell us. We build this for working contractors and we take that seriously.
+      </p>
+
+      <a href="https://buildorder.ai/dashboard.html"
+         style="display:block;text-align:center;background:#F59E0B;color:#090E1A;padding:16px 24px;border-radius:10px;font-size:16px;font-weight:900;text-decoration:none;margin-bottom:24px;letter-spacing:-0.01em;">
+        Open BuildOrder &rarr;
+      </a>
+
+      <div style="padding-top:20px;border-top:1px solid rgba(255,255,255,0.06);font-size:12px;color:#334155;line-height:1.7;">
+        Reply any time — we read every email.
+        <br>BuildOrder.ai &mdash; Contractor documents in seconds.
+      </div>
+    </div>
+  </div>
+</body></html>`
+      });
+      await supabase.from('contractor_profiles')
+        .update({ founding_warn14_sent: true })
+        .eq('id', w14.id);
+      sent++;
+    } catch (e) {
+      console.error('founding warn14 email failed for', w14.id, e.message);
+      errs.push({ type: 'founding_warn14', user_id: w14.id, error: e.message });
+    }
+  }
+
+  // ── Founding member Day 30 halfway point ─────────────────────────────────────
+  // Window: pro_expires_at is 28–32 days from now (user is ~30 days in).
+  var fm30After  = new Date(now + 28 * 24 * 60 * 60 * 1000).toISOString();
+  var fm30Before = new Date(now + 32 * 24 * 60 * 60 * 1000).toISOString();
+
+  var { data: warn30List } = await supabase
+    .from('contractor_profiles')
+    .select('id, email, contractor_name, business_name, pro_expires_at')
+    .eq('founding_member', true)
+    .eq('founding_warn30_sent', false)
+    .gte('pro_expires_at', fm30After)
+    .lte('pro_expires_at', fm30Before);
+
+  for (var w30 of (warn30List || [])) {
+    if (!w30.email) continue;
+    var w30Name    = w30.contractor_name || w30.business_name || w30.email.split('@')[0];
+    var w30Expires = new Date(w30.pro_expires_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    try {
+      await resend.emails.send({
+        from:    'BuildOrder <support@buildorder.ai>',
+        to:      w30.email,
+        subject: 'Halfway through your founding member access',
+        html: `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="font-family:Inter,Arial,sans-serif;background:#0F172A;margin:0;padding:40px 16px;">
+  <div style="max-width:560px;margin:0 auto;">
+    <div style="background:#090E1A;border-radius:14px 14px 0 0;padding:28px 32px;border:1px solid rgba(245,158,11,0.2);border-bottom:none;">
+      <div style="font-size:24px;font-weight:900;letter-spacing:-0.03em;color:#F8FAFC;">
+        <span style="color:#F59E0B;">Build</span>Order<span style="font-size:13px;font-weight:400;color:#94A3B8;">.ai</span>
+      </div>
+    </div>
+    <div style="background:#111827;border-radius:0 0 14px 14px;padding:32px;border:1px solid rgba(245,158,11,0.2);border-top:none;">
+      <h1 style="font-size:22px;font-weight:900;color:#F8FAFC;margin:0 0 10px;letter-spacing:-0.02em;">
+        30 days in. 30 days left.
+      </h1>
+      <p style="font-size:15px;color:#94A3B8;line-height:1.7;margin:0 0 24px;">
+        ${w30Name}, your founding member Pro access runs until <strong style="color:#F8FAFC;">${w30Expires}</strong>. Here's a quick reminder of everything that's included while you have it.
+      </p>
+
+      <div style="background:#1A2438;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:18px 20px;margin-bottom:24px;">
+        <div style="font-size:12px;font-weight:700;color:#F59E0B;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:12px;">What's included in Pro</div>
+        <div style="font-size:14px;color:#94A3B8;line-height:2;">
+          ✓ Unlimited documents — all 7 types, no monthly cap<br>
+          ✓ PDF export and download<br>
+          ✓ Email documents directly to clients<br>
+          ✓ E-signature with full audit trail<br>
+          ✓ State-compliant language — all 50 states<br>
+          ✓ Bilingual documents (English + Spanish)<br>
+          ✓ Client address book
+        </div>
+      </div>
+
+      <div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:16px 20px;margin-bottom:24px;">
+        <div style="font-size:12px;font-weight:700;color:#F59E0B;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px;">Coming soon</div>
+        <div style="font-size:13px;color:#D4A017;line-height:1.7;">Job cost tracking, branded document headers, and team access for multi-crew operations — all landing later this year for Pro members first.</div>
+      </div>
+
+      <a href="https://buildorder.ai/pricing.html"
+         style="display:block;text-align:center;background:#F59E0B;color:#090E1A;padding:16px 24px;border-radius:10px;font-size:16px;font-weight:900;text-decoration:none;margin-bottom:24px;letter-spacing:-0.01em;">
+        Lock In Pro — $19/mo &rarr;
+      </a>
+
+      <div style="padding-top:20px;border-top:1px solid rgba(255,255,255,0.06);font-size:12px;color:#334155;line-height:1.7;">
+        Questions? Reply to this email or reach us at
+        <a href="mailto:support@buildorder.ai" style="color:#F59E0B;text-decoration:none;">support@buildorder.ai</a>.
+        <br>BuildOrder.ai &mdash; Contractor documents in seconds.
+      </div>
+    </div>
+  </div>
+</body></html>`
+      });
+      await supabase.from('contractor_profiles')
+        .update({ founding_warn30_sent: true })
+        .eq('id', w30.id);
+      sent++;
+    } catch (e) {
+      console.error('founding warn30 email failed for', w30.id, e.message);
+      errs.push({ type: 'founding_warn30', user_id: w30.id, error: e.message });
+    }
+  }
+
+  // ── Founding member Day 55 hard urgency (5 days left) ────────────────────────
+  // Window: pro_expires_at is 4–6 days from now (user is ~55 days in).
+  var fm55After  = new Date(now +  4 * 24 * 60 * 60 * 1000).toISOString();
+  var fm55Before = new Date(now +  6 * 24 * 60 * 60 * 1000).toISOString();
+
+  var { data: warn55List } = await supabase
+    .from('contractor_profiles')
+    .select('id, email, contractor_name, business_name, pro_expires_at')
+    .eq('founding_member', true)
+    .eq('founding_warn55_sent', false)
+    .gte('pro_expires_at', fm55After)
+    .lte('pro_expires_at', fm55Before);
+
+  for (var w55 of (warn55List || [])) {
+    if (!w55.email) continue;
+    var w55Name    = w55.contractor_name || w55.business_name || w55.email.split('@')[0];
+    var w55Expires = new Date(w55.pro_expires_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    try {
+      await resend.emails.send({
+        from:    'BuildOrder <support@buildorder.ai>',
+        to:      w55.email,
+        subject: '5 days left — don\'t lose Pro access',
+        html: `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="font-family:Inter,Arial,sans-serif;background:#0F172A;margin:0;padding:40px 16px;">
+  <div style="max-width:560px;margin:0 auto;">
+    <div style="background:#090E1A;border-radius:14px 14px 0 0;padding:28px 32px;border:1px solid rgba(245,158,11,0.2);border-bottom:none;">
+      <div style="font-size:24px;font-weight:900;letter-spacing:-0.03em;color:#F8FAFC;">
+        <span style="color:#F59E0B;">Build</span>Order<span style="font-size:13px;font-weight:400;color:#94A3B8;">.ai</span>
+      </div>
+    </div>
+    <div style="background:#111827;border-radius:0 0 14px 14px;padding:32px;border:1px solid rgba(245,158,11,0.2);border-top:none;">
+      <h1 style="font-size:22px;font-weight:900;color:#F8FAFC;margin:0 0 10px;letter-spacing:-0.02em;">
+        5 days left. Don't let it lapse.
+      </h1>
+      <p style="font-size:15px;color:#94A3B8;line-height:1.7;margin:0 0 24px;">
+        ${w55Name}, your founding member Pro access expires on <strong style="color:#F8FAFC;">${w55Expires}</strong>. After that, you're on the free plan — 5 documents a month, no PDF export, no email delivery, no e-signature.
+      </p>
+
+      <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:18px 20px;margin-bottom:24px;">
+        <div style="font-size:13px;color:#D4A017;line-height:1.8;">
+          Keep access to everything:<br>
+          ✓ Unlimited documents<br>
+          ✓ PDF export<br>
+          ✓ Email to clients<br>
+          ✓ E-signature + audit trail<br>
+          ✓ All 50 states compliant<br><br>
+          <strong>$19/month. Cancel any time.</strong>
+        </div>
+      </div>
+
+      <a href="https://buildorder.ai/pricing.html"
+         style="display:block;text-align:center;background:#F59E0B;color:#090E1A;padding:16px 24px;border-radius:10px;font-size:16px;font-weight:900;text-decoration:none;margin-bottom:24px;letter-spacing:-0.01em;">
+        Upgrade Now — Keep Pro Access &rarr;
+      </a>
+
+      <div style="padding-top:20px;border-top:1px solid rgba(255,255,255,0.06);font-size:12px;color:#334155;line-height:1.7;">
+        Questions? Reply to this email or reach us at
+        <a href="mailto:support@buildorder.ai" style="color:#F59E0B;text-decoration:none;">support@buildorder.ai</a>.
+        <br>BuildOrder.ai &mdash; Contractor documents in seconds.
+      </div>
+    </div>
+  </div>
+</body></html>`
+      });
+      await supabase.from('contractor_profiles')
+        .update({ founding_warn55_sent: true })
+        .eq('id', w55.id);
+      sent++;
+    } catch (e) {
+      console.error('founding warn55 email failed for', w55.id, e.message);
+      errs.push({ type: 'founding_warn55', user_id: w55.id, error: e.message });
+    }
+  }
+
+  // ── Founding member Day 45 warning (15 days remaining) ─────────────────────
+  // Window: pro_expires_at is 14–16 days from now. Flag prevents resends.
+  var fm45After  = new Date(now + 14 * 24 * 60 * 60 * 1000).toISOString();
+  var fm45Before = new Date(now + 16 * 24 * 60 * 60 * 1000).toISOString();
+
+  var { data: warn45List } = await supabase
+    .from('contractor_profiles')
+    .select('id, email, contractor_name, business_name, pro_expires_at')
+    .eq('founding_member', true)
+    .eq('founding_warn45_sent', false)
+    .gte('pro_expires_at', fm45After)
+    .lte('pro_expires_at', fm45Before);
+
+  for (var w45 of (warn45List || [])) {
+    if (!w45.email) continue;
+    var w45Name    = w45.contractor_name || w45.business_name || w45.email.split('@')[0];
+    var w45Expires = new Date(w45.pro_expires_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    try {
+      await resend.emails.send({
+        from:    'BuildOrder <support@buildorder.ai>',
+        to:      w45.email,
+        subject: '15 days left on your BuildOrder Pro access',
+        html: `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="font-family:Inter,Arial,sans-serif;background:#0F172A;margin:0;padding:40px 16px;">
+  <div style="max-width:560px;margin:0 auto;">
+    <div style="background:#090E1A;border-radius:14px 14px 0 0;padding:28px 32px;border:1px solid rgba(245,158,11,0.2);border-bottom:none;">
+      <div style="font-size:24px;font-weight:900;letter-spacing:-0.03em;color:#F8FAFC;">
+        <span style="color:#F59E0B;">Build</span>Order<span style="font-size:13px;font-weight:400;color:#94A3B8;">.ai</span>
+      </div>
+    </div>
+    <div style="background:#111827;border-radius:0 0 14px 14px;padding:32px;border:1px solid rgba(245,158,11,0.2);border-top:none;">
+      <h1 style="font-size:22px;font-weight:900;color:#F8FAFC;margin:0 0 10px;letter-spacing:-0.02em;">
+        ${w45Name} — 15 days left on Pro.
+      </h1>
+      <p style="font-size:15px;color:#94A3B8;line-height:1.7;margin:0 0 24px;">
+        Your founding member Pro access expires on <strong style="color:#F8FAFC;">${w45Expires}</strong>. After that, your account moves to the free plan (5 documents/month).
+      </p>
+
+      <div style="background:#1A2438;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:18px 20px;margin-bottom:24px;">
+        <div style="font-size:12px;font-weight:700;color:#F59E0B;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px;">What you keep with Pro — $19/mo</div>
+        <div style="font-size:14px;color:#94A3B8;line-height:1.8;">
+          ✓ Unlimited documents — no monthly cap<br>
+          ✓ PDF export<br>
+          ✓ Email documents directly to clients<br>
+          ✓ E-signature with full audit trail<br>
+          ✓ State compliance checks — all 50 states<br>
+          ✓ Bilingual (English + Spanish)
+        </div>
+      </div>
+
+      <a href="https://buildorder.ai/pricing.html"
+         style="display:block;text-align:center;background:#F59E0B;color:#090E1A;padding:16px 24px;border-radius:10px;font-size:16px;font-weight:900;text-decoration:none;margin-bottom:24px;letter-spacing:-0.01em;">
+        Keep Pro — $19/mo &rarr;
+      </a>
+
+      <div style="padding-top:20px;border-top:1px solid rgba(255,255,255,0.06);font-size:12px;color:#334155;line-height:1.7;">
+        Questions? Reply to this email or reach us at
+        <a href="mailto:support@buildorder.ai" style="color:#F59E0B;text-decoration:none;">support@buildorder.ai</a>.
+        <br>BuildOrder.ai &mdash; Contractor documents in seconds.
+      </div>
+    </div>
+  </div>
+</body></html>`
+      });
+      await supabase.from('contractor_profiles')
+        .update({ founding_warn45_sent: true })
+        .eq('id', w45.id);
+      sent++;
+    } catch (e) {
+      console.error('founding warn45 email failed for', w45.id, e.message);
+      errs.push({ type: 'founding_warn45', user_id: w45.id, error: e.message });
+    }
+  }
+
+  // ── Founding member Day 60 expiry notice (expires tomorrow) ─────────────────
+  // Window: pro_expires_at is 0–2 days from now. Flag prevents resends.
+  var fm60Before = new Date(now + 2 * 24 * 60 * 60 * 1000).toISOString();
+
+  var { data: warn60List } = await supabase
+    .from('contractor_profiles')
+    .select('id, email, contractor_name, business_name, pro_expires_at')
+    .eq('founding_member', true)
+    .eq('founding_warn60_sent', false)
+    .gt('pro_expires_at', new Date(now).toISOString())
+    .lte('pro_expires_at', fm60Before);
+
+  for (var w60 of (warn60List || [])) {
+    if (!w60.email) continue;
+    var w60Name    = w60.contractor_name || w60.business_name || w60.email.split('@')[0];
+    var w60Expires = new Date(w60.pro_expires_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    try {
+      await resend.emails.send({
+        from:    'BuildOrder <support@buildorder.ai>',
+        to:      w60.email,
+        subject: 'Your BuildOrder Pro access expires tomorrow',
+        html: `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="font-family:Inter,Arial,sans-serif;background:#0F172A;margin:0;padding:40px 16px;">
+  <div style="max-width:560px;margin:0 auto;">
+    <div style="background:#090E1A;border-radius:14px 14px 0 0;padding:28px 32px;border:1px solid rgba(245,158,11,0.2);border-bottom:none;">
+      <div style="font-size:24px;font-weight:900;letter-spacing:-0.03em;color:#F8FAFC;">
+        <span style="color:#F59E0B;">Build</span>Order<span style="font-size:13px;font-weight:400;color:#94A3B8;">.ai</span>
+      </div>
+    </div>
+    <div style="background:#111827;border-radius:0 0 14px 14px;padding:32px;border:1px solid rgba(245,158,11,0.2);border-top:none;">
+      <h1 style="font-size:22px;font-weight:900;color:#F8FAFC;margin:0 0 10px;letter-spacing:-0.02em;">
+        Pro access expires tomorrow.
+      </h1>
+      <p style="font-size:15px;color:#94A3B8;line-height:1.7;margin:0 0 24px;">
+        ${w60Name}, your founding member Pro access expires on <strong style="color:#F8FAFC;">${w60Expires}</strong>. Upgrade today to keep your current workflow — unlimited documents, PDF export, email delivery, and e-signature.
+      </p>
+
+      <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:18px 20px;margin-bottom:24px;">
+        <div style="font-size:13px;color:#D4A017;line-height:1.8;">
+          After expiry your account drops to the <strong>free plan</strong>:<br>
+          &nbsp;✗ 5 documents/month (no more unlimited)<br>
+          &nbsp;✗ No PDF export<br>
+          &nbsp;✗ No email to clients<br>
+          &nbsp;✗ No e-signature
+        </div>
+      </div>
+
+      <a href="https://buildorder.ai/pricing.html"
+         style="display:block;text-align:center;background:#F59E0B;color:#090E1A;padding:16px 24px;border-radius:10px;font-size:16px;font-weight:900;text-decoration:none;margin-bottom:24px;letter-spacing:-0.01em;">
+        Upgrade to Pro — $19/mo &rarr;
+      </a>
+
+      <div style="padding-top:20px;border-top:1px solid rgba(255,255,255,0.06);font-size:12px;color:#334155;line-height:1.7;">
+        Questions? Reply to this email or reach us at
+        <a href="mailto:support@buildorder.ai" style="color:#F59E0B;text-decoration:none;">support@buildorder.ai</a>.
+        <br>BuildOrder.ai &mdash; Contractor documents in seconds.
+      </div>
+    </div>
+  </div>
+</body></html>`
+      });
+      await supabase.from('contractor_profiles')
+        .update({ founding_warn60_sent: true })
+        .eq('id', w60.id);
+      sent++;
+    } catch (e) {
+      console.error('founding warn60 email failed for', w60.id, e.message);
+      errs.push({ type: 'founding_warn60', user_id: w60.id, error: e.message });
+    }
+  }
+
+
+  // ── Founding member Day +1 lapsed (access ended yesterday) ───────────────────
+  // Window: pro_expires_at is 0–2 days in the PAST. Flag prevents resends.
+  var fmL1After = new Date(now - 2 * 24 * 60 * 60 * 1000).toISOString();
+
+  var { data: lapsed1List } = await supabase
+    .from('contractor_profiles')
+    .select('id, email, contractor_name, business_name, pro_expires_at')
+    .eq('founding_member', true)
+    .eq('founding_lapsed1_sent', false)
+    .gte('pro_expires_at', fmL1After)
+    .lte('pro_expires_at', new Date(now).toISOString());
+
+  for (var l1 of (lapsed1List || [])) {
+    if (!l1.email) continue;
+    var l1Name = l1.contractor_name || l1.business_name || l1.email.split('@')[0];
+    try {
+      await resend.emails.send({
+        from:    'BuildOrder <support@buildorder.ai>',
+        to:      l1.email,
+        subject: 'Your Pro access ended',
+        html: `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="font-family:Inter,Arial,sans-serif;background:#0F172A;margin:0;padding:40px 16px;">
+  <div style="max-width:560px;margin:0 auto;">
+    <div style="background:#090E1A;border-radius:14px 14px 0 0;padding:28px 32px;border:1px solid rgba(245,158,11,0.2);border-bottom:none;">
+      <div style="font-size:24px;font-weight:900;letter-spacing:-0.03em;color:#F8FAFC;">
+        <span style="color:#F59E0B;">Build</span>Order<span style="font-size:13px;font-weight:400;color:#94A3B8;">.ai</span>
+      </div>
+    </div>
+    <div style="background:#111827;border-radius:0 0 14px 14px;padding:32px;border:1px solid rgba(245,158,11,0.2);border-top:none;">
+      <h1 style="font-size:22px;font-weight:900;color:#F8FAFC;margin:0 0 10px;letter-spacing:-0.02em;">
+        Your founding member access ended.
+      </h1>
+      <p style="font-size:15px;color:#94A3B8;line-height:1.7;margin:0 0 24px;">
+        ${l1Name}, your 60 days of Pro are up. Your account is still here and nothing was deleted &mdash; it just dropped to the free plan.
+      </p>
+
+      <div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.25);border-radius:10px;padding:18px 20px;margin-bottom:14px;">
+        <div style="font-size:12px;font-weight:800;color:#F87171;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px;">What you lost</div>
+        <div style="font-size:13px;color:#94A3B8;line-height:1.8;">
+          &nbsp;&times; Unlimited documents &mdash; now capped at 5/month<br>
+          &nbsp;&times; PDF export<br>
+          &nbsp;&times; Email delivery to clients<br>
+          &nbsp;&times; E-signature and payment links
+        </div>
+      </div>
+
+      <div style="background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.22);border-radius:10px;padding:18px 20px;margin-bottom:24px;">
+        <div style="font-size:12px;font-weight:800;color:#34D399;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px;">What you keep</div>
+        <div style="font-size:13px;color:#94A3B8;line-height:1.8;">
+          &nbsp;&check; Every document you already generated<br>
+          &nbsp;&check; All 8 document types<br>
+          &nbsp;&check; All 50 states, plus DC and Puerto Rico<br>
+          &nbsp;&check; 5 documents per month, free, for as long as you want
+        </div>
+      </div>
+
+      <a href="https://buildorder.ai/pricing.html"
+         style="display:block;text-align:center;background:#F59E0B;color:#090E1A;padding:16px 24px;border-radius:10px;font-size:16px;font-weight:900;text-decoration:none;margin-bottom:24px;letter-spacing:-0.01em;">
+        Turn Pro back on &mdash; $19/mo &rarr;
+      </a>
+
+      <div style="padding-top:20px;border-top:1px solid rgba(255,255,255,0.06);font-size:12px;color:#334155;line-height:1.7;">
+        If BuildOrder wasn't a fit, just reply and tell me why &mdash; I read every one.
+        <br>BuildOrder.ai &mdash; Contractor documents in seconds.
+      </div>
+    </div>
+  </div>
+</body></html>`
+      });
+      await supabase.from('contractor_profiles')
+        .update({ founding_lapsed1_sent: true })
+        .eq('id', l1.id);
+      sent++;
+    } catch (e) {
+      console.error('founding lapsed1 email failed for', l1.id, e.message);
+      errs.push({ type: 'founding_lapsed1', user_id: l1.id, error: e.message });
+    }
+  }
+
+  // ── Founding member Day +7 lapsed (one week on free) ─────────────────────────
+  // Window: pro_expires_at is 6–8 days in the PAST.
+  var fmL7After  = new Date(now - 8 * 24 * 60 * 60 * 1000).toISOString();
+  var fmL7Before = new Date(now - 6 * 24 * 60 * 60 * 1000).toISOString();
+
+  var { data: lapsed7List } = await supabase
+    .from('contractor_profiles')
+    .select('id, email, contractor_name, business_name')
+    .eq('founding_member', true)
+    .eq('founding_lapsed7_sent', false)
+    .gte('pro_expires_at', fmL7After)
+    .lte('pro_expires_at', fmL7Before);
+
+  for (var l7 of (lapsed7List || [])) {
+    if (!l7.email) continue;
+    var l7Name = l7.contractor_name || l7.business_name || l7.email.split('@')[0];
+    try {
+      await resend.emails.send({
+        from:    'BuildOrder <support@buildorder.ai>',
+        to:      l7.email,
+        subject: 'The one thing the free plan can\'t do',
+        html: `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="font-family:Inter,Arial,sans-serif;background:#0F172A;margin:0;padding:40px 16px;">
+  <div style="max-width:560px;margin:0 auto;">
+    <div style="background:#090E1A;border-radius:14px 14px 0 0;padding:28px 32px;border:1px solid rgba(245,158,11,0.2);border-bottom:none;">
+      <div style="font-size:24px;font-weight:900;letter-spacing:-0.03em;color:#F8FAFC;">
+        <span style="color:#F59E0B;">Build</span>Order<span style="font-size:13px;font-weight:400;color:#94A3B8;">.ai</span>
+      </div>
+    </div>
+    <div style="background:#111827;border-radius:0 0 14px 14px;padding:32px;border:1px solid rgba(245,158,11,0.2);border-top:none;">
+      <h1 style="font-size:22px;font-weight:900;color:#F8FAFC;margin:0 0 10px;letter-spacing:-0.02em;">
+        Getting paid is the part that's gated.
+      </h1>
+      <p style="font-size:15px;color:#94A3B8;line-height:1.7;margin:0 0 20px;">
+        ${l7Name}, you've been on the free plan for a week. You can still write documents &mdash; that part works fine.
+      </p>
+      <p style="font-size:15px;color:#94A3B8;line-height:1.7;margin:0 0 24px;">
+        What you can't do is send one link that lets a homeowner read the scope, sign it, and pay the deposit from their phone. That's the piece that turns a signed estimate into money in your account the same day, and it's Pro only.
+      </p>
+
+      <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:18px 20px;margin-bottom:24px;">
+        <div style="font-size:13px;color:#D4A017;line-height:1.8;">
+          One job where the deposit lands a week earlier pays for a year of Pro.
+        </div>
+      </div>
+
+      <a href="https://buildorder.ai/pricing.html"
+         style="display:block;text-align:center;background:#F59E0B;color:#090E1A;padding:16px 24px;border-radius:10px;font-size:16px;font-weight:900;text-decoration:none;margin-bottom:24px;letter-spacing:-0.01em;">
+        Turn Pro back on &mdash; $19/mo &rarr;
+      </a>
+
+      <div style="padding-top:20px;border-top:1px solid rgba(255,255,255,0.06);font-size:12px;color:#334155;line-height:1.7;">
+        Questions? Reply to this email or reach us at
+        <a href="mailto:support@buildorder.ai" style="color:#F59E0B;text-decoration:none;">support@buildorder.ai</a>.
+        <br>BuildOrder.ai &mdash; Contractor documents in seconds.
+      </div>
+    </div>
+  </div>
+</body></html>`
+      });
+      await supabase.from('contractor_profiles')
+        .update({ founding_lapsed7_sent: true })
+        .eq('id', l7.id);
+      sent++;
+    } catch (e) {
+      console.error('founding lapsed7 email failed for', l7.id, e.message);
+      errs.push({ type: 'founding_lapsed7', user_id: l7.id, error: e.message });
+    }
+  }
+
+  // ── Founding member Day +30 lapsed (final touch) ─────────────────────────────
+  // Window: pro_expires_at is 29+ days in the PAST — no lower bound, so members
+  // who lapsed before this sequence existed still receive exactly one final
+  // email. The flag guarantees it only ever sends once.
+  var fmL30Before = new Date(now - 29 * 24 * 60 * 60 * 1000).toISOString();
+
+  var { data: lapsed30List } = await supabase
+    .from('contractor_profiles')
+    .select('id, email, contractor_name, business_name')
+    .eq('founding_member', true)
+    .eq('founding_lapsed30_sent', false)
+    .lte('pro_expires_at', fmL30Before);
+
+  for (var l30 of (lapsed30List || [])) {
+    if (!l30.email) continue;
+    var l30Name = l30.contractor_name || l30.business_name || l30.email.split('@')[0];
+    try {
+      await resend.emails.send({
+        from:    'BuildOrder <support@buildorder.ai>',
+        to:      l30.email,
+        subject: 'Last note about your BuildOrder account',
+        html: `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="font-family:Inter,Arial,sans-serif;background:#0F172A;margin:0;padding:40px 16px;">
+  <div style="max-width:560px;margin:0 auto;">
+    <div style="background:#090E1A;border-radius:14px 14px 0 0;padding:28px 32px;border:1px solid rgba(245,158,11,0.2);border-bottom:none;">
+      <div style="font-size:24px;font-weight:900;letter-spacing:-0.03em;color:#F8FAFC;">
+        <span style="color:#F59E0B;">Build</span>Order<span style="font-size:13px;font-weight:400;color:#94A3B8;">.ai</span>
+      </div>
+    </div>
+    <div style="background:#111827;border-radius:0 0 14px 14px;padding:32px;border:1px solid rgba(245,158,11,0.2);border-top:none;">
+      <h1 style="font-size:22px;font-weight:900;color:#F8FAFC;margin:0 0 10px;letter-spacing:-0.02em;">
+        This is the last one.
+      </h1>
+      <p style="font-size:15px;color:#94A3B8;line-height:1.7;margin:0 0 20px;">
+        ${l30Name}, you were one of the first contractors to sign up for BuildOrder, and I'm not going to keep emailing you about it. This is the last message you'll get from me on this.
+      </p>
+      <p style="font-size:15px;color:#94A3B8;line-height:1.7;margin:0 0 24px;">
+        Your account stays open on the free plan. Every document you made is still in there, and 5 a month is yours for as long as you want it. If the day comes that you need unlimited documents and e-signature again, Pro is right where you left it.
+      </p>
+
+      <a href="https://buildorder.ai/pricing.html"
+         style="display:block;text-align:center;background:transparent;color:#F59E0B;border:1px solid rgba(245,158,11,0.4);padding:15px 24px;border-radius:10px;font-size:15px;font-weight:800;text-decoration:none;margin-bottom:24px;letter-spacing:-0.01em;">
+        See Pro &mdash; $19/mo &rarr;
+      </a>
+
+      <div style="padding-top:20px;border-top:1px solid rgba(255,255,255,0.06);font-size:12px;color:#334155;line-height:1.7;">
+        If there was something BuildOrder got wrong, I'd take the feedback &mdash; just reply.
+        <br>BuildOrder.ai &mdash; Contractor documents in seconds.
+      </div>
+    </div>
+  </div>
+</body></html>`
+      });
+      await supabase.from('contractor_profiles')
+        .update({ founding_lapsed30_sent: true })
+        .eq('id', l30.id);
+      sent++;
+    } catch (e) {
+      console.error('founding lapsed30 email failed for', l30.id, e.message);
+      errs.push({ type: 'founding_lapsed30', user_id: l30.id, error: e.message });
     }
   }
 

@@ -132,6 +132,12 @@ HOW IT WORKS:
 Always encourage visitors to try the free plan or grab the founding member offer while it lasts.`;
 
   let history = [];
+  let conversationLang = 'en';
+
+  function detectSpanish(text) {
+    if (/[¿¡ñáéíóúüÁÉÍÓÚÜÑ]/.test(text)) return true;
+    return /\b(el|la|los|las|que|de|es|hola|gracias|cómo|qué|cuánto|necesito|puedo|puede|quiero|tengo|para|con|por|cuesta|hacer|ayuda|favor|precio|documento|contrato|factura|estimado)\b/i.test(text);
+  }
 
   function addMsg(text, role) {
     const div = document.createElement('div');
@@ -149,11 +155,17 @@ Always encourage visitors to try the free plan or grab the founding member offer
     inputEl.value = '';
     addMsg(text, 'user');
     const typing = addMsg('Typing...', 'typing');
+
+    if (detectSpanish(text)) conversationLang = 'es';
+    const langDirective = conversationLang === 'es'
+      ? 'IMPORTANT: The user is writing in Spanish. You MUST respond entirely in Spanish, no exceptions.\n\n'
+      : '';
+
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ system: SYSTEM, messages: [...history, { role: 'user', content: text }] })
+        body: JSON.stringify({ system: langDirective + SYSTEM, messages: [...history, { role: 'user', content: text }] })
       });
       const data = await res.json();
       const reply = data.content?.[0]?.text || "Sorry, I couldn't get a response. Please try again.";

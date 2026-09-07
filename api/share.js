@@ -128,7 +128,7 @@ module.exports = async function handler(req, res) {
       // Fetch link — include user_id and document_type for notification
       const { data: link, error: fetchErr } = await db
         .from('share_links')
-        .select('id, user_id, document_type, expires_at, signed_at')
+        .select('id, user_id, document_type, expires_at, signed_at, viewed_at')
         .eq('token', token)
         .single();
 
@@ -151,6 +151,38 @@ module.exports = async function handler(req, res) {
         .eq('token', token);
 
       if (updateErr) return res.status(500).json({ error: updateErr.message });
+
+      // ── Write to document_signatures with full audit log ─────────────
+      try {
+        const ipAddress = ((req.headers['x-forwarded-for'] || '').split(',')[0].trim()) ||
+                          (req.socket && req.socket.remoteAddress) || 'unknown';
+        const userAgent = req.headers['user-agent'] || 'unknown';
+
+        const auditLog = [];
+        if (link.viewed_at) {
+          auditLog.push({ action: 'document_viewed', timestamp: link.viewed_at });
+        }
+        auditLog.push({
+          action:       'signature_applied',
+          timestamp:    signedAt,
+          ip_address:   ipAddress,
+          signer_name:  client_name  || null,
+          signer_email: client_email || null
+        });
+        auditLog.push({ action: 'document_finalized', timestamp: signedAt });
+
+        await db.from('document_signatures').insert({
+          document_id:     token,
+          contractor_id:   link.user_id,
+          signature_image: client_sig || null,
+          ip_address:      ipAddress,
+          user_agent:      userAgent,
+          signed_at:       signedAt,
+          audit_log:       auditLog
+        });
+      } catch (auditErr) {
+        console.error('[share] document_signatures insert failed:', auditErr.message);
+      }
 
       // ── Send notification email to contractor ──────────────────────────
       try {
