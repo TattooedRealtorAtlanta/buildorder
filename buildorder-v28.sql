@@ -16,8 +16,12 @@
 
 ALTER TABLE job_photos ENABLE ROW LEVEL SECURITY;
 
--- Replace the blanket FOR ALL policy from v4
+-- Replace every blanket FOR ALL policy on this table. v4 created one, and a
+-- second was added later under a different name; because permissive RLS
+-- policies are OR'd together, leaving either one in place lets INSERT
+-- through and the Business check below never binds.
 DROP POLICY IF EXISTS "Users manage own job photos" ON job_photos;
+DROP POLICY IF EXISTS "Users own their photos"      ON job_photos;
 
 DROP POLICY IF EXISTS "job_photos: read own"   ON job_photos;
 DROP POLICY IF EXISTS "job_photos: update own" ON job_photos;
@@ -49,3 +53,8 @@ CREATE POLICY "job_photos: insert requires business"
 
 -- Note: API routes use the service-role key and bypass RLS entirely,
 -- so server-side inserts are unaffected by the policy above.
+
+-- Verify: this must return exactly 4 rows (SELECT, INSERT, UPDATE, DELETE)
+-- and no row with cmd = 'ALL'.
+--   select policyname, cmd from pg_policies
+--   where tablename = 'job_photos' order by cmd;
