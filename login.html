@@ -337,6 +337,19 @@
         btn.disabled = false;
         btn.textContent = isFoundingFlow ? 'Create Account — Get 60 Days Free' : 'Create Account';
       } else {
+        // Account exists now. Fire before the 1.2s redirect below — GA4 sends
+        // via beacon so it survives the navigation, but the call has to happen
+        // first. Guarded because an ad blocker can leave gtag undefined, and a
+        // blocked analytics call must never break account creation.
+        try {
+          if (typeof gtag === 'function') {
+            gtag('event', 'sign_up', {
+              method: 'password',
+              signup_path: isFoundingFlow ? 'founding_member' : 'standard'
+            });
+          }
+        } catch (e) {}
+
         // Fire welcome email non-blocking — never delay the redirect
         if (data.session) {
           fetch('/api/welcome', {

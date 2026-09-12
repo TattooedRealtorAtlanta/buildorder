@@ -195,6 +195,15 @@
         return;
       }
 
+      // Same key event as login.html, tagged so invited teammates can be told
+      // apart from people who found the site themselves. Without this, every
+      // account created through an invite would be missing from sign_up.
+      try {
+        if (typeof gtag === 'function') {
+          gtag('event', 'sign_up', { method: 'password', signup_path: 'team_invite' });
+        }
+      } catch (e) {}
+
       // Sign in immediately after signup
       var { error: loginErr } = await db.auth.signInWithPassword({ email: email, password: pass });
       if (loginErr) { setMsg(loginErr.message, true); setBusy(false); return; }
