@@ -3,7 +3,18 @@ const { createClient } = require('@supabase/supabase-js');
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { password, action } = req.body || {};
+  // admin.html sends the password as the X-Admin-Password header, not in the
+  // body. This read the body only, so `password` was always undefined and the
+  // comparison always failed -- the admin page could never be opened with any
+  // password. Accept the header, keep the body as a fallback for any direct
+  // caller. Node lowercases incoming header names.
+  const { action } = req.body || {};
+  const password = req.headers['x-admin-password'] || (req.body || {}).password;
+
+  if (!process.env.ADMIN_SECRET) {
+    console.error('[admin] ADMIN_SECRET is not set — every request will be rejected');
+    return res.status(500).json({ error: 'Admin is not configured' });
+  }
   if (password !== process.env.ADMIN_SECRET) {
     return res.status(401).json({ error: 'Unauthorized' });
   }

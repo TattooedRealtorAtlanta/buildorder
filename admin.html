@@ -144,7 +144,10 @@
       document.getElementById('login-gate').style.display = 'none';
       document.getElementById('admin-dash').style.display = 'block';
 
-      var s = statsR.data;
+      // /api/admin returns { success, stats } — the figures are nested under
+      // .stats, not at the top level. Reading statsR.data directly left every
+      // tile showing zero even once auth worked.
+      var s = statsR.data.stats || {};
       document.getElementById('s-mrr').textContent = '$' + (s.mrr || 0).toLocaleString();
       document.getElementById('s-users').textContent = (s.total_users || 0).toLocaleString();
       document.getElementById('s-docs').textContent = (s.total_docs || 0).toLocaleString();
