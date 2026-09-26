@@ -219,7 +219,22 @@
       document.getElementById('submit-btn').disabled = true;
       document.getElementById('submit-btn').textContent = 'Creating…';
 
+      // proposals.user_id is NOT NULL with no database default, and RLS
+      // checks user_id = get_owner_id(). This page was the only create
+      // screen in the app that never set it, so every insert since the
+      // feature shipped failed the not-null constraint before RLS was even
+      // reached. Matches the pattern in new-job.html / new-estimate.html.
+      var userRes = await db.auth.getUser();
+      var currentUser = userRes && userRes.data && userRes.data.user;
+      if (!currentUser) {
+        document.getElementById('msg').textContent = 'Your session expired. Please sign in again.';
+        document.getElementById('submit-btn').disabled = false;
+        document.getElementById('submit-btn').textContent = '\u{1F4CB} Create Proposal';
+        return;
+      }
+
       var row = {
+        user_id:         currentUser.id,
         homeowner_name:  name,
         homeowner_email: g('homeowner_email') || null,
         homeowner_phone: g('homeowner_phone') || null,
