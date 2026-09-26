@@ -543,7 +543,11 @@
     async function init() {
       var sessionRes = await db.auth.getSession();
       if (!sessionRes.data.session) { window.location.href = '/login.html'; return; }
-      var profileRes = await db.from('contractor_profiles').select('*').single();
+      // RLS also carries a blanket anon SELECT policy on contractor_profiles, so an
+      // unfiltered select returns every contractor's row and .single() throws
+      // PGRST116. Filter to the signed-in user.
+      var profileRes = await db.from('contractor_profiles').select('*')
+        .eq('id', sessionRes.data.session.user.id).single();
       var profile = profileRes.data;
       if (!profile || !profile.onboarding_complete) { window.location.href = '/onboarding.html'; return; }
       document.getElementById('nav-name').textContent = profile.business_name || profile.contractor_name;

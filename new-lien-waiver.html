@@ -139,7 +139,11 @@
 
     db.auth.getSession().then(function(res) {
       if (!res.data.session) { window.location.href = '/login.html'; return; }
-      db.from('contractor_profiles').select('contractor_name, business_name').single().then(function(pRes) {
+      // RLS also carries a blanket anon SELECT policy on contractor_profiles, so an
+      // unfiltered select returns every contractor's row and .single() throws
+      // PGRST116. Filter to the signed-in user.
+      db.from('contractor_profiles').select('contractor_name, business_name')
+        .eq('id', res.data.session.user.id).single().then(function(pRes) {
         if (pRes.data) {
           document.getElementById('claimant_name').value = pRes.data.contractor_name || '';
           document.getElementById('claimant_company').value = pRes.data.business_name || pRes.data.contractor_name || '';
